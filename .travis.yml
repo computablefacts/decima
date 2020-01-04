@@ -2,20 +2,29 @@ dist: trusty
 language: java
 sudo: false
 jdk:
-  - openjdk10
+- openjdk10
 install: "/bin/true"
 script:
-  - mvn clean install -q -B
+- mvn clean install -q -B
 deploy:
-  - skip_cleanup: true
-    provider: script
-    script: chmod +x ./deploy.sh && ./deploy.sh
-    on:
-      branch: master
-  - skip_cleanup: true
-    provider: script
-    script: chmod +x ./deploy.sh && ./deploy.sh
-    on:
-      tags: true
+- skip_cleanup: true
+  provider: script
+  script: chmod +x ./deploy.sh && ./deploy.sh
+  on:
+    branch: master
+- skip_cleanup: true
+  provider: script
+  script: chmod +x ./deploy.sh && ./deploy.sh
+  on:
+    tags: true
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -t 7a9e3d42-9f08-4354-81f6-d1409e85ea17
+- bash <(curl -s https://codecov.io/bash) -t 7a9e3d42-9f08-4354-81f6-d1409e85ea17
+env:
+  global:
+  - secure: CncbCM02ZZTn4O/MF0YiR2iBU9DhSu+QTRI5hZNx3r4eF7gD6EORM6NAQXtxlQMMGcrQNvGT8a4Ggg7Y+BBGlLHSTki/UwqQywzFfEcN3TSFn+FYvs917WxokZXKyB71+fH7SXQf9CTLLwGHUk9yaOZb69M7gZc0JLaTrP/2flo4cplXGMQ3SYiKCrWvLdArwOsMKo/LJFvmXe+owcqEHNeECdbwa0v0tWwMbtiZNeZOgMxaqB3Ht8UOdiTbBMMlfFnqFeWMsEWqkE55X0cQ6A8AmYRQem1XKWQ0aq6QX1eghLyZoVvvObUbfRKrzh9V/hPHjf3vdm/7tKGMhc7mDbJw7qZwuT7V1ywroFQrL8fni2baEyGfdTwJwfrRz4O8Hoz/6vtRCyVujfOLnCqN1CINISujVTDSQtzRJHYaemE8hARo407yqQTPVJ0Lky7XLAq812kxbfo2wA29B7aJAVWz6PYxIWHjwnmBpLN2ufSII78x77cZ0WcXcTkHWx4dEOLdSZFuu5xFSqX7/bMyEAgj6EzlMP7Tb/yKNVQaOAhPevQnxlC6PgbvndxJZvlj1XDVguTWE5mQNClkb9IVvr/buVSWQbmOH6XoN8onXahoidda/izgcJ2iMIUsXJgs1SSCJHe/E9AZ9BQ5L7DuQepel/ClEXpQ6n4gjNyofMA=
+  - secure: AcFMNQLYxXnjDy9gGR7Kbe3E9+LA75AMJR4K01LupDt8KaaM69Plwkw6uOcF3F6Y9YFsIokJjB14sONgY+9adOHUKAH3j4rnZO3U422ozgWKzEjmJLBprm/0dMb03ChIComw/jn+zjik0es3WURBcADwF6cnDuXzg2qFVkl0niRQnhyrXNCgLqj+lExsK+CaafOyTwTsGL6/m7Rh+7jrpzKSID8lSFc22vyJsywW3gEjb1duCJR8euW7/MDrCY3eIX28WE+ljHYCKiV02IrLy7tNfFmJhFXUU4m1DQICmnkWgsFlHLQGHN0v5JOEQ0GGIURAgBm8rQcZsUvKafc8jcqHzJtw81N684JMTlihouDossA19MpT5WYB3wQTDrNxI01zFUXV98eCXJZW2RoCo3RKTnN8jnXwfWGtLYXQzgFqu/EXfPPW30p7UIaAfr4vB2jg4jLEVmERKxUYi1RMn59+1psd72O8avzrLDRvGzGMZd/L7n4HBxVFiHifR9jOrdB6Vmk1s7nD3M2R6z8a10RurDQ7vssscwfKZ+fGkgFMikgPFIaHn31gorXPrW1ZZZFxVZlAdhvqJ970q0csRuXJ40vGiuLGblAiJ4P7sVAvw9qX+gIVx0yo1DXkTxX8XhQSWeqGPoc4kIGE1h6ICCcLvZpbVGIBYduVRJ0F0Fk=
+  - secure: PYDj0VK7SV2eY9z5eXP1IjmqJi02T09IHSLh+sInFdYCxzo3AoSKLrHN4ql1FxHFIL4/PQlbXRl6vWE+qgEG/4Sfk+FHAMb5kLrOnbgzuF3BKaSvj3Luv+9/wGm6uVtQGkDkznbP3/N4jdyXFWS7wTgtt9y04FCjuU3xXsCNklQeCc/sUPPO/q6D1nlx1svTd0VnzUP5lyCgmRT/J4BKavYE1ET6UBQ+fVXFZVZmW/BV4ypV12hFJCB1rMUsBQS4CvXZC3anm3XhDn54aKD/YVwPSJ6fkFvGqmWGuCTAbOfidJuJsztkCtyycab8IQO0RTx8CbDJNzDxcy0a+ssco0CCHrCIH7I/WHDsUHThu3x5dPx8u58X3JvhDk9tFL+Tm025DYg5lx4jYtQVwsFofIuGrPuCMLFdPlvlQuEj7CUCFCev4/zhnJYNYD8KW4MXhodvDlkS/f6kbjxxR6C0+Le1bRHlNra6zlt4fUEcroP0k81IzE3M4zUyUycyLCWxe3nxtdXOFhhENV6tIGO+AW10bQzQUz1JsvQ4+bcgk8kAclGsDFNiI1+IvedokPKrsUJZ99360griq2PYZg1yx2UNzy24eE4vx7YCgakhpqcNnDd7w4jatFx4nnZacbmkrVG3tzJabkaRB8CA93wRCf8FixV1IeHlxmrN22zmKM8=
+  - secure: jK5luCMP+hCXXs2EqxpIdBAMOz+bDUuKB0o2EPlxmmLMGrjqCXVifvffpf56Fhu2TDrgbK2Bh5FAug4W0JZdukM9Nm3yAxUT57Re1kJXvNOQ7E0q82cRWXLaERp3HkNmh23oWi5kgFzRETD7NC83UdFKrCccWDh39cFjNL0Y5Dw1rmpM1vsIDAQ4X2SwDo0L1YUTVJTfKWNHrSl/qNW25k8K4fvGU0+C+/xNHXkE0mZ+A3NeIKjpoV1ALYl72W92egyfps8UokpoJoOAAO+3vu7C1V9xhzcIuwUYXZidA6hTLKMGhvPlxTMyVWZZlaom8gOeNDxP/kk3/J0oF/bifG8Au7M2Uu2Bq3m6Vw1p7KYHNoYnaOhTRg9QfYHetS8NZ6mLVvs4Zyc1UdbKTyA9uQ76PP/FPVNBUe9p+sxZwYS/vWCjbNjDDs2/8LnZP0saofroTbFuAIBQ80+omykT7sREeaLP2Oz6tQyqN4YpSPS3EHTOY1EpDu3Y2AjqARwoyaj6rq55q/ntkY2iLldNln61jVamBbMfJiJNAWAAaUMFcKmzE+7ljBOhn+LuXd1BiPXLFMi0b5n8WkpLyTFYhuxT3xAW73Lw2/evuGA5txOR+VcmKfacIgg+zcoVxVO/FjbBpEb9Yw1DEq8l0H+j6Fd6kOboX4cPf7aKXK2UMlo=
+before_install:
+- openssl aes-256-cbc -K $encrypted_e6bd3ac02664_key -iv $encrypted_e6bd3ac02664_iv
+  -in gpg.asc.enc -out .travis/gpg.asc -d
