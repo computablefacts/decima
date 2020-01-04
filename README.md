@@ -6,6 +6,11 @@
 
 Decima is a proof-of-concept Java implementation of the probabilistic logic programming language [ProbLog](https://dtai.cs.kuleuven.be/problog).
 
+This library embeds a Java port of the C# library [BDDSharp](https://github.com/ancailliau/BDDSharp) (under [MIT licence](https://opensource.org/licenses/mit-license.php)). 
+BDDSharp is a library for manipulating [ROBDDs](https://en.wikipedia.org/wiki/Binary_decision_diagram) (Reduced Ordered 
+Binary Decision Diagrams). A good overview of Binary Decision Diagrams can be found in [Lecture Notes on Binary Decision Diagrams](https://www.cs.cmu.edu/~fp/courses/15122-f10/lectures/19-bdds.pdf)
+by Frank Pfenning.
+
 ## Adding Decima to your build
 
 Decima's Maven group ID is `com.computablefacts` and its artifact ID is `decima`.
