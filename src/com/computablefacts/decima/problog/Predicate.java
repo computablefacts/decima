@@ -128,7 +128,7 @@ final public class Predicate {
   /**
    * Predicate arity.
    *
-   * @return predicate arity. An integer >= 0.
+   * @return predicate arity. An integer &gt;= 0.
    */
   public int arity() {
     return arity_;
