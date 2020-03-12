@@ -8,8 +8,11 @@ import java.util.Stack;
 import com.computablefacts.decima.robdd.Pair;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
+@CheckReturnValue
 final public class Trie<T> {
 
   private final TrieNode<T> root_ = new TrieNode<>();
@@ -89,13 +92,12 @@ final public class Trie<T> {
    * Remove a sequence from a Trie.
    *
    * @param list sequence to remove.
-   * @return true if the sequence has been removed, false otherwise.
    */
-  public boolean delete(List<T> list) {
+  public void delete(List<T> list) {
 
     Preconditions.checkNotNull(list, "list should not be null");
 
-    return delete(root_, list, 0);
+    delete(root_, list, 0);
   }
 
   /**
@@ -162,6 +164,7 @@ final public class Trie<T> {
     }
   }
 
+  @CanIgnoreReturnValue
   private boolean remove(TrieNode<T> current, Function<T, Boolean> fnRemoveNode) {
 
     Preconditions.checkNotNull(current, "current should not be null");
@@ -192,6 +195,7 @@ final public class Trie<T> {
     return !remove.isEmpty() && current.children().isEmpty();
   }
 
+  @CanIgnoreReturnValue
   private boolean delete(TrieNode<T> current, List<T> list, int index) {
 
     Preconditions.checkNotNull(current, "current should not be null");

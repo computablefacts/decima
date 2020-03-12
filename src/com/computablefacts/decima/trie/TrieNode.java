@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.MoreObjects;
+import com.google.errorprone.annotations.CheckReturnValue;
 
+@CheckReturnValue
 final public class TrieNode<T> {
 
   private final static AtomicInteger ID = new AtomicInteger(0);
