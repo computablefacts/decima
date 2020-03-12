@@ -39,6 +39,7 @@
     </developers>
 
     <properties>
+        <nona.version>1.6</nona.version>
         <guava.version>28.0-jre</guava.version>
         <error-prone.version>2.3.1</error-prone.version>
         <junit.version>4.12</junit.version>
@@ -54,6 +55,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.computablefacts</groupId>
+            <artifactId>nona</artifactId>
+            <version>${nona.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
