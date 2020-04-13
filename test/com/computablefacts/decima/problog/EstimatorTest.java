@@ -167,4 +167,120 @@ public class EstimatorTest {
     Assert.assertEquals(BigDecimal.valueOf(0.2), probabilities.get(a2));
     Assert.assertEquals(BigDecimal.valueOf(0.2), probabilities.get(a3));
   }
+
+  /**
+   * Negative query
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/negative_query.pl
+   */
+  @Test
+  public void testNegativeQuery() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.3::p(1)."));
+
+    // Query kb
+    Solver solver = new Solver(kb);
+    Literal query = new Literal("~p", new Const(1));
+    Set<Clause> proofs = solver.proofs(query);
+
+    // Verify answers
+    Assert.assertEquals(1, proofs.size());
+    Assert.assertTrue(isValid(proofs, "0.7::~p(1)."));
+
+    // Verify BDD answer
+    // 0.7::~p(1).
+    Estimator estimator = new Estimator(proofs);
+    BigDecimal probability = estimator.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.7).compareTo(probability));
+  }
+
+  /**
+   * Tossing coins
+   *
+   * Description: two coins - one biased and one not.
+   *
+   * Query: what is the probability of throwing some heads.
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_or.pl
+   */
+  @Test
+  public void testTrivialOr() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.5::heads1(a)."));
+    kb.azzert(parseClause("0.6::heads2(a)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("someHeads(X) :- heads1(X)."));
+    kb.azzert(parseClause("someHeads(X) :- heads2(X)."));
+
+    // Query kb
+    // someHeads(X)?
+    Solver solver = new Solver(kb);
+    Literal query = new Literal("someHeads", new Var());
+    Set<Clause> proofs = solver.proofs(query);
+
+    // Verify answers
+    Assert.assertEquals(2, proofs.size());
+
+    Assert.assertTrue(isValid(proofs, "someHeads(a)", Lists.newArrayList("0.5::heads1(a)")));
+    Assert.assertTrue(isValid(proofs, "someHeads(a)", Lists.newArrayList("0.6::heads2(a)")));
+
+    // Verify BDD answer
+    // 0.8::someHeads(a).
+    Estimator estimator = new Estimator(proofs);
+    BigDecimal probability = estimator.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.8).compareTo(probability));
+  }
+
+  /**
+   * Tossing coins
+   *
+   * Description: two coins - one biased and one not.
+   *
+   * Query: what is the probability of throwing two heads.
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_and.pl
+   */
+  @Test
+  public void testTrivialAnd() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.5::heads1(a)."));
+    kb.azzert(parseClause("0.6::heads2(a)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("twoHeads(X) :- heads1(X), heads2(X)."));
+
+    // Query kb
+    // twoHeads(X)?
+    Solver solver = new Solver(kb);
+    Literal query = new Literal("twoHeads", new Var());
+    Set<Clause> proofs = solver.proofs(query);
+
+    // Verify answers
+    Assert.assertEquals(1, proofs.size());
+
+    Assert.assertTrue(
+        isValid(proofs, "twoHeads(a)", Lists.newArrayList("0.5::heads1(a)", "0.6::heads2(a)")));
+
+    // Verify BDD answer
+    // 0.3::twoHeads(a).
+    Estimator estimator = new Estimator(proofs);
+    BigDecimal probability = estimator.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.3).compareTo(probability));
+  }
 }
