@@ -146,7 +146,7 @@ public class LiteralTest {
     Literal literal = new Literal("fn_is_true", new Const(false));
     Literal newLiteral = literal.execute(kb.definitions());
 
-    Assert.assertEquals(null, newLiteral);
+    Assert.assertNull(newLiteral);
   }
 
   @Test
@@ -166,7 +166,7 @@ public class LiteralTest {
     Literal literal = new Literal("fn_is_false", new Const(true));
     Literal newLiteral = literal.execute(kb.definitions());
 
-    Assert.assertEquals(null, newLiteral);
+    Assert.assertNull(newLiteral);
   }
 
   @Test
