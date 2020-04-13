@@ -5,6 +5,8 @@ import static com.computablefacts.decima.problog.TestUtils.kb;
 import static com.computablefacts.decima.problog.TestUtils.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.solver;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -330,5 +332,43 @@ public class SolverTest {
     Solver solver = new Solver(kb);
     Literal query = new Literal("a", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
+  }
+
+  /**
+   * Variable unification in query
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/query_same.pl
+   */
+  @Test
+  public void testVariableUnificationInQuery() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("a(2, 3)."));
+    kb.azzert(parseClause("a(1, 1)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("p(X) :- a(X, X)."));
+
+    // Query kb
+    // a(X, X)?
+    // p(X)?
+    Solver solver = new Solver(kb);
+    Var x = new Var();
+    Literal query1 = new Literal("a", x, x);
+    List<Clause> proofs1 = new ArrayList<>(solver.proofs(query1));
+
+    Literal query2 = new Literal("p", x);
+    List<Clause> proofs2 = new ArrayList<>(solver.proofs(query2));
+
+    // Verify answers
+    // a(1,1).
+    // p(1) :- a(1, 1).
+    Assert.assertEquals(1, proofs1.size());
+    Assert.assertEquals(1, proofs2.size());
+
+    Assert.assertEquals(proofs1.get(0).head(), proofs2.get(0).body().get(0));
   }
 }
