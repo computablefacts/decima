@@ -302,4 +302,33 @@ public class SolverTest {
     Assert.assertEquals(1, solutions.size());
     Assert.assertTrue(isValid(solutions, "match(b, c)."));
   }
+
+  /**
+   * Non-ground
+   *
+   * Description: negation on non-ground probabilistic facts are forbidden.
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/nonground.pl
+   */
+  @Test(expected = IllegalStateException.class)
+  public void testNonGroundProbabilisticClause() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.4::b(1)."));
+    kb.azzert(parseClause("0.4::b(2)."));
+    kb.azzert(parseClause("0.4::c(1)."));
+    kb.azzert(parseClause("0.4::c(2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("0.4::a(X,Y) :- \\+b(X), \\+c(Y)."));
+
+    // Query kb
+    // a(X, Y)?
+    Solver solver = new Solver(kb);
+    Literal query = new Literal("a", new Var(), new Var());
+    Set<Clause> proofs = solver.proofs(query);
+  }
 }
