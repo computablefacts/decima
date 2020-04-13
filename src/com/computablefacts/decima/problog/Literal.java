@@ -63,7 +63,8 @@ final public class Literal {
     this(BigDecimal.ONE, predicate, term1, term2, term3);
   }
 
-  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3, AbstractTerm term4) {
+  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3,
+      AbstractTerm term4) {
     this(BigDecimal.ONE, predicate, term1, term2, term3, term4);
   }
 
@@ -79,12 +80,13 @@ final public class Literal {
     this(probability, predicate, Lists.newArrayList(term1, term2));
   }
 
-  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3) {
+  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2,
+      AbstractTerm term3) {
     this(probability, predicate, Lists.newArrayList(term1, term2, term3));
   }
 
-  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3,
-                 AbstractTerm term4) {
+  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2,
+      AbstractTerm term3, AbstractTerm term4) {
     this(probability, predicate, Lists.newArrayList(term1, term2, term3, term4));
   }
 
@@ -466,9 +468,9 @@ final public class Literal {
       }
     }
 
-    List<Object> parameters = functionVariables().stream().skip(1)
-        .map(term -> ((Const) term).value().toString()).collect(Collectors.toList());
+    List<Object> parameters = functionParameters();
     parameters.add(0, result.value());
+
     return new Literal(probability_, predicate_.name(),
         parameters.stream().map(Const::new).collect(Collectors.toList()));
   }
@@ -494,6 +496,10 @@ final public class Literal {
       }
     }
     return true;
+  }
+
+  private List<Object> functionParameters() {
+    return terms_.stream().skip(1).map(Object::toString).collect(Collectors.toList());
   }
 
   private List<AbstractTerm> functionVariables() {

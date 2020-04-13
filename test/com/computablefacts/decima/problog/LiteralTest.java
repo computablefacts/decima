@@ -53,6 +53,87 @@ public class LiteralTest {
   }
 
   @Test
+  public void testFnEqBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_eq", new Var(), new Const(2), new Const(2));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(new Literal("fn_eq", new Const(true), new Const(2), new Const(2)),
+        newLiteral);
+  }
+
+  @Test
+  public void testGroundedFnIsBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is", new Const(2), new Const(2));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(new Literal("fn_is", new Const(2), new Const(2)), newLiteral);
+  }
+
+  @Test
+  public void testNotGroundedFnIsBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is", new Var(), new Const(2));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(new Literal("fn_is", new Const(2), new Const(2)), newLiteral);
+  }
+
+  @Test
+  public void testInvalidFnIsBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is", new Const(3), new Const(2));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertNull(newLiteral);
+  }
+
+  @Test
+  public void testFnIsTrueOfTrueBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is_true", new Const(true));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(new Literal("fn_is_true", new Const(true)), newLiteral);
+  }
+
+  @Test
+  public void testFnIsTrueOfFalseBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is_true", new Const(false));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(null, newLiteral);
+  }
+
+  @Test
+  public void testFnIsFalseOfFalseBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is_false", new Const(false));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(new Literal("fn_is_false", new Const(false)), newLiteral);
+  }
+
+  @Test
+  public void testFnIsFalseOfTrueBuiltin() {
+
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+    Literal literal = new Literal("fn_is_false", new Const(true));
+    Literal newLiteral = literal.execute(kb.definitions());
+
+    Assert.assertEquals(null, newLiteral);
+  }
+
+  @Test
   public void testRelevantLiterals() {
 
     Literal literal0 = new Literal("~edge", new Const("a"), new Const("b"));
