@@ -22,7 +22,7 @@ import com.google.errorprone.annotations.Var;
  * <ul>
  * <li>Chen, Weidong et al. "Efficient Top-Down Computation of Queries under the Well-Founded
  * Semantics." J. Log. Program. 24 (1995): 161-199.</li>
- * <li>Chen, Weidong & Warren, David. (1996). Tabled evaluation with delaying for general logic
+ * <li>Chen, Weidong &amp; Warren, David. (1996). Tabled evaluation with delaying for general logic
  * programs. J. ACM. 43. 20-74. 10.1145/227595.227597.</li>
  * </ul>
  *
@@ -30,7 +30,7 @@ import com.google.errorprone.annotations.Var;
  *
  * <ul>
  * <li>Luc De Raedt, Angelika Kimmig (2015). "Probabilistic (logic) programming concepts"</li>
- * <li>Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic
+ * <li>Mantadelis, Theofrastos &amp; Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic
  * Setting.". Technical Communications of ICLP. 7. 124-133. 10.4230/LIPIcs.ICLP.2010.124.</li>
  * </ul>
  */

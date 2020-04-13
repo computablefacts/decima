@@ -160,8 +160,8 @@ public abstract class AbstractKnowledgeBase {
   /**
    * Returns matching clauses (e.g. facts or rules) for a literal query.
    *
-   * @param literal
-   * @return
+   * @param literal literal.
+   * @return matching clauses.
    */
   public Set<Clause> clauses(Literal literal) {
 
