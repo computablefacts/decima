@@ -3,6 +3,7 @@ package com.computablefacts.decima.problog;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,38 @@ public class Estimator {
     Preconditions.checkNotNull(proofs, "proofs should not be null");
 
     proofs_ = proofs;
+  }
+
+  /**
+   * Compute the probability associated with each fact.
+   *
+   * @return map of facts and probabilities.
+   */
+  public Map<Clause, BigDecimal> probabilities() {
+
+    if (proofs_.isEmpty()) {
+      return new HashMap<>();
+    }
+
+    Preconditions.checkArgument(proofs_.stream().allMatch(Clause::isGrounded),
+        "All proofs should be grounded");
+
+    Map<Clause, BigDecimal> probabilities = new HashMap<>();
+
+    for (Clause clause : proofs_) {
+
+      Clause fact = new Clause(clause.head());
+      String tag = clause.head().tag();
+
+      if (!probabilities.containsKey(fact)) {
+
+        Estimator estimator = new Estimator(
+            proofs_.stream().filter(p -> p.head().tag().equals(tag)).collect(Collectors.toSet()));
+
+        probabilities.put(fact, estimator.probability());
+      }
+    }
+    return probabilities;
   }
 
   public BigDecimal probability(int nbSignificantDigits) {

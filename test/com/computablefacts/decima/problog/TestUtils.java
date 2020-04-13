@@ -2,6 +2,7 @@ package com.computablefacts.decima.problog;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
@@ -19,6 +20,22 @@ final public class TestUtils {
 
   public static Clause parseClause(String clause) {
     return Parser.parseClause(clause);
+  }
+
+  public static boolean isValid(Set<Clause> proofs, String head, List<String> body) {
+
+    Literal newHead = parseClause(head + ".").head();
+    List<Literal> newBody =
+        body.stream().map(s -> parseClause(s + ".").head()).collect(Collectors.toList());
+
+    return proofs.stream().filter(c -> c.head().equals(newHead)).anyMatch(c -> {
+      for (int i = 0; i < newBody.size(); i++) {
+        if (!c.body().subList(i, c.body().size()).contains(newBody.get(i))) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   /**
