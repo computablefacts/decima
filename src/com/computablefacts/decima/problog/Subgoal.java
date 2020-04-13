@@ -28,7 +28,7 @@ import com.google.errorprone.annotations.Var;
  * subgoal and a clause.
  */
 @CheckReturnValue
-final class Subgoal {
+final public class Subgoal {
 
   public final static AtomicInteger ID = new AtomicInteger(0);
 
