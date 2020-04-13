@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.TestUtils.parseClause;
+
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -23,15 +25,25 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testAssertClauseWithZeroProbability() {
-    kb().azzert(Parser.parseClause("0.0:edge(a, b)."));
+  public void testAssertFactWithZeroProbability() {
+    kb().azzert(parseClause("0.0:edge(a, b)."));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testAssertRuleWithZeroProbability() {
+    kb().azzert(parseClause("0.0:is_true(X) :- fn_is_true(X)."));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testAssertRuleWithProbabilityInBody() {
+    kb().azzert(parseClause("node(X) :- 0.3::edge(X, b)."));
   }
 
   @Test
   public void testAssertFact() {
 
-    Clause fact1 = Parser.parseClause("0.3::edge(a, b).");
-    Clause fact2 = Parser.parseClause("0.5::edge(b, c).");
+    Clause fact1 = parseClause("0.3::edge(a, b).");
+    Clause fact2 = parseClause("0.5::edge(b, c).");
 
     InMemoryKnowledgeBase kb = kb();
     kb.azzert(fact1);
@@ -44,8 +56,8 @@ public class AbstractKnowledgeBaseTest {
   @Test
   public void testAssertRule() {
 
-    Clause rule1 = Parser.parseClause("0.2::path(A, B) :- edge(A, B).");
-    Clause rule2 = Parser.parseClause("0.2::path(A, B) :- path(A, X), edge(X, B).");
+    Clause rule1 = parseClause("0.2::path(A, B) :- edge(A, B).");
+    Clause rule2 = parseClause("0.2::path(A, B) :- path(A, X), edge(X, B).");
 
     InMemoryKnowledgeBase kb = kb();
     kb.azzert(rule1);
@@ -80,11 +92,11 @@ public class AbstractKnowledgeBaseTest {
   @Test
   public void testAssertClauses() {
 
-    Clause fact1 = Parser.parseClause("0.3::edge(a, b).");
-    Clause fact2 = Parser.parseClause("0.5::edge(b, c).");
+    Clause fact1 = parseClause("0.3::edge(a, b).");
+    Clause fact2 = parseClause("0.5::edge(b, c).");
 
-    Clause rule1 = Parser.parseClause("0.2::path(A, B) :- edge(A, B).");
-    Clause rule2 = Parser.parseClause("0.2::path(A, B) :- path(A, X), edge(X, B).");
+    Clause rule1 = parseClause("0.2::path(A, B) :- edge(A, B).");
+    Clause rule2 = parseClause("0.2::path(A, B) :- path(A, X), edge(X, B).");
 
     InMemoryKnowledgeBase kb = kb();
     kb.azzert(Sets.newHashSet(fact1, fact2, rule1, rule2));
@@ -106,14 +118,14 @@ public class AbstractKnowledgeBaseTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testApplyRewriteRuleHeadOnFact() {
-    Clause fact = Parser.parseClause("0.3::edge(a, b).");
+    Clause fact = parseClause("0.3::edge(a, b).");
     Pair<Clause, Clause> pair = kb().rewriteRuleHead(fact);
   }
 
   @Test
   public void testApplyRewriteRuleHeadOnRuleWithProbability() {
 
-    Clause rule = Parser.parseClause("0.3::path(A, B) :- path(A, X), edge(X, B).");
+    Clause rule = parseClause("0.3::path(A, B) :- path(A, X), edge(X, B).");
 
     Assert.assertEquals(BigDecimal.valueOf(0.3), rule.head().probability());
     Assert.assertEquals(2, rule.body().size());

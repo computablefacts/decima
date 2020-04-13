@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.TestUtils.parseClause;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -173,7 +175,7 @@ public class LiteralTest {
   public void testMergeFunctions() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Clause clause = Parser.parseClause("is_ok(X) :- fn_eq(X, fn_add(1, 1), 2).");
+    Clause clause = parseClause("is_ok(X) :- fn_eq(X, fn_add(1, 1), 2).");
     Literal literal = clause.body().get(0);
     Literal newLiteral = literal.execute(kb.definitions());
 
