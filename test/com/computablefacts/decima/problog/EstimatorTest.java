@@ -283,4 +283,186 @@ public class EstimatorTest {
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.3).compareTo(probability));
   }
+
+  /**
+   * Duplicate fact
+   *
+   * Description: Interpret as two separate facts.
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_duplicate.pl
+   */
+  @Test
+  public void testTrivialDuplicate() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.3::p(1)."));
+    kb.azzert(parseClause("0.2::p(2)."));
+    kb.azzert(parseClause("0.6::p(1)."));
+
+    // Query kb
+    // p(1)?
+    // p(2)?
+    Solver solver = new Solver(kb);
+    Literal query1 = new Literal("p", new Const("1"));
+    Set<Clause> proofs1 = solver.proofs(query1);
+
+    Literal query2 = new Literal("p", new Const("2"));
+    Set<Clause> proofs2 = solver.proofs(query2);
+
+    // Verify answers
+    Assert.assertEquals(2, proofs1.size());
+
+    Assert.assertTrue(isValid(proofs1, "0.3::p(1)."));
+    Assert.assertTrue(isValid(proofs1, "0.6::p(1)."));
+
+    Assert.assertEquals(1, proofs2.size());
+
+    Assert.assertTrue(isValid(proofs2, "0.2::p(2)."));
+
+    // Verify BDD answer
+    // 0.72::p(1).
+    // 0.2::p(2).
+    Estimator estimator1 = new Estimator(proofs1);
+    BigDecimal probability1 = estimator1.probability();
+
+    Assert.assertTrue(BigDecimal.valueOf(0.72).compareTo(probability1) == 0);
+
+    Estimator estimator2 = new Estimator(proofs2);
+    BigDecimal probability2 = estimator2.probability();
+
+    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probability2) == 0);
+  }
+
+  /**
+   * Probabilistic negation
+   *
+   * Description: Compute probability of a negated fact.
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_not.pl
+   */
+  @Test
+  public void testTrivialNot() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.4::p(1)."));
+
+    // Query kb
+    // ~p(1)?
+    Solver solver = new Solver(kb);
+    Literal query = new Literal("~p", new Const("1"));
+    Set<Clause> proofs = solver.proofs(query);
+
+    // Verify answers
+    Assert.assertEquals(1, proofs.size());
+
+    Assert.assertTrue(isValid(proofs, "0.6::~p(1)."));
+
+    // Verify BDD answer
+    // 0.6::~p(1).
+    Estimator estimator = new Estimator(proofs);
+    BigDecimal probability = estimator.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.6).compareTo(probability));
+  }
+
+  /**
+   * Probabilistic negation of a rule
+   *
+   * Description: Compute probability of a negated rule.
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_not_and.pl
+   */
+  @Test
+  public void testTrivialNotAnd() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.5::t(1)."));
+    kb.azzert(parseClause("0.3::t(2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("q(X) :- t(X), fn_add(U, X, 1), fn_int(V, U), t(V)."));
+    kb.azzert(parseClause("p(X) :- ~q(X)."));
+
+    // Query kb
+    // p(1)?
+    Solver solver = new Solver(kb);
+    Literal query = new Literal("p", new Const(1));
+    Set<Clause> clauses = solver.proofs(query);
+
+    // Verify answers
+    Assert.assertEquals(2, clauses.size());
+
+    Assert.assertTrue(isValid(clauses, "p(1)", Lists.newArrayList("0.5::~t(1)")));
+    Assert.assertTrue(isValid(clauses, "p(1)", Lists.newArrayList("0.7::~t(2)")));
+
+    // Verify BDD answer
+    // 0.85::p(1).
+    Estimator estimator = new Estimator(clauses);
+    BigDecimal probability = estimator.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.85).compareTo(probability));
+  }
+
+  /**
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/tc_3.pl
+   */
+  @Test
+  public void testRuleWithProbabilityInHead() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("athlet(1)."));
+    kb.azzert(parseClause("athlet(2)."));
+    kb.azzert(parseClause("student(2)."));
+    kb.azzert(parseClause("student(3)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("0.5::stressed(X) :- student(X)."));
+    kb.azzert(parseClause("0.2::stressed(X) :- athlet(X)."));
+
+    // Query kb
+    // stressed(1)?
+    // stressed(2)?
+    // stressed(3)?
+    Solver solver = new Solver(kb);
+
+    Literal query1 = new Literal("stressed", new Const(1));
+    Set<Clause> proofs1 = solver.proofs(query1);
+
+    Literal query2 = new Literal("stressed", new Const(2));
+    Set<Clause> proofs2 = solver.proofs(query2);
+
+    Literal query3 = new Literal("stressed", new Const(3));
+    Set<Clause> proofs3 = solver.proofs(query3);
+
+    // Verify BDD answer
+    // 0.2::stressed(1).
+    // 0.6::stressed(2).
+    // 0.5::stressed(3).
+    Estimator estimator1 = new Estimator(proofs1);
+    BigDecimal probability1 = estimator1.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probability1));
+
+    Estimator estimator2 = new Estimator(proofs2);
+    BigDecimal probability2 = estimator2.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.6).compareTo(probability2));
+
+    Estimator estimator3 = new Estimator(proofs3);
+    BigDecimal probability3 = estimator3.probability();
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.5).compareTo(probability3));
+  }
 }
