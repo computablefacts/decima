@@ -13,12 +13,17 @@ import java.util.stream.Collectors;
 import com.computablefacts.decima.robdd.BddManager;
 import com.computablefacts.decima.robdd.BddNode;
 import com.computablefacts.decima.utils.RandomString;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.Var;
 
+/**
+ * See Theofrastos Mantadelis and Gerda Janssens (2010). "Nesting Probabilistic Inference" for
+ * details.
+ */
 public class Estimator {
 
   private final RandomString randomString_ = new RandomString(7);
@@ -27,62 +32,90 @@ public class Estimator {
   public Estimator(Set<Clause> proofs) {
 
     Preconditions.checkNotNull(proofs, "proofs should not be null");
+    Preconditions.checkArgument(proofs.stream().allMatch(Clause::isGrounded),
+        "All proofs should be grounded");
 
     proofs_ = proofs;
+  }
+
+  @Beta
+  public Map<Clause, BigDecimal> probabilities() {
+    return probabilities(5);
   }
 
   /**
    * Compute the probability associated with each fact.
    *
-   * @return map of facts and probabilities.
+   * @param nbSignificantDigits number of significant digits.
+   * @return map between facts and probabilities.
    */
-  public Map<Clause, BigDecimal> probabilities() {
+  public Map<Clause, BigDecimal> probabilities(int nbSignificantDigits) {
 
     if (proofs_.isEmpty()) {
       return new HashMap<>();
     }
-
-    Preconditions.checkArgument(proofs_.stream().allMatch(Clause::isGrounded),
-        "All proofs should be grounded");
 
     Map<Clause, BigDecimal> probabilities = new HashMap<>();
 
     for (Clause clause : proofs_) {
 
       Clause fact = new Clause(clause.head());
-      String tag = clause.head().tag();
 
       if (!probabilities.containsKey(fact)) {
-
-        Estimator estimator = new Estimator(
-            proofs_.stream().filter(p -> p.head().tag().equals(tag)).collect(Collectors.toSet()));
-
-        probabilities.put(fact, estimator.probability());
+        probabilities.put(fact, probability(fact, nbSignificantDigits));
       }
     }
     return probabilities;
   }
 
-  public BigDecimal probability(int nbSignificantDigits) {
-    BigDecimal probability = probability();
-    int newScale = nbSignificantDigits - probability.precision() + probability.scale();
-    return probability.setScale(newScale, RoundingMode.HALF_UP);
+  @Beta
+  public BigDecimal probability(Literal literal) {
+
+    Preconditions.checkNotNull(literal, "literal should not be null");
+
+    return probability(literal, 5);
+  }
+
+  @Beta
+  public BigDecimal probability(Literal literal, int nbSignificantDigits) {
+
+    Preconditions.checkNotNull(literal, "literal should not be null");
+
+    return probability(new Clause(literal), nbSignificantDigits);
   }
 
   /**
-   * See Theofrastos Mantadelis and Gerda Janssens (2010). "Nesting Probabilistic Inference" for
-   * details.
+   * Compute the probability associated with a given clause.
    *
-   * @return exact probability.
+   * @param clause clause.
+   * @param nbSignificantDigits number of significant digits.
+   * @return probability.
    */
-  public BigDecimal probability() {
+  public BigDecimal probability(Clause clause, int nbSignificantDigits) {
+
+    Preconditions.checkNotNull(clause, "clause should not be null");
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+    Preconditions.checkArgument(nbSignificantDigits > 0, "nbSignificantDigits should be > 0");
 
     if (proofs_.isEmpty()) {
       return BigDecimal.ZERO;
     }
 
-    Preconditions.checkArgument(proofs_.stream().allMatch(Clause::isGrounded),
-        "All proofs should be grounded");
+    Estimator estimator = new Estimator(
+        proofs_.stream().filter(p -> p.isGrounded() && p.head().tag().equals(clause.head().tag()))
+            .collect(Collectors.toSet()));
+    int newScale =
+        nbSignificantDigits - estimator.probability().precision() + estimator.probability().scale();
+
+    return estimator.probability().setScale(newScale, RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal probability() {
+
+    if (proofs_.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+
     Preconditions.checkArgument(
         proofs_.stream().map(p -> p.head().tag()).collect(Collectors.toSet()).size() == 1,
         "All proofs should be about the same fact");

@@ -19,7 +19,7 @@ public class EstimatorTest {
   @Test
   public void testComputeProbabilityWithoutProofs() {
     Estimator estimator = new Estimator(new HashSet<>());
-    Assert.assertEquals(BigDecimal.ZERO, estimator.probability());
+    Assert.assertEquals(BigDecimal.ZERO, estimator.probability(new Literal("fake", new Const(1))));
   }
 
   /**
@@ -65,7 +65,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.734375::s1(1).
     Estimator estimator = new Estimator(proofs);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(query, 6);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.734375).compareTo(probability));
   }
@@ -113,7 +113,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.734375::s2(1).
     Estimator estimator = new Estimator(proofs);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(query, 6);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.734375).compareTo(probability));
   }
@@ -163,9 +163,9 @@ public class EstimatorTest {
     Clause a2 = new Clause(new Literal("a", new Const(2)));
     Clause a3 = new Clause(new Literal("a", new Const(3)));
 
-    Assert.assertEquals(BigDecimal.valueOf(0.2), probabilities.get(a1));
-    Assert.assertEquals(BigDecimal.valueOf(0.2), probabilities.get(a2));
-    Assert.assertEquals(BigDecimal.valueOf(0.2), probabilities.get(a3));
+    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probabilities.get(a1)) == 0);
+    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probabilities.get(a2)) == 0);
+    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probabilities.get(a3)) == 0);
   }
 
   /**
@@ -194,7 +194,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.7::~p(1).
     Estimator estimator = new Estimator(proofs);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(query);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.7).compareTo(probability));
   }
@@ -237,7 +237,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.8::someHeads(a).
     Estimator estimator = new Estimator(proofs);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(new Literal("someHeads", new Const("a")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.8).compareTo(probability));
   }
@@ -279,7 +279,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.3::twoHeads(a).
     Estimator estimator = new Estimator(proofs);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(new Literal("twoHeads", new Const("a")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.3).compareTo(probability));
   }
@@ -326,12 +326,12 @@ public class EstimatorTest {
     // 0.72::p(1).
     // 0.2::p(2).
     Estimator estimator1 = new Estimator(proofs1);
-    BigDecimal probability1 = estimator1.probability();
+    BigDecimal probability1 = estimator1.probability(query1);
 
     Assert.assertTrue(BigDecimal.valueOf(0.72).compareTo(probability1) == 0);
 
     Estimator estimator2 = new Estimator(proofs2);
-    BigDecimal probability2 = estimator2.probability();
+    BigDecimal probability2 = estimator2.probability(query2);
 
     Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probability2) == 0);
   }
@@ -366,7 +366,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.6::~p(1).
     Estimator estimator = new Estimator(proofs);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(query);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.6).compareTo(probability));
   }
@@ -407,7 +407,7 @@ public class EstimatorTest {
     // Verify BDD answer
     // 0.85::p(1).
     Estimator estimator = new Estimator(clauses);
-    BigDecimal probability = estimator.probability();
+    BigDecimal probability = estimator.probability(query);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.85).compareTo(probability));
   }
@@ -451,17 +451,17 @@ public class EstimatorTest {
     // 0.6::stressed(2).
     // 0.5::stressed(3).
     Estimator estimator1 = new Estimator(proofs1);
-    BigDecimal probability1 = estimator1.probability();
+    BigDecimal probability1 = estimator1.probability(query1);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probability1));
 
     Estimator estimator2 = new Estimator(proofs2);
-    BigDecimal probability2 = estimator2.probability();
+    BigDecimal probability2 = estimator2.probability(query2);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.6).compareTo(probability2));
 
     Estimator estimator3 = new Estimator(proofs3);
-    BigDecimal probability3 = estimator3.probability();
+    BigDecimal probability3 = estimator3.probability(query3);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.5).compareTo(probability3));
   }

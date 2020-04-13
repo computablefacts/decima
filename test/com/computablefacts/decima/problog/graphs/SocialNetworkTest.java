@@ -40,7 +40,7 @@ public class SocialNetworkTest {
 
     // Verify BDD answer
     // 0.342::smokes(angelika).
-    BigDecimal probability = new Estimator(proofs).probability(3);
+    BigDecimal probability = new Estimator(proofs).probability(query, 3);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.342).compareTo(probability));
   }
@@ -68,7 +68,7 @@ public class SocialNetworkTest {
 
     // Verify BDD answer
     // 0.42301296::smokes(joris).
-    BigDecimal probability = new Estimator(proofs).probability(8);
+    BigDecimal probability = new Estimator(proofs).probability(query, 8);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.42556811).compareTo(probability));
   }
