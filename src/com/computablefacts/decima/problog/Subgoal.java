@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.computablefacts.decima.robdd.Pair;
@@ -30,11 +29,8 @@ import com.google.errorprone.annotations.Var;
 @CheckReturnValue
 final public class Subgoal {
 
-  public final static AtomicInteger ID = new AtomicInteger(0);
-
   // KB rules benefiting from this sub-goal resolution
   public final Trie<Literal> trie_ = new Trie<>();
-  public final Set<Literal> deprecatedNodes_ = Collections.newSetFromMap(new ConcurrentHashMap<>());
   public final Set<Clause> parents_ = new HashSet<>();
 
   // All maps and lists should support concurrency because they will be updated and enumerated at
@@ -42,11 +38,11 @@ final public class Subgoal {
   private final int id_;
   private final Literal literal_;
 
-  // parent rules benefiting from this sub-goal resolution
+  // Parent rules benefiting from this sub-goal resolution
   private final Set<Map.Entry<Subgoal, Clause>> waiters_ =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-  // facts derived for this subgoal
+  // Facts derived for this subgoal
   private final Set<Clause> facts_ = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
   Subgoal(int id, Literal literal) {
