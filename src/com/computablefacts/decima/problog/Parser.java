@@ -304,7 +304,7 @@ public final class Parser {
         "[line " + scan.lineno() + "] Expected '(' after predicate or an operator");
 
     @Var
-    List<Term> terms = new ArrayList<>();
+    List<AbstractTerm> terms = new ArrayList<>();
 
     if (scan.nextToken() != ')') {
 
@@ -329,13 +329,13 @@ public final class Parser {
           literals = literals.subList(0, literals.size() - 1);
         }
 
-        List<Term> outputTerms = new ArrayList<>();
+        List<AbstractTerm> outputTerms = new ArrayList<>();
         terms = new ArrayList<>();
 
         for (Literal literal : literals) {
           for (int i = 0; i < literal.terms().size(); i++) {
 
-            Term term = literal.terms().get(i);
+            AbstractTerm term = literal.terms().get(i);
 
             if (i == 0) {
               outputTerms.add(term);
@@ -401,8 +401,8 @@ public final class Parser {
    * @return
    * @throws IOException
    */
-  private static List<Term> parseFunction(String lhs, StreamTokenizer scan,
-      Map<String, com.computablefacts.decima.problog.Var> map, List<Literal> literals)
+  private static List<AbstractTerm> parseFunction(String lhs, StreamTokenizer scan,
+                                                  Map<String, com.computablefacts.decima.problog.Var> map, List<Literal> literals)
       throws IOException {
 
     Preconditions.checkNotNull(lhs, "lhs should not be null");
@@ -410,18 +410,18 @@ public final class Parser {
     Preconditions.checkNotNull(scan, "scan should not be null");
     Preconditions.checkNotNull(map, "map should not be null");
 
-    List<Term> terms = new ArrayList<>();
+    List<AbstractTerm> terms = new ArrayList<>();
 
     do {
       if (scan.nextToken() == StreamTokenizer.TT_WORD) {
 
-        Term term = stringToVarOrConst(map, numberOrString(scan));
+        AbstractTerm term = stringToVarOrConst(map, numberOrString(scan));
 
         if (term.isConst() && ((String) ((Const) term).value()).startsWith("fn_")) {
 
           Preconditions.checkState(scan.nextToken() == '(', "invalid function usage : %s", term);
 
-          List<Term> tmp = parseFunction((String) ((Const) term).value(), scan, map, literals);
+          List<AbstractTerm> tmp = parseFunction((String) ((Const) term).value(), scan, map, literals);
           String name = (String) ((Const) term).value();
           String function = name + "(" + Joiner.on(",").join(tmp) + ")";
 
@@ -539,8 +539,8 @@ public final class Parser {
 
     if (op.equals("fn_is")) {
 
-      Term dest = stringToVarOrConst(map, lhs);
-      Term src = stringToVarOrConst(map, rhs);
+      AbstractTerm dest = stringToVarOrConst(map, lhs);
+      AbstractTerm src = stringToVarOrConst(map, rhs);
 
       Preconditions.checkState(!dest.isConst(),
           "[line " + scan.lineno() + "] It is forbidden to assign to a constant");
@@ -558,14 +558,14 @@ public final class Parser {
   }
 
   /**
-   * Create a new {@link Term} from a string.
+   * Create a new {@link AbstractTerm} from a string.
    *
    * @param map
    * @param name
    * @return
    */
-  private static Term stringToVarOrConst(Map<String, com.computablefacts.decima.problog.Var> map,
-      String name) {
+  private static AbstractTerm stringToVarOrConst(Map<String, com.computablefacts.decima.problog.Var> map,
+                                                 String name) {
     if (isWildcard(name)) {
       return new com.computablefacts.decima.problog.Var(true);
     }

@@ -7,7 +7,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
  * Constants as simple objects.
  */
 @CheckReturnValue
-final public class Const extends Term {
+final public class Const extends AbstractTerm {
 
   private final String id_;
   private final Object value_;

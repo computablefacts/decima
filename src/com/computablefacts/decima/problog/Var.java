@@ -8,7 +8,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
  * Variables as simple objects.
  */
 @CheckReturnValue
-final public class Var extends Term {
+final public class Var extends AbstractTerm {
 
   private final static AtomicInteger ID = new AtomicInteger(0);
 

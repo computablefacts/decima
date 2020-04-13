@@ -46,53 +46,53 @@ final public class Literal {
 
   private final String tag_;
   private final Predicate predicate_;
-  private final List<Term> terms_;
+  private final List<AbstractTerm> terms_;
   private final List<Literal> functions_; // a sequence of functions to execute
   private final BigDecimal probability_;
   private final String id_;
 
-  public Literal(String predicate, Term term) {
+  public Literal(String predicate, AbstractTerm term) {
     this(BigDecimal.ONE, predicate, term);
   }
 
-  public Literal(String predicate, Term term1, Term term2) {
+  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2) {
     this(BigDecimal.ONE, predicate, term1, term2);
   }
 
-  public Literal(String predicate, Term term1, Term term2, Term term3) {
+  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3) {
     this(BigDecimal.ONE, predicate, term1, term2, term3);
   }
 
-  public Literal(String predicate, Term term1, Term term2, Term term3, Term term4) {
+  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3, AbstractTerm term4) {
     this(BigDecimal.ONE, predicate, term1, term2, term3, term4);
   }
 
-  public Literal(String predicate, List<Term> terms) {
+  public Literal(String predicate, List<AbstractTerm> terms) {
     this(BigDecimal.ONE, predicate, terms);
   }
 
-  public Literal(BigDecimal probability, String predicate, Term term) {
+  public Literal(BigDecimal probability, String predicate, AbstractTerm term) {
     this(probability, predicate, Lists.newArrayList(term));
   }
 
-  public Literal(BigDecimal probability, String predicate, Term term1, Term term2) {
+  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2) {
     this(probability, predicate, Lists.newArrayList(term1, term2));
   }
 
-  public Literal(BigDecimal probability, String predicate, Term term1, Term term2, Term term3) {
+  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3) {
     this(probability, predicate, Lists.newArrayList(term1, term2, term3));
   }
 
-  public Literal(BigDecimal probability, String predicate, Term term1, Term term2, Term term3,
-      Term term4) {
+  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3,
+                 AbstractTerm term4) {
     this(probability, predicate, Lists.newArrayList(term1, term2, term3, term4));
   }
 
-  public Literal(BigDecimal probability, String predicate, List<Term> terms) {
+  public Literal(BigDecimal probability, String predicate, List<AbstractTerm> terms) {
     this(probability, predicate, terms, new ArrayList<>());
   }
 
-  public Literal(BigDecimal probability, String predicate, List<Term> terms,
+  public Literal(BigDecimal probability, String predicate, List<AbstractTerm> terms,
       List<Literal> functions) {
 
     Preconditions.checkArgument(
@@ -146,7 +146,7 @@ final public class Literal {
         builder.append(", ");
       }
 
-      Term term = terms_.get(i);
+      AbstractTerm term = terms_.get(i);
 
       if (!term.isConst()) {
         builder.append(term.toString());
@@ -235,7 +235,7 @@ final public class Literal {
    *
    * @return the current literal terms.
    */
-  public List<Term> terms() {
+  public List<AbstractTerm> terms() {
     return terms_;
   }
 
@@ -245,7 +245,7 @@ final public class Literal {
    * @return true iif the current literal is grounded.
    */
   public boolean isGrounded() {
-    for (Term term : terms_) {
+    for (AbstractTerm term : terms_) {
       if (!term.isConst()) {
         return false;
       }
@@ -259,7 +259,7 @@ final public class Literal {
    * @return true iif the current literal is semi-grounded.
    */
   public boolean isSemiGrounded() {
-    for (Term term : terms_) {
+    for (AbstractTerm term : terms_) {
       if (!term.isConst()) {
         if (!term.isWildcard()) {
           return false;
@@ -275,11 +275,11 @@ final public class Literal {
    * @param term term.
    * @return true iif the current literal contains the given term.
    */
-  boolean hasTerm(Term term) {
+  boolean hasTerm(AbstractTerm term) {
 
     Preconditions.checkNotNull(term, "term should not be null");
 
-    for (Term t : terms_) {
+    for (AbstractTerm t : terms_) {
       if (term.equals(t)) {
         return true;
       }
@@ -306,8 +306,8 @@ final public class Literal {
 
     for (int i = 0; i < literal.terms().size(); i++) {
 
-      Term t1 = terms_.get(i);
-      Term t2 = literal.terms().get(i);
+      AbstractTerm t1 = terms_.get(i);
+      AbstractTerm t2 = literal.terms().get(i);
 
       if (t1.isConst() && t2.isConst()) {
         if (!t1.equals(t2)) {
@@ -325,11 +325,11 @@ final public class Literal {
    * @param env environment.
    * @return an environment.
    */
-  Map<Var, Term> shuffle(Map<Var, Term> env) {
+  Map<Var, AbstractTerm> shuffle(Map<Var, AbstractTerm> env) {
 
-    Map<Var, Term> e = env == null ? new HashMap<>() : env;
+    Map<Var, AbstractTerm> e = env == null ? new HashMap<>() : env;
 
-    for (Term term : terms_) {
+    for (AbstractTerm term : terms_) {
       if (!term.isConst()) {
         if (!e.containsKey(term)) {
           e.put((Var) term, new Var(term.isWildcard()));
@@ -354,15 +354,15 @@ final public class Literal {
    * @param env an environment is a map from variables to terms.
    * @return a new literal.
    */
-  Literal subst(Map<Var, Term> env) {
+  Literal subst(Map<Var, AbstractTerm> env) {
 
     if (env == null || env.isEmpty()) {
       return this;
     }
 
-    List<Term> terms = new ArrayList<>();
+    List<AbstractTerm> terms = new ArrayList<>();
 
-    for (Term term : terms_) {
+    for (AbstractTerm term : terms_) {
       terms.add(term.subst(env));
     }
     return new Literal(probability_, predicate_.name(), terms, functions_);
@@ -376,7 +376,7 @@ final public class Literal {
    *         cannot be unified. When they can, applying the substitutions defined by the environment
    *         on both literals will create two literals that are structurally equal.
    */
-  public Map<Var, Term> unify(Literal literal) {
+  public Map<Var, AbstractTerm> unify(Literal literal) {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
 
@@ -388,12 +388,12 @@ final public class Literal {
         "terms_.size() should be equal to literal.terms_.size()");
 
     @com.google.errorprone.annotations.Var
-    Map<Var, Term> env = new HashMap<>();
+    Map<Var, AbstractTerm> env = new HashMap<>();
 
     for (int i = 0; i < terms_.size(); i++) {
 
-      Term t1 = terms_.get(i).chase(env);
-      Term t2 = literal.terms_.get(i).chase(env);
+      AbstractTerm t1 = terms_.get(i).chase(env);
+      AbstractTerm t2 = literal.terms_.get(i).chase(env);
 
       if (!t1.equals(t2)) {
         env = t1.unify(t2, env);
@@ -457,7 +457,7 @@ final public class Literal {
 
     if (!isFirstTermVariable) { // => FN_IS()
 
-      Term first = terms_.get(0);
+      AbstractTerm first = terms_.get(0);
       Comparable object = (Comparable) ((Const) first).value();
       BoxedType boxedType = BoxedType.create(object);
 
@@ -481,7 +481,7 @@ final public class Literal {
 
     for (int i = 1 /* The first term is always a variable */; i < terms_.size(); i++) {
 
-      Term term = terms_.get(i);
+      AbstractTerm term = terms_.get(i);
 
       if (!term.isConst()) {
         return false; // All terms must be grounded before delegating work to a function
@@ -496,15 +496,15 @@ final public class Literal {
     return true;
   }
 
-  private List<Term> functionVariables() {
+  private List<AbstractTerm> functionVariables() {
 
-    List<Term> functionOutputs = new ArrayList<>();
-    List<Term> functionVariables = new ArrayList<>();
+    List<AbstractTerm> functionOutputs = new ArrayList<>();
+    List<AbstractTerm> functionVariables = new ArrayList<>();
 
     for (Literal literal : functions_) {
       for (int i = 0; i < literal.terms().size(); i++) {
 
-        Term term = literal.terms().get(i);
+        AbstractTerm term = literal.terms().get(i);
 
         if (i == 0) { // The first term of a function is always the function output
           functionOutputs.add(term);
@@ -532,10 +532,10 @@ final public class Literal {
     //
     // where all terms are const but the first of each function.
 
-    List<Term> functionVariables = functionVariables();
+    List<AbstractTerm> functionVariables = functionVariables();
 
     // Compute the mapping between the current literal terms and the functions parameters
-    Map<Term, Term> functionVariablesMapping = new HashMap<>();
+    Map<AbstractTerm, AbstractTerm> functionVariablesMapping = new HashMap<>();
 
     for (int i = 0; i < terms_.size(); i++) {
       functionVariablesMapping.put(functionVariables.get(i), terms_.get(i));
@@ -548,17 +548,17 @@ final public class Literal {
     // where all terms are const but the first one.
 
     // Compute the mapping between the intermediary variables and the partial functions
-    Map<Term, String> functionOutputsMapping = new HashMap<>();
+    Map<AbstractTerm, String> functionOutputsMapping = new HashMap<>();
 
     for (int i = 0; i < functions_.size(); i++) {
 
-      List<Term> terms = functions_.get(i).terms();
+      List<AbstractTerm> terms = functions_.get(i).terms();
       String fnName = functions_.get(i).predicate().name().toUpperCase();
       List<String> fnParams = new ArrayList<>(terms.size() - 1);
 
       for (int k = 1 /* The first term is always a variable */; k < terms.size(); k++) {
 
-        Term term = terms.get(k);
+        AbstractTerm term = terms.get(k);
 
         if (term.isConst()) {
 
@@ -617,7 +617,7 @@ final public class Literal {
     id.append(probability_);
     id.append(addSize(predicate_.id()));
 
-    for (Term term : terms_) {
+    for (AbstractTerm term : terms_) {
       id.append(addSize(term.id()));
     }
     return id.toString();
@@ -636,7 +636,7 @@ final public class Literal {
 
     for (int i = 0; i < terms_.size(); i++) {
 
-      Term term = terms_.get(i);
+      AbstractTerm term = terms_.get(i);
 
       if (term.isConst()) {
         tag.append(addSize(term.id()));

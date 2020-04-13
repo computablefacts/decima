@@ -317,7 +317,7 @@ final public class Clause {
    * @return true iif the current clause is safe.
    */
   public boolean isSafe() {
-    for (Term term : head_.terms()) {
+    for (AbstractTerm term : head_.terms()) {
       if (!term.isConst()) {
         if (!bodyHasTerm(term)) {
           return false;
@@ -336,7 +336,7 @@ final public class Clause {
   public Clause rename() {
 
     @com.google.errorprone.annotations.Var
-    Map<Var, Term> env = new HashMap<>();
+    Map<Var, AbstractTerm> env = new HashMap<>();
 
     for (Literal literal : body_) {
       env = literal.shuffle(env);
@@ -351,7 +351,7 @@ final public class Clause {
    * @param env environment.
    * @return a new clause.
    */
-  public Clause subst(Map<Var, Term> env) {
+  public Clause subst(Map<Var, AbstractTerm> env) {
 
     if (env == null || env.isEmpty()) {
       return this;
@@ -384,7 +384,7 @@ final public class Clause {
     }
 
     Literal first = body_.get(0);
-    Map<Var, Term> env = first.unify(literal.rename());
+    Map<Var, AbstractTerm> env = first.unify(literal.rename());
 
     if (env == null) {
       return null;
@@ -417,7 +417,7 @@ final public class Clause {
     }
 
     Literal first = body_.get(0);
-    Map<Var, Term> env = first.unify(literal.rename());
+    Map<Var, AbstractTerm> env = first.unify(literal.rename());
 
     if (env == null) {
       return null;
@@ -462,7 +462,7 @@ final public class Clause {
    * @param term term.
    * @return true iif the current clause body contains the given term.
    */
-  private boolean bodyHasTerm(Term term) {
+  private boolean bodyHasTerm(AbstractTerm term) {
 
     Preconditions.checkNotNull(term, "term should not be null");
 

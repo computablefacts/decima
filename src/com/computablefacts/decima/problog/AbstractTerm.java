@@ -10,19 +10,19 @@ import com.google.errorprone.annotations.CheckReturnValue;
  * A term is either a variable or a constant.
  */
 @CheckReturnValue
-public abstract class Term {
+public abstract class AbstractTerm {
 
-  protected Term() {}
+  protected AbstractTerm() {}
 
   @Override
   public boolean equals(Object o) {
     if (o == null) {
       return false;
     }
-    if (!(o instanceof Term)) {
+    if (!(o instanceof AbstractTerm)) {
       return false;
     }
-    Term term = (Term) o;
+    AbstractTerm term = (AbstractTerm) o;
     return Objects.equals(id(), term.id());
   }
 
@@ -37,7 +37,7 @@ public abstract class Term {
    * @param env environment.
    * @return returns a constant or an unbound variable.
    */
-  Term chase(Map<Var, Term> env) {
+  AbstractTerm chase(Map<Var, AbstractTerm> env) {
 
     Preconditions.checkNotNull(env, "env should not be null");
 
@@ -57,7 +57,7 @@ public abstract class Term {
    * @param env environment.
    * @return returns a constant or an unbound variable.
    */
-  Term subst(Map<Var, Term> env) {
+  AbstractTerm subst(Map<Var, AbstractTerm> env) {
 
     Preconditions.checkNotNull(env, "env should not be null");
 
@@ -79,7 +79,7 @@ public abstract class Term {
    * @return the result is either an environment or null. Null is returned when the two terms cannot
    *         be unified.
    */
-  Map<Var, Term> unify(Term term, Map<Var, Term> env) {
+  Map<Var, AbstractTerm> unify(AbstractTerm term, Map<Var, AbstractTerm> env) {
 
     Preconditions.checkNotNull(term, "term should not be null");
     Preconditions.checkNotNull(env, "env should not be null");
@@ -98,7 +98,7 @@ public abstract class Term {
    * @return the result is either an environment or null. Null is returned when the two terms cannot
    *         be unified.
    */
-  Map<Var, Term> unifyConst(Const constant, Map<Var, Term> env) {
+  Map<Var, AbstractTerm> unifyConst(Const constant, Map<Var, AbstractTerm> env) {
 
     Preconditions.checkNotNull(constant, "constant should not be null");
     Preconditions.checkNotNull(env, "env should not be null");
@@ -119,7 +119,7 @@ public abstract class Term {
    * @return the result is either an environment or null. Null is returned when the two terms cannot
    *         be unified.
    */
-  Map<Var, Term> unifyVar(Var variable, Map<Var, Term> env) {
+  Map<Var, AbstractTerm> unifyVar(Var variable, Map<Var, AbstractTerm> env) {
 
     Preconditions.checkNotNull(variable, "variable should not be null");
     Preconditions.checkNotNull(env, "env should not be null");
