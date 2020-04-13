@@ -34,6 +34,42 @@ public class LiteralTest {
   }
 
   @Test
+  public void testIsSemiGroundedWithConstAndWildcard() {
+
+    Literal literal = new Literal("edge", new Const("a"), new Var(true));
+
+    Assert.assertFalse(literal.isGrounded());
+    Assert.assertTrue(literal.isSemiGrounded());
+  }
+
+  @Test
+  public void testIsSemiGroundedWithConstOnly() {
+
+    Literal literal = new Literal("edge", new Const("a"), new Const("b"));
+
+    Assert.assertTrue(literal.isGrounded());
+    Assert.assertTrue(literal.isSemiGrounded());
+  }
+
+  @Test
+  public void testIsSemiGroundedWithWildcardOnly() {
+
+    Literal literal = new Literal("edge", new Var(true), new Var(true));
+
+    Assert.assertFalse(literal.isGrounded());
+    Assert.assertTrue(literal.isSemiGrounded());
+  }
+
+  @Test
+  public void testIsNotSemiGrounded() {
+
+    Literal literal = new Literal("edge", new Const("a"), new Var());
+
+    Assert.assertFalse(literal.isGrounded());
+    Assert.assertFalse(literal.isSemiGrounded());
+  }
+
+  @Test
   public void testBuiltinLiteral() {
 
     Predicate predicate = new Predicate("fn_isOk", 2);
