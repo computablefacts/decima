@@ -11,6 +11,46 @@ BDDSharp is a library for manipulating [ROBDDs](https://en.wikipedia.org/wiki/Bi
 Binary Decision Diagrams). A good overview of Binary Decision Diagrams can be found in [Lecture Notes on Binary Decision Diagrams](https://www.cs.cmu.edu/~fp/courses/15122-f10/lectures/19-bdds.pdf)
 by Frank Pfenning.
 
+## Usage
+
+ProbLog is a redesign and new implementation of Prolog in which facts and rules can be annotated with probabilities 
+(ProbLog makes the assumption that all probabilistic facts are mutually independent) by adding a floating-point number 
+in front of the fact/rule followed by double-colons (from [ProbLog's site](https://dtai.cs.kuleuven.be/problog/tutorial/basic/05_smokers.html)) :
+
+```
+0.3::stress(X) :- person(X).
+0.2::influences(X, Y) :- person(X), person(Y).
+
+smokes(X) :- stress(X).
+smokes(X) :- friend(X, Y), influences(Y, X), smokes(Y).
+
+0.4::asthma(X) :- smokes(X).
+
+person(éléana).
+person(jean).
+person(pierre).
+person(alexis).
+
+friend(jean, pierre).
+friend(jean, éléana).
+friend(jean, alexis).
+friend(éléana, pierre).
+```
+
+The program above encodes a variant of the "Friends & Smokers" problem. The first two rules state that there are two 
+possible causes for a person X to smoke, namely X having stress, and X having a friend Y who smokes himself and 
+influences X. Furthermore, the program encodes that if X smokes, X has asthma with probability 0.4.
+
+It is then possible to calculates the probability of the various people smoking and having asthma :
+
+```
+smokes(éléana)?
+0.342
+
+smokes(jean)?
+0.42556811
+```
+
 ## Adding Decima to your build
 
 Decima's Maven group ID is `com.computablefacts` and its artifact ID is `decima`.
