@@ -1,7 +1,6 @@
 os: linux
 dist: trusty
 language: java
-sudo: false
 jdk:
   - openjdk11
 install: "/bin/true"
