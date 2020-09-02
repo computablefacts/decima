@@ -263,7 +263,7 @@ public abstract class AbstractKnowledgeBase {
       }
 
       @Override
-      protected BoxedType evaluate(List<BoxedType> parameters) {
+      public BoxedType evaluate(List<BoxedType> parameters) {
 
         Preconditions.checkArgument(parameters.size() > 1,
             "EXISTINKB takes at least two parameters.");
