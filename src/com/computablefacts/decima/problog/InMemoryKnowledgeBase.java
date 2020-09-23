@@ -18,18 +18,26 @@ final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
 
   @Override
   protected void azzertFact(@NotNull Clause fact) {
-    if (!facts_.containsKey(fact.head().predicate())) {
-      facts_.put(fact.head().predicate(), new HashSet<>());
+
+    Literal head = fact.head();
+    Predicate predicate = head.predicate();
+
+    if (!facts_.containsKey(predicate)) {
+      facts_.put(predicate, new HashSet<>());
     }
-    facts_.get(fact.head().predicate()).add(fact);
+    facts_.get(predicate).add(fact);
   }
 
   @Override
   protected void azzertRule(@NotNull Clause rule) {
-    if (!rules_.containsKey(rule.head().predicate())) {
-      rules_.put(rule.head().predicate(), new HashSet<>());
+
+    Literal head = rule.head();
+    Predicate predicate = head.predicate();
+
+    if (!rules_.containsKey(predicate)) {
+      rules_.put(predicate, new HashSet<>());
     }
-    rules_.get(rule.head().predicate()).add(rule);
+    rules_.get(predicate).add(rule);
   }
 
   @Override
