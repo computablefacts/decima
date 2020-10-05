@@ -196,6 +196,8 @@ public abstract class AbstractKnowledgeBase {
    */
   protected void setDefinitions() {
 
+    // TODO : use Function.definitions() after nona 1.13
+
     // Assignment operator
     definitions_.put("FN_IS", new Is());
 
