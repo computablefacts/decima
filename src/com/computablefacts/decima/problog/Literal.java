@@ -53,28 +53,34 @@ final public class Literal {
     this(BigDecimal.ONE, predicate, term1, term2, term3, term4);
   }
 
+  @Generated
   public Literal(String predicate, List<AbstractTerm> terms) {
     this(BigDecimal.ONE, predicate, terms);
   }
 
+  @Generated
   public Literal(BigDecimal probability, String predicate, AbstractTerm term) {
     this(probability, predicate, Lists.newArrayList(term));
   }
 
+  @Generated
   public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2) {
     this(probability, predicate, Lists.newArrayList(term1, term2));
   }
 
+  @Generated
   public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2,
       AbstractTerm term3) {
     this(probability, predicate, Lists.newArrayList(term1, term2, term3));
   }
 
+  @Generated
   public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2,
       AbstractTerm term3, AbstractTerm term4) {
     this(probability, predicate, Lists.newArrayList(term1, term2, term3, term4));
   }
 
+  @Generated
   public Literal(BigDecimal probability, String predicate, List<AbstractTerm> terms) {
     this(probability, predicate, terms, new ArrayList<>());
   }
