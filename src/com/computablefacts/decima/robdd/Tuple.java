@@ -2,6 +2,7 @@ package com.computablefacts.decima.robdd;
 
 import java.util.Objects;
 
+import com.computablefacts.nona.Generated;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -24,6 +25,7 @@ public final class Tuple<T, U, V> {
     this.v = v;
   }
 
+  @Generated
   @Override
   public String toString() {
     return String.format("[Tuple: t=%s, u=%s, v=%s]", t == null ? "null" : t.toString(),

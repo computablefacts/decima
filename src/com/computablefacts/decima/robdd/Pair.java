@@ -2,6 +2,7 @@ package com.computablefacts.decima.robdd;
 
 import java.util.Objects;
 
+import com.computablefacts.nona.Generated;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -21,6 +22,7 @@ public final class Pair<T, U> {
     this.u = u;
   }
 
+  @Generated
   @Override
   public String toString() {
     return String.format("[Pair: t=%s, u=%s]", t == null ? "null" : t.toString(),

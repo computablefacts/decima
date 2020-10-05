@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.computablefacts.nona.Generated;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 
@@ -45,6 +46,7 @@ final public class BddNode {
     index_ = index;
   }
 
+  @Generated
   @Override
   public String toString() {
     return String.format(
