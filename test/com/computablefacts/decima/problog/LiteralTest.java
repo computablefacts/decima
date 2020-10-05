@@ -225,6 +225,12 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
+    Assert.assertEquals("17:~edge/23:1:a3:1:b", literal0.id());
+    Assert.assertEquals("16:edge/23:1:a3:1:b", literal1.id());
+    Assert.assertEquals("16:edge/23:1:a2:v0", literal2.id());
+    Assert.assertEquals("16:edge/22:v13:1:c", literal3.id());
+    Assert.assertEquals("16:edge/22:v23:1:b", literal4.id());
+
     Assert.assertNotEquals(literal0.id(), literal1.id());
     Assert.assertNotEquals(literal0.id(), literal2.id());
     Assert.assertNotEquals(literal0.id(), literal3.id());
@@ -248,6 +254,12 @@ public class LiteralTest {
     Literal literal2 = new Literal("edge", new Const("a"), new Var());
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
+
+    Assert.assertEquals("7:~edge/23:1:a3:1:b", literal0.tag());
+    Assert.assertEquals("6:edge/23:1:a3:1:b", literal1.tag());
+    Assert.assertEquals("6:edge/23:1:a2:v1", literal2.tag());
+    Assert.assertEquals("6:edge/22:v03:1:c", literal3.tag());
+    Assert.assertEquals("6:edge/22:v03:1:b", literal4.tag());
 
     Assert.assertNotEquals(literal0.tag(), literal1.tag());
     Assert.assertNotEquals(literal0.tag(), literal2.tag());
