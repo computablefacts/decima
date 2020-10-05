@@ -68,6 +68,20 @@ public class TrieTest {
   }
 
   @Test
+  public void testDeleteStrictPrefix() {
+
+    Trie<String> trie = new Trie<>();
+
+    trie.insert(Arrays.asList("p", "i", "e"));
+    trie.insert(Arrays.asList("p", "i", "e", "s"));
+
+    trie.delete(Arrays.asList("p", "i"));
+
+    assertTrue(trie.contains(Arrays.asList("p", "i", "e")));
+    assertTrue(trie.contains(Arrays.asList("p", "i", "e", "s")));
+  }
+
+  @Test
   public void testRemoveNode() {
 
     Trie<String> trie = createExampleTrie();
