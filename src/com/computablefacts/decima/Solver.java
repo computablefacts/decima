@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.annotation.CheckReturnValue;
-
 import com.computablefacts.decima.problog.AbstractKnowledgeBase;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Estimator;
@@ -21,6 +19,7 @@ import com.computablefacts.nona.helpers.Files;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
+import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
 final public class Solver extends CommandLine {

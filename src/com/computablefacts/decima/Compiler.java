@@ -3,12 +3,11 @@ package com.computablefacts.decima;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.CheckReturnValue;
-
 import com.computablefacts.decima.yaml.Rules;
 import com.computablefacts.nona.helpers.CommandLine;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
+import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
 final public class Compiler extends CommandLine {
