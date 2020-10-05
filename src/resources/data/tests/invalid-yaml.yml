@@ -1,0 +1,36 @@
+name: Friends and Smokers
+description: "The program below encodes a variant of the \"Friends & Smokers\" problem."
+rules:
+  - name: stress
+    parameters: X
+    confidence: 0.3
+    body:
+      - person(X)
+
+  - name: influences
+    parameters: X, Y
+    confidence: 0.2
+    body:
+      - person(X), person(Y)
+
+  - name: smokes
+    parameters: X
+    body:
+      - stress(X)
+      - friend(X, Y), influences(Y, X), smokes(Y)
+    tests:
+      - kb: "person(éléana).\nperson(jean).\nperson(pierre).\nperson(alexis).\nfriend(jean, pierre).\nfriend(jean, éléana).\nfriend(jean, alexis).\nfriend(éléana, pierre)."
+        query: "smokes(éléana)?"
+        output: "0.342::smokes(éléana)."
+
+      # The only difference with the file valid-yaml.yml is that the output probability is not rounded up to 5 digits
+      # after the comma. But it must !
+      - kb: "person(éléana).\nperson(jean).\nperson(pierre).\nperson(alexis).\nfriend(jean, pierre).\nfriend(jean, éléana).\nfriend(jean, alexis).\nfriend(éléana, pierre)."
+        query: "smokes(jean)?"
+        output: "0.42556811::smokes(jean)."
+
+  - name: asthma
+    parameters: X
+    confidence: 0.4
+    body:
+      - smokes(X)
