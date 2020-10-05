@@ -51,6 +51,10 @@ smokes(jean)?
 0.42556811
 ```
 
+Note that the rules above can also be stored as a [YAML file](/src/resources/data/tests/valid-yaml.yml). This YAML file
+can be transpiled into a valid set of rules using the [Compiler](/src/com/computablefacts/decima/Compiler.java) tool.
+One big advantage of this approach is that it allows the user to easily write unit tests.
+
 ## Adding Decima to your build
 
 Decima's Maven group ID is `com.computablefacts` and its artifact ID is `decima`.
