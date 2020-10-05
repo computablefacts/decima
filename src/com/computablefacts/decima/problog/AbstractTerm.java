@@ -137,6 +137,7 @@ public abstract class AbstractTerm {
    *
    * @return an identifier that maps all variables to the character "v".
    */
+  @Deprecated
   public String tag() {
     return isConst() ? id() : "v";
   }
