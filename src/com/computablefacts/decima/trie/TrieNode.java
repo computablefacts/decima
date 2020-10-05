@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.computablefacts.nona.Generated;
 import com.google.common.base.MoreObjects;
 import com.google.errorprone.annotations.CheckReturnValue;
 
@@ -19,6 +20,7 @@ final public class TrieNode<T> {
     id_ = ID.getAndIncrement();
   }
 
+  @Generated
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("id", id_).add("isEndOfSequence", isEndOfSequence_)
