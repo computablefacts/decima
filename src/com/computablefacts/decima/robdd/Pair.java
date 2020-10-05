@@ -14,8 +14,8 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 public final class Pair<T, U> {
 
-  public T t;
-  public U u;
+  public final T t;
+  public final U u;
 
   public Pair(T t, U u) {
     this.t = t;

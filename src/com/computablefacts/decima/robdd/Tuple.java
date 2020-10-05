@@ -15,9 +15,9 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 public final class Tuple<T, U, V> {
 
-  public T t;
-  public U u;
-  public V v;
+  public final T t;
+  public final U u;
+  public final V v;
 
   public Tuple(T t, U u, V v) {
     this.t = t;
