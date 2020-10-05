@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.computablefacts.decima.robdd.Pair;
 import com.computablefacts.decima.trie.Trie;
+import com.computablefacts.nona.Generated;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -82,6 +83,7 @@ final public class Subgoal {
     return Objects.hash(literal_);
   }
 
+  @Generated
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("id", id_).add("literal", literal_)
