@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.computablefacts.nona.Function;
+import com.computablefacts.nona.Generated;
 import com.computablefacts.nona.types.BoxedType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -31,18 +32,22 @@ final public class Literal {
   private final BigDecimal probability_;
   private final String id_;
 
+  @Generated
   public Literal(String predicate, AbstractTerm term) {
     this(BigDecimal.ONE, predicate, term);
   }
 
+  @Generated
   public Literal(String predicate, AbstractTerm term1, AbstractTerm term2) {
     this(BigDecimal.ONE, predicate, term1, term2);
   }
 
+  @Generated
   public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3) {
     this(BigDecimal.ONE, predicate, term1, term2, term3);
   }
 
+  @Generated
   public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3,
       AbstractTerm term4) {
     this(BigDecimal.ONE, predicate, term1, term2, term3, term4);

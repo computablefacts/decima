@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 
+import com.computablefacts.nona.Generated;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -22,6 +23,30 @@ final public class RandomString {
   private final char[] symbols;
   private final char[] buf;
 
+  /**
+   * Create an alphanumeric string generator.
+   */
+  @Generated
+  public RandomString(int length, Random random) {
+    this(length, random, alphanum);
+  }
+
+  /**
+   * Create session identifiers.
+   */
+  @Generated
+  public RandomString() {
+    this(21);
+  }
+
+  /**
+   * Create an alphanumeric strings from a secure generator.
+   */
+  @Generated
+  public RandomString(int length) {
+    this(length, new SecureRandom());
+  }
+
   public RandomString(int length, Random random, String symbols) {
     if (length < 1) {
       throw new IllegalArgumentException();
@@ -32,27 +57,6 @@ final public class RandomString {
     this.random = Objects.requireNonNull(random);
     this.symbols = symbols.toCharArray();
     this.buf = new char[length];
-  }
-
-  /**
-   * Create an alphanumeric string generator.
-   */
-  public RandomString(int length, Random random) {
-    this(length, random, alphanum);
-  }
-
-  /**
-   * Create an alphanumeric strings from a secure generator.
-   */
-  public RandomString(int length) {
-    this(length, new SecureRandom());
-  }
-
-  /**
-   * Create session identifiers.
-   */
-  public RandomString() {
-    this(21);
   }
 
   /**

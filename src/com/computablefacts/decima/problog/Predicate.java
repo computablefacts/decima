@@ -40,22 +40,6 @@ final public class Predicate {
     Preconditions.checkState(!(isNegated_ && isPrimitive_), "primitives cannot be negated");
   }
 
-  /**
-   * Copy constructor.
-   *
-   * @param predicate predicate.
-   */
-  public Predicate(Predicate predicate) {
-
-    Preconditions.checkNotNull(predicate);
-
-    id_ = predicate.id_;
-    name_ = predicate.name_;
-    arity_ = predicate.arity_;
-    isNegated_ = predicate.isNegated_;
-    isPrimitive_ = predicate.isPrimitive_;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (o == null) {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.computablefacts.nona.Generated;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
@@ -29,6 +30,7 @@ final public class Clause {
    *
    * @param head literal.
    */
+  @Generated
   public Clause(Literal head) {
     this(head, new ArrayList<>());
   }
@@ -39,6 +41,7 @@ final public class Clause {
    * @param head literal.
    * @param literal #1 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal) {
     this(head, Lists.newArrayList(literal));
   }
@@ -50,6 +53,7 @@ final public class Clause {
    * @param literal1 #1 body literal.
    * @param literal2 #2 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal1, Literal literal2) {
     this(head, Lists.newArrayList(literal1, literal2));
   }
@@ -62,6 +66,7 @@ final public class Clause {
    * @param literal2 #2 body literal.
    * @param literal3 #3 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3) {
     this(head, Lists.newArrayList(literal1, literal2, literal3));
   }
@@ -75,6 +80,7 @@ final public class Clause {
    * @param literal3 #3 body literal.
    * @param literal4 #4 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
       Literal literal4) {
     this(head, Lists.newArrayList(literal1, literal2, literal3, literal4));
@@ -90,6 +96,7 @@ final public class Clause {
    * @param literal4 #4 body literal.
    * @param literal5 #5 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
       Literal literal4, Literal literal5) {
     this(head, Lists.newArrayList(literal1, literal2, literal3, literal4, literal5));
@@ -106,6 +113,7 @@ final public class Clause {
    * @param literal5 #5 body literal.
    * @param literal6 #6 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
       Literal literal4, Literal literal5, Literal literal6) {
     this(head, Lists.newArrayList(literal1, literal2, literal3, literal4, literal5, literal6));
@@ -123,6 +131,7 @@ final public class Clause {
    * @param literal6 #6 body literal.
    * @param literal7 #7 body literal.
    */
+  @Generated
   public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
       Literal literal4, Literal literal5, Literal literal6, Literal literal7) {
     this(head,
