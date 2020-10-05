@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import com.computablefacts.decima.robdd.Pair;
-import com.computablefacts.decima.utils.RandomString;
 import com.computablefacts.nona.Function;
 import com.computablefacts.nona.functions.additiveoperators.Add;
 import com.computablefacts.nona.functions.additiveoperators.Substract;

@@ -1,4 +1,4 @@
-package com.computablefacts.decima.utils;
+package com.computablefacts.decima.problog;
 
 import java.security.SecureRandom;
 import java.util.Locale;
