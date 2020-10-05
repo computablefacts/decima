@@ -3,6 +3,7 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.TestUtils.parseClause;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -171,5 +172,24 @@ public class ParserTest {
 
     Assert.assertTrue(rule.isRule());
     Assert.assertFalse(rule.isFact());
+  }
+
+  @Test
+  public void testParseQuery() {
+
+    Literal query = Parser.parseQuery("edge(X, Y)?");
+
+    Assert.assertEquals(new Literal("edge", new Var(), new Var()), query);
+  }
+
+  @Test
+  public void testParseQueries() {
+
+    Set<Literal> queries = Parser.parseQueries("edge(X, Y)?\nedge(a, Y)?\nedge(X, b)?");
+
+    Assert.assertEquals(3, queries.size());
+    Assert.assertTrue(queries.contains(new Literal("edge", new Var(), new Var())));
+    Assert.assertTrue(queries.contains(new Literal("edge", new Const("a"), new Var())));
+    Assert.assertTrue(queries.contains(new Literal("edge", new Var(), new Const("b"))));
   }
 }
