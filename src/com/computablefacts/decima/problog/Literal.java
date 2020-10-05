@@ -210,6 +210,7 @@ final public class Literal {
    *
    * @return a key.
    */
+  @Deprecated
   public String key() {
     return probability_.stripTrailingZeros().toPlainString() + "::" + tag_;
   }
