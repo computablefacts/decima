@@ -63,16 +63,16 @@ final public class BddNode {
       return false;
     }
     BddNode other = (BddNode) obj;
-    return Objects.equals(id_, other.id_) && Objects.equals(low_.id_, other.low_.id_)
-        && Objects.equals(high_.id_, other.high_.id_);
+    return Objects.equals(id_, other.id_)
+        && Objects.equals(low_ == null ? null : low_.id_,
+            other.low_ == null ? null : other.low_.id_)
+        && Objects.equals(high_ == null ? null : high_.id_,
+            other.high_ == null ? null : other.high_.id_);
   }
 
   @Override
   public int hashCode() {
-    if (value_ != null) {
-      return value_ ? 1 : 0;
-    }
-    return Objects.hash(id_, low_.id_, high_.id_);
+    return Objects.hash(id_, low_ == null ? null : low_.id_, high_ == null ? null : high_.id_);
   }
 
   /**

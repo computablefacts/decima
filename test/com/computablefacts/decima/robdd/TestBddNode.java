@@ -5,7 +5,18 @@ import org.junit.Test;
 
 import com.google.errorprone.annotations.Var;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+
 public class TestBddNode {
+
+  @Test
+  public void testHashcodeAndEquals() {
+    BddManager manager = new BddManager(1);
+    EqualsVerifier.forClass(BddNode.class).suppress(Warning.NONFINAL_FIELDS)
+        .withPrefabValues(BddNode.class, manager.Zero, manager.One)
+        .withIgnoredFields("value_", "index_", "refCount_").verify();
+  }
 
   @Test
   public void testTupleValueForOne() {
