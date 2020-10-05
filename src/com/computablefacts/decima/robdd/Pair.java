@@ -31,8 +31,8 @@ public final class Pair<T, U> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null) {
-      return false;
+    if (o == this) {
+      return true;
     }
     if (!(o instanceof Pair)) {
       return false;

@@ -34,8 +34,8 @@ public final class Tuple<T, U, V> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null) {
-      return false;
+    if (o == this) {
+      return true;
     }
     if (!(o instanceof Tuple)) {
       return false;

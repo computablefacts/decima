@@ -42,8 +42,8 @@ final public class Predicate {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null) {
-      return false;
+    if (o == this) {
+      return true;
     }
     if (!(o instanceof Predicate)) {
       return false;
