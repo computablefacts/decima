@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Random;
 
 import com.computablefacts.nona.Generated;
+import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -48,12 +49,10 @@ final public class RandomString {
   }
 
   public RandomString(int length, Random random, String symbols) {
-    if (length < 1) {
-      throw new IllegalArgumentException();
-    }
-    if (symbols.length() < 2) {
-      throw new IllegalArgumentException();
-    }
+
+    Preconditions.checkArgument(length >= 1, "length must be >= 1");
+    Preconditions.checkArgument(symbols.length() >= 2, "the number of symbols must be >= 2");
+
     this.random = Objects.requireNonNull(random);
     this.symbols = symbols.toCharArray();
     this.buf = new char[length];
