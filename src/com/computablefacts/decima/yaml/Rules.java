@@ -2,10 +2,13 @@ package com.computablefacts.decima.yaml;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.computablefacts.decima.problog.Clause;
+import com.computablefacts.decima.problog.Parser;
 import com.computablefacts.nona.Generated;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,6 +72,10 @@ final public class Rules {
   public Rules() {}
 
   public static Rules load(File file) {
+    return load(file, false);
+  }
+
+  public static Rules load(File file, boolean test) {
 
     Preconditions.checkNotNull(file, "file should not be null");
     Preconditions.checkArgument(file.exists(), "file does not exist : %s", file);
@@ -77,7 +84,12 @@ final public class Rules {
       YAMLFactory yamlFactory = new YAMLFactory();
       YAMLMapper yamlMapper = new YAMLMapper(yamlFactory);
       yamlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-      return yamlMapper.readValue(file, Rules.class);
+      Rules rules = yamlMapper.readValue(file, Rules.class);
+
+      if (rules != null && test) {
+        return rules.isValid() ? rules : null;
+      }
+      return rules;
     } catch (JsonProcessingException e) {
       logger_.error(Throwables.getStackTraceAsString(Throwables.getRootCause(e)));
     } catch (IOException e) {
@@ -96,5 +108,28 @@ final public class Rules {
       builder.append(rule.toString());
     }
     return builder.toString();
+  }
+
+  private boolean isValid() {
+
+    Set<Clause> clauses = Parser.parseClauses(toString());
+
+    for (Rule rule : rules_) {
+      if (rule.tests_ != null) {
+        for (Test test : rule.tests_) {
+          if (!test.matchOutput(clauses)) {
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("\nTest failed for :").append(
+                "\n===[ RULE ]=============================================================================\n")
+                .append(rule.toString()).append(test.toString());
+
+            logger_.error(builder.toString());
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 }

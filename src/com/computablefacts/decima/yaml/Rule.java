@@ -50,6 +50,9 @@ final public class Rule {
   @JsonProperty("body")
   String[] body_;
 
+  @JsonProperty("tests")
+  Test[] tests_;
+
   public Rule() {}
 
   public Rule(String name, String description, double confidence, String parameters,
