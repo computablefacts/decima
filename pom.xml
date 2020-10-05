@@ -45,6 +45,8 @@
         <jcip.version>1.0-1</jcip.version>
         <guava.version>28.0-jre</guava.version>
         <error-prone.version>2.3.1</error-prone.version>
+        <equalsverifier.version>3.4.2</equalsverifier.version>
+        <jackson-dataformat-yaml.version>2.10.2</jackson-dataformat-yaml.version>
         <junit.version>4.12</junit.version>
         <javax-validation.version>2.0.1.Final</javax-validation.version>
         <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
@@ -89,6 +91,17 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>nl.jqno.equalsverifier</groupId>
+            <artifactId>equalsverifier</artifactId>
+            <version>${equalsverifier.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson-dataformat-yaml.version}</version>
         </dependency>
     </dependencies>
 
