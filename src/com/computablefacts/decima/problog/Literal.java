@@ -616,7 +616,7 @@ final public class Literal {
     id.append(addSize(predicate_.id()));
 
     for (AbstractTerm term : terms_) {
-      id.append(addSize(term.id()));
+      id.append(term.id());
     }
     return id.toString();
   }
@@ -637,9 +637,9 @@ final public class Literal {
       AbstractTerm term = terms_.get(i);
 
       if (term.isConst()) {
-        tag.append(addSize(term.id()));
+        tag.append(term.id());
       } else {
-        tag.append(addSize("v" + Integer.toString(i, 10)));
+        tag.append("v" + Integer.toString(i, 10));
       }
     }
     return tag.toString();

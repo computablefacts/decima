@@ -5,6 +5,8 @@ import static com.computablefacts.decima.problog.TestUtils.parseClause;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.computablefacts.nona.helpers.WildcardMatcher;
+
 public class LiteralTest {
 
   @Test
@@ -225,11 +227,12 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("17:~edge/23:1:a3:1:b", literal0.id());
-    Assert.assertEquals("16:edge/23:1:a3:1:b", literal1.id());
-    Assert.assertEquals("16:edge/23:1:a2:v0", literal2.id());
-    Assert.assertEquals("16:edge/22:v13:1:c", literal3.id());
-    Assert.assertEquals("16:edge/22:v23:1:b", literal4.id());
+    Assert.assertEquals("17:~edge/21:a1:b", literal0.id());
+    Assert.assertEquals("16:edge/21:a1:b", literal1.id());
+
+    Assert.assertTrue(WildcardMatcher.match(literal2.id(), "1?:edge/21:av*"));
+    Assert.assertTrue(WildcardMatcher.match(literal3.id(), "1?:edge/2v*1:c"));
+    Assert.assertTrue(WildcardMatcher.match(literal4.id(), "1?:edge/2v*:b"));
 
     Assert.assertNotEquals(literal0.id(), literal1.id());
     Assert.assertNotEquals(literal0.id(), literal2.id());
@@ -255,11 +258,11 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("7:~edge/23:1:a3:1:b", literal0.tag());
-    Assert.assertEquals("6:edge/23:1:a3:1:b", literal1.tag());
-    Assert.assertEquals("6:edge/23:1:a2:v1", literal2.tag());
-    Assert.assertEquals("6:edge/22:v03:1:c", literal3.tag());
-    Assert.assertEquals("6:edge/22:v03:1:b", literal4.tag());
+    Assert.assertEquals("7:~edge/21:a1:b", literal0.tag());
+    Assert.assertEquals("6:edge/21:a1:b", literal1.tag());
+    Assert.assertEquals("6:edge/21:av1", literal2.tag());
+    Assert.assertEquals("6:edge/2v01:c", literal3.tag());
+    Assert.assertEquals("6:edge/2v01:b", literal4.tag());
 
     Assert.assertNotEquals(literal0.tag(), literal1.tag());
     Assert.assertNotEquals(literal0.tag(), literal2.tag());
