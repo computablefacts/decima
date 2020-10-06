@@ -41,6 +41,7 @@
     </developers>
 
     <properties>
+        <logfmt.version>0.2</logfmt.version>
         <nona.version>1.12</nona.version>
         <jcip.version>1.0-1</jcip.version>
         <guava.version>28.0-jre</guava.version>
@@ -61,6 +62,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.computablefacts</groupId>
+            <artifactId>logfmt</artifactId>
+            <version>${logfmt.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.computablefacts</groupId>
             <artifactId>nona</artifactId>
@@ -141,6 +147,11 @@
                                         implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
                                     <reason>Decima must not inherit from Morta</reason>
                                     <bannedImport>com.computablefacts.morta.**</bannedImport>
+                                </restrictImports>
+                                <restrictImports
+                                        implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
+                                    <reason>Use SLF4j for logging</reason>
+                                    <bannedImport>java.util.logging.**</bannedImport>
                                 </restrictImports>
                             </rules>
                         </configuration>

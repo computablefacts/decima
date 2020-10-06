@@ -7,6 +7,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.computablefacts.decima.logs.LogFormatterManager;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Parser;
 import com.computablefacts.nona.Generated;
@@ -16,7 +17,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 /**
  * Group ProbLog rules in a YAML file.
@@ -91,9 +91,9 @@ final public class Rules {
       }
       return rules;
     } catch (JsonProcessingException e) {
-      logger_.error(Throwables.getStackTraceAsString(Throwables.getRootCause(e)));
+      logger_.error(LogFormatterManager.logFormatter().message(e).formatError());
     } catch (IOException e) {
-      logger_.error(Throwables.getStackTraceAsString(Throwables.getRootCause(e)));
+      logger_.error(LogFormatterManager.logFormatter().message(e).formatError());
     }
     return null;
   }
@@ -124,7 +124,8 @@ final public class Rules {
                 "\n===[ RULE ]=============================================================================\n")
                 .append(rule.toString()).append(test.toString());
 
-            logger_.error(builder.toString());
+            logger_.error(
+                LogFormatterManager.logFormatter().message(builder.toString()).formatError());
             return false;
           }
         }
