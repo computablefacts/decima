@@ -13,36 +13,9 @@ import javax.validation.constraints.NotNull;
 
 import com.computablefacts.decima.robdd.Pair;
 import com.computablefacts.nona.Function;
-import com.computablefacts.nona.functions.additiveoperators.Add;
-import com.computablefacts.nona.functions.additiveoperators.Substract;
-import com.computablefacts.nona.functions.assignmentoperators.Is;
-import com.computablefacts.nona.functions.booleanlogicoperators.And;
-import com.computablefacts.nona.functions.booleanlogicoperators.Not;
-import com.computablefacts.nona.functions.booleanlogicoperators.Or;
 import com.computablefacts.nona.functions.comparisonoperators.Equal;
-import com.computablefacts.nona.functions.comparisonoperators.GreaterThan;
-import com.computablefacts.nona.functions.comparisonoperators.GreaterThanOrEqual;
-import com.computablefacts.nona.functions.comparisonoperators.LessThan;
-import com.computablefacts.nona.functions.comparisonoperators.LessThanOrEqual;
-import com.computablefacts.nona.functions.controlflowoperators.If;
 import com.computablefacts.nona.functions.csvoperators.CsvValue;
-import com.computablefacts.nona.functions.csvoperators.NbCsvRows;
-import com.computablefacts.nona.functions.csvoperators.ToCsv;
-import com.computablefacts.nona.functions.jsonoperators.NbJsonObjects;
-import com.computablefacts.nona.functions.jsonoperators.ToJson;
-import com.computablefacts.nona.functions.mathematicaloperators.Max;
-import com.computablefacts.nona.functions.mathematicaloperators.Min;
-import com.computablefacts.nona.functions.multiplicativeoperators.Divide;
-import com.computablefacts.nona.functions.multiplicativeoperators.Multiply;
-import com.computablefacts.nona.functions.stringoperators.Concat;
-import com.computablefacts.nona.functions.stringoperators.Contain;
-import com.computablefacts.nona.functions.stringoperators.EndWith;
-import com.computablefacts.nona.functions.stringoperators.IndexOf;
-import com.computablefacts.nona.functions.stringoperators.MatchFuzzy;
-import com.computablefacts.nona.functions.stringoperators.MatchWildcard;
-import com.computablefacts.nona.functions.stringoperators.StartWith;
 import com.computablefacts.nona.functions.stringoperators.StrLength;
-import com.computablefacts.nona.functions.stringoperators.Substring;
 import com.computablefacts.nona.functions.stringoperators.ToInteger;
 import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
@@ -196,64 +169,21 @@ public abstract class AbstractKnowledgeBase {
    */
   protected void setDefinitions() {
 
-    // TODO : use Function.definitions() after nona 1.13
+    Map<String, Function> defs = Function.definitions();
 
-    // Assignment operator
-    definitions_.put("FN_IS", new Is());
+    for (Map.Entry<String, Function> def : defs.entrySet()) {
+      definitions_.put("FN_" + def.getKey(), def.getValue());
+    }
 
-    // Additive operators
-    definitions_.put("FN_ADD", new Add());
-    definitions_.put("FN_SUB", new Substract());
-
-    // Multiplicative operators
-    definitions_.put("FN_DIV", new Divide());
-    definitions_.put("FN_MUL", new Multiply());
-
-    // Comparison operators
+    // TODO : legacy functions. Remove ASAP.
     definitions_.put("FN_EQ", new Equal());
-    definitions_.put("FN_GT", new GreaterThan());
-    definitions_.put("FN_GTE", new GreaterThanOrEqual());
-    definitions_.put("FN_LT", new LessThan());
-    definitions_.put("FN_LTE", new LessThanOrEqual());
-
-    // Boolean logic operators
-    definitions_.put("FN_AND", new And());
-    definitions_.put("FN_OR", new Or());
-    definitions_.put("FN_NOT", new Not());
-
-    // Mathematical operators
-    definitions_.put("FN_MIN", new Min());
-    definitions_.put("FN_MAX", new Max());
-
-    // Csv operators
-    definitions_.put("FN_TO_CSV", new ToCsv());
-    definitions_.put("FN_NB_CSV_ROWS", new NbCsvRows());
     definitions_.put("FN_CSV_VALUE", new CsvValue());
-
-    // Json operators
-    definitions_.put("FN_TO_JSON", new ToJson());
-    definitions_.put("FN_NB_JSON_OBJECTS", new NbJsonObjects());
-
-    // String operators
     definitions_.put("FN_LOWER_CASE", new ToUpperCase());
     definitions_.put("FN_UPPER_CASE", new ToLowerCase());
-    definitions_.put("FN_CONCAT", new Concat());
     definitions_.put("FN_INT", new ToInteger());
     definitions_.put("FN_LENGTH", new StrLength());
-    definitions_.put("FN_CONTAIN", new Contain());
-    definitions_.put("FN_INDEX_OF", new IndexOf());
-    definitions_.put("FN_MATCH_WILDCARD", new MatchWildcard());
-    definitions_.put("FN_MATCH_FUZZY", new MatchFuzzy());
-    definitions_.put("FN_START_WITH", new StartWith());
-    definitions_.put("FN_END_WITH", new EndWith());
-    definitions_.put("FN_SUBSTRING", new Substring());
 
-    // Control flow operators
-    definitions_.put("FN_IF", new If());
-
-    /**
-     * Special operator. See {@link Literal#execute} for details.
-     */
+    // Special operator. See {@link Literal#execute} for details.
     definitions_.put("FN_EXIST_IN_KB", new Function("EXISTINKB") {
 
       @Override
