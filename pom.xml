@@ -41,7 +41,7 @@
     </developers>
 
     <properties>
-        <logfmt.version>0.2</logfmt.version>
+        <logfmt.version>0.3</logfmt.version>
         <nona.version>1.12</nona.version>
         <jcip.version>1.0-1</jcip.version>
         <guava.version>28.0-jre</guava.version>
