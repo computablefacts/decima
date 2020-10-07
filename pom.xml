@@ -42,7 +42,7 @@
 
     <properties>
         <logfmt.version>0.3</logfmt.version>
-        <nona.version>1.12</nona.version>
+        <nona.version>1.13</nona.version>
         <jcip.version>1.0-1</jcip.version>
         <guava.version>28.0-jre</guava.version>
         <error-prone.version>2.3.1</error-prone.version>

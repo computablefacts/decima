@@ -254,7 +254,7 @@ public abstract class AbstractKnowledgeBase {
     /**
      * Special operator. See {@link Literal#execute} for details.
      */
-    definitions_.put("FN_EXIST_IN_KB", new Function("EXISTINKB", true) {
+    definitions_.put("FN_EXIST_IN_KB", new Function("EXISTINKB") {
 
       @Override
       protected boolean isCacheable() {

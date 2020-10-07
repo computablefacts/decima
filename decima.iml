@@ -15,7 +15,7 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.0" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
-    <orderEntry type="library" name="Maven: com.computablefacts:nona:1.12" level="project" />
+    <orderEntry type="library" name="Maven: com.computablefacts:nona:1.13" level="project" />
     <orderEntry type="library" name="Maven: me.xdrop:fuzzywuzzy:1.2.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.re2j:re2j:1.2" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.10.2" level="project" />
