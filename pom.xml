@@ -41,15 +41,12 @@
     </developers>
 
     <properties>
-        <logfmt.version>0.3</logfmt.version>
         <nona.version>1.14</nona.version>
         <jcip.version>1.0-1</jcip.version>
-        <guava.version>28.0-jre</guava.version>
         <error-prone.version>2.3.1</error-prone.version>
         <equalsverifier.version>3.4.2</equalsverifier.version>
         <jackson-dataformat-yaml.version>2.10.2</jackson-dataformat-yaml.version>
         <junit.version>4.12</junit.version>
-        <javax-validation.version>2.0.1.Final</javax-validation.version>
         <maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
@@ -64,11 +61,6 @@
     <dependencies>
         <dependency>
             <groupId>com.computablefacts</groupId>
-            <artifactId>logfmt</artifactId>
-            <version>${logfmt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.computablefacts</groupId>
             <artifactId>nona</artifactId>
             <version>${nona.version}</version>
         </dependency>
@@ -79,19 +71,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.errorprone</groupId>
             <artifactId>error_prone_annotations</artifactId>
             <version>${error-prone.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>${javax-validation.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
