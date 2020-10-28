@@ -16,6 +16,15 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
 
+/**
+ * Encode a single test case.
+ *
+ * <pre>
+ * kb: "fact1(...).\nfact2(...).\n..."
+ * query: "query1(...)?"
+ * output: "0.xxx::query1(...)."
+ * </pre>
+ */
 @CheckReturnValue
 final public class Test {
 

@@ -23,6 +23,13 @@ import com.google.errorprone.annotations.CheckReturnValue;
  *     - literal_1.1, literal_1.2, ...
  *     - literal_2.1, literal_2.2, ...
  *     - ...
+ *   tests:
+ *     - kb: "fact1(...).\nfact2(...).\n..."
+ *       query: "query1(...)?"
+ *       output: "0.xxx::query1(...)."
+ *     - kb: "fact1(...).\nfact2(...).\n..."
+ *       query: "query2(...)?"
+ *       output: "0.xxx::query2(...)."
  * </pre>
  *
  * Once compiled, the YAML above will create the following rules :
