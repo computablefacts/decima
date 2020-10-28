@@ -38,7 +38,7 @@ public class KbBuilderTest {
   @Test
   public void testBuildKb() throws IOException {
 
-    String json = TestUtils.load("/data/tests/simple-json.json");
+    String json = TestUtils.load("/data/tests/simple-json.txt");
     Path input = Files.createTempFile("rules-", ".json");
     Files.write(input, Lists.newArrayList(json));
 
