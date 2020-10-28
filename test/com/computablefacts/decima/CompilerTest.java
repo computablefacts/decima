@@ -40,12 +40,11 @@ public class CompilerTest {
     String yaml = TestUtils.load("/data/tests/valid-yaml.yml");
     Path file = Files.createTempFile("rules-", ".yml");
     Files.write(file, Lists.newArrayList(yaml));
-    Compiler.main(new String[] {"-file", file.toString()});
+    Compiler.main(new String[] {"-input", file.toString()});
 
-    Assert.assertTrue(outContent_.toString().replace("\r", "").startsWith(
-        "================================================================================\n"
-            + "0.3::stress(X) :- person(X).\n" + "0.2::influences(X, Y) :- person(X), person(Y).\n"
-            + "1.0::smokes(X) :- stress(X).\n"
+    Assert.assertTrue(outContent_.toString().replace("\r", "")
+        .startsWith("0.3::stress(X) :- person(X).\n"
+            + "0.2::influences(X, Y) :- person(X), person(Y).\n" + "1.0::smokes(X) :- stress(X).\n"
             + "1.0::smokes(X) :- friend(X, Y), influences(Y, X), smokes(Y).\n"
             + "0.4::asthma(X) :- smokes(X).\n"));
   }

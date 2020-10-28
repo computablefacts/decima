@@ -110,6 +110,10 @@ final public class Rules {
     return builder.toString();
   }
 
+  public int nbRules() {
+    return rules_ == null ? 0 : rules_.length;
+  }
+
   private boolean isValid() {
 
     Set<Clause> clauses = Parser.parseClauses(toString());

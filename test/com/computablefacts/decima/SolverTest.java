@@ -56,6 +56,6 @@ public class SolverTest {
     Solver.main(new String[] {"-facts", factz.toString(), "-rules", rulez.toString(), "-queries",
         queriez.toString()});
 
-    Assert.assertTrue(outContent_.toString().startsWith("son(\"bill\", \"alice\") -> 1.0000"));
+    Assert.assertTrue(outContent_.toString().startsWith("1.0000::son(\"bill\", \"alice\")."));
   }
 }

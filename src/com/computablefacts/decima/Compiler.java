@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.computablefacts.decima.yaml.Rules;
 import com.computablefacts.nona.helpers.CommandLine;
+import com.computablefacts.nona.helpers.Files;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.errorprone.annotations.CheckReturnValue;
@@ -16,20 +17,24 @@ final public class Compiler extends CommandLine {
 
     Preconditions.checkNotNull(args, "args should not be null");
 
-    File file = getFileCommand(args, "file", null);
+    File input = getFileCommand(args, "input", null);
+    String output = getStringCommand(args, "output", null);
+    boolean showLogs = getBooleanCommand(args, "show_logs", false);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
+    Rules rules = Rules.load(input, true);
 
-    Rules rules = Rules.load(file, true);
-
-    System.out.println(
-        "================================================================================");
-    System.out.println(rules.toString());
-    System.out.println(
-        "================================================================================");
+    if (output == null) {
+      System.out.println(rules.toString());
+    } else {
+      Files.create(new File(output), rules.toString());
+    }
 
     stopwatch.stop();
 
-    System.out.println("elapsed time : " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
+    if (showLogs) {
+      System.out.println("number of rules : " + rules.nbRules());
+      System.out.println("elapsed time : " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
+    }
   }
 }
