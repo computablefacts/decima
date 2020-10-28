@@ -47,7 +47,7 @@ import com.google.common.base.Preconditions;
  *  - ...
  * </pre>
  *
- * One compiled, the YAML above will create the following rules :
+ * Once compiled, the YAML above will create the following rules :
  *
  * <pre>
  *     0.xxx:predicate_1(term_1, term_2, ...) :- literal_1.1, literal_1.2, ...
