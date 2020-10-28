@@ -2,6 +2,7 @@ package com.computablefacts.decima;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
@@ -41,20 +43,33 @@ final public class KbBuilder extends CommandLine {
     RandomString rnd = new RandomString(8);
     long nbFacts = Files.lineStream(input, StandardCharsets.UTF_8)
         .filter(pair -> !Strings.isNullOrEmpty(pair.getValue()))
-        .map(pair -> new JsonFlattener(pair.getValue()).withSeparator(SEPARATOR).flattenAsMap())
-        .peek(json -> {
-          String uid = rnd.nextString();
-          json.forEach((k, v) -> {
+        .map(pair -> new AbstractMap.SimpleEntry<>(rnd.nextString(), pair.getValue()))
+        .peek(pair -> kb.azzert(new Clause(new Literal("json",
+            Lists.newArrayList(new Const(pair.getKey()), new Const(pair.getValue()))))))
+        .peek(pair -> new JsonFlattener(pair.getValue()).withSeparator(SEPARATOR).flattenAsMap()
+            .forEach((k, v) -> {
 
-            List<AbstractTerm> terms = new ArrayList<>();
-            terms.add(new Const(uid));
-            Splitter.on(SEPARATOR).trimResults().split(k)
-                .forEach(term -> terms.add(new Const(term)));
-            terms.add(new Const(v == null ? "null" : v.toString()));
+              List<AbstractTerm> terms = new ArrayList<>();
+              terms.add(new Const(pair.getKey()));
+              Splitter.on(SEPARATOR).trimResults().split(k).forEach(term -> {
 
-            kb.azzert(new Clause(new Literal("json_path", terms)));
-          });
-        }).count();
+                int indexBegin = term.lastIndexOf('[');
+                int indexEnd = term.lastIndexOf(']');
+
+                if (indexBegin < 0 || indexEnd < 0 || indexBegin >= indexEnd
+                    || indexEnd != term.length() - 1) {
+                  terms.add(new Const(term));
+                } else { // Here, we are dealing with an array
+                  terms.add(new Const(term.substring(0, indexBegin)));
+                  terms.add(
+                      new Const(Integer.parseInt(term.substring(indexBegin + 1, indexEnd), 10)));
+                }
+              });
+              terms.add(new Const(v == null ? "null" : v.toString()));
+
+              kb.azzert(new Clause(new Literal("json_path", terms)));
+            }))
+        .count();
 
     if (output == null) {
       System.out.println(kb.toString());

@@ -184,7 +184,7 @@ public abstract class AbstractKnowledgeBase {
     definitions_.put("FN_LENGTH", new StrLength());
 
     // Special operator. See {@link Literal#execute} for details.
-    definitions_.put("FN_EXIST_IN_KB", new Function("EXISTINKB") {
+    definitions_.put("FN_EXIST_IN_KB", new Function("EXIST_IN_KB") {
 
       @Override
       protected boolean isCacheable() {
@@ -197,7 +197,7 @@ public abstract class AbstractKnowledgeBase {
       public BoxedType evaluate(List<BoxedType> parameters) {
 
         Preconditions.checkArgument(parameters.size() > 1,
-            "EXISTINKB takes at least two parameters.");
+            "EXIST_IN_KB takes at least two parameters.");
 
         String predicate = parameters.get(0).asString();
         List<String> terms = parameters.subList(1, parameters.size()).stream().map(bt -> {
