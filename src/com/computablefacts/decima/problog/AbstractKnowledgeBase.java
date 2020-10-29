@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import com.computablefacts.decima.Builder;
 import com.computablefacts.decima.robdd.Pair;
 import com.computablefacts.nona.Function;
 import com.computablefacts.nona.functions.comparisonoperators.Equal;
@@ -19,7 +20,9 @@ import com.computablefacts.nona.functions.stringoperators.StrLength;
 import com.computablefacts.nona.functions.stringoperators.ToInteger;
 import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
+import com.computablefacts.nona.helpers.Codecs;
 import com.computablefacts.nona.types.BoxedType;
+import com.computablefacts.nona.types.Json;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
@@ -182,6 +185,40 @@ public abstract class AbstractKnowledgeBase {
     definitions_.put("FN_UPPER_CASE", new ToLowerCase());
     definitions_.put("FN_INT", new ToInteger());
     definitions_.put("FN_LENGTH", new StrLength());
+
+    // Special operator. Allow KB modification at runtime.
+    definitions_.put("FN_ASSERT_JSON", new Function("ASSERT_JSON") {
+
+      @Override
+      protected boolean isCacheable() {
+
+        // The function's cache is shared between multiple processes
+        return false;
+      }
+
+      @Override
+      public BoxedType evaluate(List<BoxedType> parameters) {
+
+        Preconditions.checkArgument(parameters.size() == 2,
+            "ASSERT_JSON takes exactly two parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
+            parameters.get(0));
+        Preconditions.checkArgument(parameters.get(1).value() instanceof Json,
+            "%s should be a json array", parameters.get(1));
+
+        String uuid = parameters.get(0).asString();
+        Json jsons = (Json) parameters.get(1).value();
+
+        for (int i = 0; i < jsons.nbObjects(); i++) {
+
+          String json = Codecs.asString(jsons.object(i));
+
+          azzert(Builder.json(uuid, Integer.toString(i, 10), json));
+          azzert(Builder.jsonPaths(uuid, Integer.toString(i, 10), json));
+        }
+        return BoxedType.create(true);
+      }
+    });
 
     // Special operator. See {@link Literal#execute} for details.
     definitions_.put("FN_EXIST_IN_KB", new Function("EXIST_IN_KB") {
