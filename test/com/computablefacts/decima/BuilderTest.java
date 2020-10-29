@@ -16,7 +16,7 @@ import com.computablefacts.nona.helpers.WildcardMatcher;
 import com.google.common.collect.Lists;
 
 @net.jcip.annotations.NotThreadSafe
-public class KbBuilderTest {
+public class BuilderTest {
 
   private final ByteArrayOutputStream outContent_ = new ByteArrayOutputStream();
   private final ByteArrayOutputStream errContent_ = new ByteArrayOutputStream();
@@ -42,7 +42,7 @@ public class KbBuilderTest {
     Path input = Files.createTempFile("rules-", ".json");
     Files.write(input, Lists.newArrayList(json));
 
-    KbBuilder.main(new String[] {"-input", input.toString()});
+    Builder.main(new String[] {"-input", input.toString()});
 
     String result = outContent_.toString().replace("\r", "");
 

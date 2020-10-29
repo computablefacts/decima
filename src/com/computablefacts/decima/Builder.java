@@ -4,7 +4,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.computablefacts.decima.problog.AbstractTerm;
@@ -24,9 +26,52 @@ import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
-final public class KbBuilder extends CommandLine {
+final public class Builder extends CommandLine {
 
   private static final char SEPARATOR = '¤';
+
+  public static Clause json(String namespace, String uuid, String json) {
+
+    Preconditions.checkNotNull(namespace, "namespace should not be null");
+    Preconditions.checkNotNull(uuid, "uuid should not be null");
+    Preconditions.checkNotNull(json, "json should not be null");
+
+    return new Clause(new Literal("json",
+        Lists.newArrayList(new Const(namespace), new Const(uuid), new Const(json))));
+  }
+
+  public static Set<Clause> jsonPaths(String namespace, String uuid, String json) {
+
+    Preconditions.checkNotNull(namespace, "namespace should not be null");
+    Preconditions.checkNotNull(uuid, "uuid should not be null");
+    Preconditions.checkNotNull(json, "json should not be null");
+
+    Set<Clause> clauses = new HashSet<>();
+
+    new JsonFlattener(json).withSeparator(SEPARATOR).flattenAsMap().forEach((k, v) -> {
+
+      List<AbstractTerm> terms = new ArrayList<>();
+      terms.add(new Const(namespace));
+      terms.add(new Const(uuid));
+      Splitter.on(SEPARATOR).trimResults().split(k).forEach(term -> {
+
+        int indexBegin = term.lastIndexOf('[');
+        int indexEnd = term.lastIndexOf(']');
+
+        if (indexBegin < 0 || indexEnd < 0 || indexBegin >= indexEnd
+            || indexEnd != term.length() - 1) {
+          terms.add(new Const(term));
+        } else { // Here, we are dealing with an array
+          terms.add(new Const(term.substring(0, indexBegin)));
+          terms.add(new Const(Integer.parseInt(term.substring(indexBegin + 1, indexEnd), 10)));
+        }
+      });
+      terms.add(new Const(v == null ? "null" : v.toString()));
+
+      clauses.add(new Clause(new Literal("json_path", terms)));
+    });
+    return clauses;
+  }
 
   public static void main(String[] args) {
 
@@ -44,32 +89,8 @@ final public class KbBuilder extends CommandLine {
     long nbFacts = Files.lineStream(input, StandardCharsets.UTF_8)
         .filter(pair -> !Strings.isNullOrEmpty(pair.getValue()))
         .map(pair -> new AbstractMap.SimpleEntry<>(rnd.nextString(), pair.getValue()))
-        .peek(pair -> kb.azzert(new Clause(new Literal("json",
-            Lists.newArrayList(new Const(pair.getKey()), new Const(pair.getValue()))))))
-        .peek(pair -> new JsonFlattener(pair.getValue()).withSeparator(SEPARATOR).flattenAsMap()
-            .forEach((k, v) -> {
-
-              List<AbstractTerm> terms = new ArrayList<>();
-              terms.add(new Const(pair.getKey()));
-              Splitter.on(SEPARATOR).trimResults().split(k).forEach(term -> {
-
-                int indexBegin = term.lastIndexOf('[');
-                int indexEnd = term.lastIndexOf(']');
-
-                if (indexBegin < 0 || indexEnd < 0 || indexBegin >= indexEnd
-                    || indexEnd != term.length() - 1) {
-                  terms.add(new Const(term));
-                } else { // Here, we are dealing with an array
-                  terms.add(new Const(term.substring(0, indexBegin)));
-                  terms.add(
-                      new Const(Integer.parseInt(term.substring(indexBegin + 1, indexEnd), 10)));
-                }
-              });
-              terms.add(new Const(v == null ? "null" : v.toString()));
-
-              kb.azzert(new Clause(new Literal("json_path", terms)));
-            }))
-        .count();
+        .peek(pair -> kb.azzert(json("", pair.getKey(), pair.getValue())))
+        .peek(pair -> kb.azzert(jsonPaths("", pair.getKey(), pair.getValue()))).count();
 
     if (output == null) {
       System.out.println(kb.toString());
