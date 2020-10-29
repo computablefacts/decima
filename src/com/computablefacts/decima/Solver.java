@@ -3,22 +3,27 @@ package com.computablefacts.decima;
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.computablefacts.decima.json.Fact;
+import com.computablefacts.decima.json.Metadata;
+import com.computablefacts.decima.json.Provenance;
 import com.computablefacts.decima.problog.AbstractKnowledgeBase;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Estimator;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
 import com.computablefacts.decima.problog.Parser;
+import com.computablefacts.nona.helpers.Codecs;
 import com.computablefacts.nona.helpers.CommandLine;
 import com.computablefacts.nona.helpers.Files;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
@@ -34,24 +39,60 @@ final public class Solver extends CommandLine {
     File facts = getFileCommand(args, "facts", null);
     File queries = getFileCommand(args, "queries", null);
     String output = getStringCommand(args, "output", null);
+    String type = getStringCommand(args, "type", "problob");
+    String extractedWith = getStringCommand(args, "extracted_with", "decima");
+    String extractedBy = getStringCommand(args, "extracted_by", "decima");
+    String root = getStringCommand(args, "root", null);
+    String dataset = getStringCommand(args, "dataset", null);
     boolean showLogs = getBooleanCommand(args, "show_logs", false);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
-    String answers = apply(rules, facts, queries).entrySet().stream()
-        .map(e -> e.getValue().toPlainString() + "::" + e.getKey().toString() + ".")
-        .collect(Collectors.joining("\n"));
+    Map<Literal, BigDecimal> answers = apply(rules, facts, queries);
 
-    if (output == null) {
-      System.out.println(answers);
+    if ("problob".equals(type)) {
+
+      String str = answers.entrySet().stream()
+          .map(e -> e.getValue().toPlainString() + "::" + e.getKey().toString() + ".")
+          .collect(Collectors.joining("\n"));
+
+      if (output == null) {
+        System.out.println(str);
+      } else {
+        Files.create(new File(output), str);
+      }
     } else {
-      Files.create(new File(output), answers);
+
+      // TODO : legacy code. Remove ASAP.
+      String sourceType = "STORAGE/ROOT/DATASET/DOC_ID";
+      String sourceStore = "ACCUMULO/" + root + "/" + dataset + "/000|0000-00-00T00:00:00.000Z";
+
+      List<Fact> jsons = answers.entrySet().stream().map(e -> {
+
+        String factType = e.getKey().predicate().name();
+        double confidenceScore = e.getValue().doubleValue();
+
+        Fact fact = new Fact(factType, confidenceScore);
+        fact.metadata(Sets.newHashSet(new Metadata("Comment", "extracted_with", extractedWith),
+            new Metadata("Comment", "extracted_by", extractedBy),
+            new Metadata("Comment", "extraction_date", Instant.now().toString())));
+        fact.provenance(new Provenance(sourceType, sourceStore, null, null, null));
+
+        return fact;
+      }).collect(Collectors.toList());
+
+      String str = jsons.stream().map(Codecs::asString).collect(Collectors.joining("\n"));
+
+      if (output == null) {
+        System.out.println(str);
+      } else {
+        Files.create(new File(output), str);
+      }
     }
 
     stopwatch.stop();
 
     if (showLogs) {
-      System.out.println("number of answers : "
-          + Splitter.on('\n').trimResults().omitEmptyStrings().splitToList(answers).size());
+      System.out.println("number of answers : " + answers.size());
       System.out.println("elapsed time : " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
     }
   }
