@@ -50,7 +50,8 @@ final public class Solver extends CommandLine {
     stopwatch.stop();
 
     if (showLogs) {
-      System.out.println("number of answers : " + Splitter.on('\n').splitToList(answers).size());
+      System.out.println("number of answers : "
+          + Splitter.on('\n').trimResults().omitEmptyStrings().splitToList(answers).size());
       System.out.println("elapsed time : " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
     }
   }

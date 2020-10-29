@@ -347,7 +347,12 @@ public final class Parser {
         if (scan.nextToken() == StreamTokenizer.TT_WORD) {
           terms.add(stringToVarOrConst(map, numberOrString(scan)));
         } else if (scan.ttype == '"' || scan.ttype == '\'') {
-          terms.add(new Const(scan.sval));
+          // HOTFIX : the backslash characters are removed from the string. Why ?
+          // This must be kept in sync with com.computablefacts.nona.Function.encode(...)
+          // and com.computablefacts.nona.Function.decode(...)
+          String str = scan.sval.replace("u0028", "(").replace("u0029", ")").replace("u0022", "\"")
+              .replace("u002c", ",");
+          terms.add(new Const(str));
         } else {
           Preconditions.checkState(false,
               "[line " + scan.lineno() + "] Expected term in expression");
@@ -381,7 +386,7 @@ public final class Parser {
    * @throws IOException
    */
   private static List<AbstractTerm> parseFunction(String lhs, StreamTokenizer scan,
-                                                  Map<String, com.computablefacts.decima.problog.Var> map, List<Literal> literals)
+      Map<String, com.computablefacts.decima.problog.Var> map, List<Literal> literals)
       throws IOException {
 
     Preconditions.checkNotNull(lhs, "lhs should not be null");
@@ -400,7 +405,8 @@ public final class Parser {
 
           Preconditions.checkState(scan.nextToken() == '(', "invalid function usage : %s", term);
 
-          List<AbstractTerm> tmp = parseFunction((String) ((Const) term).value(), scan, map, literals);
+          List<AbstractTerm> tmp =
+              parseFunction((String) ((Const) term).value(), scan, map, literals);
           String name = (String) ((Const) term).value();
           String function = name + "(" + Joiner.on(",").join(tmp) + ")";
 
@@ -543,8 +549,8 @@ public final class Parser {
    * @param name
    * @return
    */
-  private static AbstractTerm stringToVarOrConst(Map<String, com.computablefacts.decima.problog.Var> map,
-                                                 String name) {
+  private static AbstractTerm stringToVarOrConst(
+      Map<String, com.computablefacts.decima.problog.Var> map, String name) {
     if (isWildcard(name)) {
       return new com.computablefacts.decima.problog.Var(true);
     }
@@ -600,6 +606,10 @@ public final class Parser {
     tokenizer.wordChars('A', 'Z');
     tokenizer.wordChars(128 + 32, 255);
     tokenizer.whitespaceChars(0, ' ');
+
+    // Reset standard comments
+    tokenizer.slashSlashComments(false);
+    tokenizer.slashStarComments(false);
 
     // '.' looks like a number to StreamTokenizer by default
     tokenizer.ordinaryChar('.');
