@@ -25,6 +25,7 @@ import com.computablefacts.nona.helpers.CommandLine;
 import com.computablefacts.nona.helpers.Files;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
 
@@ -72,7 +73,7 @@ final public class Solver extends CommandLine {
         double confidenceScore = e.getValue().doubleValue();
 
         Fact fact = new Fact(factType, confidenceScore);
-        fact.metadata(Sets.newHashSet(new Metadata("Comment", "extracted_with", extractedWith),
+        fact.metadata(Lists.newArrayList(new Metadata("Comment", "extracted_with", extractedWith),
             new Metadata("Comment", "extracted_by", extractedBy),
             new Metadata("Comment", "extraction_date", Instant.now().toString())));
         fact.provenance(new Provenance(sourceType, sourceStore, null, null, null));
