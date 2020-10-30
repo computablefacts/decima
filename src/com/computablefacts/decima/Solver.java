@@ -15,6 +15,7 @@ import com.computablefacts.decima.json.Fact;
 import com.computablefacts.decima.json.Metadata;
 import com.computablefacts.decima.json.Provenance;
 import com.computablefacts.decima.problog.AbstractKnowledgeBase;
+import com.computablefacts.decima.problog.AbstractTerm;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Estimator;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
@@ -71,8 +72,15 @@ final public class Solver extends CommandLine {
 
         String factType = e.getKey().predicate().name();
         double confidenceScore = e.getValue().doubleValue();
-
         Fact fact = new Fact(factType, confidenceScore);
+
+        for (AbstractTerm term : e.getKey().terms()) {
+
+          Preconditions.checkState(term.isConst(), "Term should be Const : %s", term);
+
+          fact.value(term.toString());
+        }
+
         fact.metadata(Lists.newArrayList(new Metadata("Comment", "extracted_with", extractedWith),
             new Metadata("Comment", "extracted_by", extractedBy),
             new Metadata("Comment", "extraction_date", Instant.now().toString())));

@@ -81,6 +81,6 @@ public class SolverTest {
         queriez.toString(), "-type", "json", "-root", "my_root", "-dataset", "my_dataset"});
 
     Assert.assertTrue(WildcardMatcher.match(outContent_.toString(),
-        "*{\"external_id\":\"*\",\"metadata\":[{\"type\":\"Comment\",\"key\":\"extracted_with\",\"value\":\"decima\"},{\"type\":\"Comment\",\"key\":\"extracted_by\",\"value\":\"decima\"},{\"type\":\"Comment\",\"key\":\"extraction_date\",\"value\":\"????-??-??T??:??:??*Z\"}],\"provenances\":[{\"source_store\":\"ACCUMULO/my_root/my_dataset/000|0000-00-00T00:00:00.000Z\",\"source_type\":\"STORAGE/ROOT/DATASET/DOC_ID\"}],\"type\":\"son\",\"confidence_score\":1.0,\"start_date\":\"????-??-??T??:??:??*Z\"}*"));
+        "*{\"external_id\":\"*\",\"metadata\":[{\"type\":\"Comment\",\"key\":\"extracted_with\",\"value\":\"decima\"},{\"type\":\"Comment\",\"key\":\"extracted_by\",\"value\":\"decima\"},{\"type\":\"Comment\",\"key\":\"extraction_date\",\"value\":\"????-??-??T??:??:??*Z\"}],\"provenances\":[{\"source_store\":\"ACCUMULO/my_root/my_dataset/000|0000-00-00T00:00:00.000Z\",\"source_type\":\"STORAGE/ROOT/DATASET/DOC_ID\"}],\"values\":[\"bill\",\"alice\"],\"type\":\"son\",\"confidence_score\":1.0,\"start_date\":\"????-??-??T??:??:??*Z\"}*"));
   }
 }
