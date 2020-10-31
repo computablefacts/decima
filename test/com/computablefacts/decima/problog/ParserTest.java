@@ -147,6 +147,28 @@ public class ParserTest {
   }
 
   @Test
+  public void testParseFnIsWithTwoFunctions() {
+
+    Clause rule1 = Parser.parseClause("is_valid(X) :- fn_is_true(fn_test(X)).");
+    Clause rule2 = Parser.parseClause("is_valid(X) :- fn_test(Y, X), fn_is_true(Y).");
+
+    Assert.assertTrue(rule1.isRelevant(rule2));
+  }
+
+  @Test
+  public void testParseFnIsWithMoreThanTwoFunctions() {
+
+    Clause rule =
+        Parser.parseClause("is_valid(X, Y) :- fn_is_true(fn_and(fn_test(X), fn_test(Y))).");
+
+    Assert.assertTrue(rule.head().isRelevant(new Literal("is_valid", new Var(), new Var())));
+    Assert.assertEquals(2, rule.body().size());
+    Assert.assertTrue(rule.body().get(0).predicate().name().startsWith("fn_shadow_"));
+    Assert.assertEquals(3, rule.body().get(0).predicate().arity());
+    Assert.assertTrue(rule.body().get(1).isRelevant(new Literal("fn_is_true", new Var())));
+  }
+
+  @Test
   public void testParseProbabilityOnFact() {
 
     Clause fact = parseClause("0.3::edge(a, b).");
