@@ -185,6 +185,14 @@ public class ParserTest {
   }
 
   @Test
+  public void testParseClauseAsQuery() {
+
+    Clause query = Parser.parseClause("edge(X, Y)?");
+
+    Assert.assertEquals(new Literal("edge", new Var(), new Var()), query.head());
+  }
+
+  @Test
   public void testParseQuery() {
 
     Literal query = Parser.parseQuery("edge(X, Y)?");
