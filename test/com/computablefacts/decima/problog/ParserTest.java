@@ -15,6 +15,11 @@ import com.computablefacts.nona.helpers.Codecs;
 
 public class ParserTest {
 
+  @Test
+  public void testParseComment() {
+    Assert.assertNull(Parser.parseClause("% My comment"));
+  }
+
   @Test(expected = IllegalStateException.class)
   public void testMissingFinalDotAfterFact() {
     Clause clause = parseClause("edge(a, b)");
