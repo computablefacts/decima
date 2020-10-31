@@ -106,10 +106,21 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testIntersection() {
+  public void testIntersectionSet1SizeMoreThanSet2Size() {
 
     Set<String> set1 = Sets.newHashSet("a", "b", "c", "d", "e");
     Set<String> set2 = Sets.newHashSet("a", "b", "c");
+
+    Set<String> intersection = kb().intersection(set1, set2);
+
+    Assert.assertEquals(Sets.newHashSet("a", "b", "c"), intersection);
+  }
+
+  @Test
+  public void testIntersectionSet1SizeLessThanSet2Size() {
+
+    Set<String> set1 = Sets.newHashSet("a", "b", "c");
+    Set<String> set2 = Sets.newHashSet("a", "b", "c", "d", "e");
 
     Set<String> intersection = kb().intersection(set1, set2);
 
