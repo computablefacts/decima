@@ -51,9 +51,39 @@ smokes(jean)?
 0.42556811
 ```
 
-Note that the rules above can also be stored as a [YAML file](/src/resources/data/tests/valid-yaml.yml). This YAML file
-can be transpiled into a valid set of rules using the [Compiler](/src/com/computablefacts/decima/Compiler.java) tool.
-One big advantage of this approach is that it allows the user to easily write unit tests.
+The rules above can also be stored as a YAML file ([example](/src/resources/data/tests/valid-yaml.yml)). 
+This YAML file can be transpiled into a valid set of rules using the [Compiler](/src/com/computablefacts/decima/Compiler.java) 
+tool. One big advantage of this approach is that it allows the user to easily write 
+unit tests.
+
+```
+java -Xms1g -Xmx1g com.computablefacts.decima.Compiler \
+     -input "rules.yml" \
+     -output "rules-compiled.txt" \
+     -show_logs true
+```
+
+The [Builder](/src/com/computablefacts/decima/Builder.java) tool allows the user 
+to automatically generate facts from [ND-JSON](http://ndjson.org/) files containing 
+one or more JSON objects.
+
+```
+java -Xms1g -Xmx1g com.computablefacts.decima.Builder \
+     -input "facts.json" \
+     -output "facts-compiled.txt" \
+     -show_logs true
+```
+
+The [Solver](/src/com/computablefacts/decima/Solver.java) tool allows the user to 
+load facts and rules into a Knowledge Base and query it.
+
+```
+java -Xms2g -Xmx4g com.computablefacts.decima.Solver \
+     -rules "rules-compiled.txt" \
+     -facts "facts-compiled.txt" \
+     -queries "queries.txt" \ 
+     -show_logs true
+```
 
 ## Adding Decima to your build
 
