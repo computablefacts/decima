@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.computablefacts.decima.robdd.Pair;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class AbstractKnowledgeBaseTest {
@@ -154,6 +155,52 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertEquals(BigDecimal.valueOf(0.3), newFact.head().probability());
     Assert.assertTrue(newFact.head().isRelevant(newRule.body().get(newRule.body().size() - 1)));
     Assert.assertTrue(newFact.head().predicate().name().startsWith("proba_"));
+  }
+
+  @Test
+  public void testFnAssertJson() {
+
+    Clause clause = Parser.parseClause(
+        "json_path(\"jhWTAETz\", \"data\", \"9\", \"rawOutput\", \"[{\\u0022Modified\\u0022:\\u00222020-07-07T12:24:00\\u0022\\u002c\\u0022Published\\u0022:1594088100000\\u002c\\u0022access.authentication\\u0022:\\u0022NONE\\u0022\\u002c\\u0022access.complexity\\u0022:\\u0022LOW\\u0022\\u002c\\u0022access.vector\\u0022:\\u0022NETWORK\\u0022\\u002c\\u0022assigner\\u0022:\\u0022cve@mitre.org\\u0022\\u002c\\u0022cvss\\u0022:7.5\\u002c\\u0022cvss-time\\u0022:null\\u002c\\u0022cvss-vector\\u0022:null\\u002c\\u0022cwe\\u0022:\\u0022NVD-CWE-noinfo\\u0022\\u002c\\u0022id\\u0022:\\u0022CVE-2020-15505\\u0022\\u002c\\u0022impact.availability\\u0022:\\u0022PARTIAL\\u0022\\u002c\\u0022impact.confidentiality\\u0022:\\u0022PARTIAL\\u0022\\u002c\\u0022impact.integrity\\u0022:\\u0022PARTIAL\\u0022\\u002c\\u0022last-modified\\u0022:\\u00222020-09-18T16:15:00\\u0022\\u002c\\u0022references\\u0022:[\\u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available\\u0022]\\u002c\\u0022summary\\u0022:\\u0022A remote code execution vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier\\u002c 10.4.0.0\\u002c 10.4.0.1\\u002c 10.4.0.2\\u002c 10.4.0.3\\u002c 10.5.1.0\\u002c 10.5.2.0 and 10.6.0.0; and Sentry versions 9.7.2 and earlier\\u002c and 9.8.0; and Monitor and Reporting Database \\u0028RDB\\u0029 version 2.0.0.1 and earlier that allows remote attackers to execute arbitrary code via unspecified vectors.\\u0022\\u002c\\u0022vulnerable_configuration\\u0022:[\\u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*\\u0022]\\u002c\\u0022vulnerable_configuration_cpe_2_2\\u0022:[]\\u002c\\u0022vulnerable_product\\u0022:[\\u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*\\u0022]}\\u002c{\\u0022Modified\\u0022:\\u00222020-07-07T12:24:00\\u0022\\u002c\\u0022Published\\u0022:1594088100000\\u002c\\u0022access.authentication\\u0022:\\u0022NONE\\u0022\\u002c\\u0022access.complexity\\u0022:\\u0022LOW\\u0022\\u002c\\u0022access.vector\\u0022:\\u0022NETWORK\\u0022\\u002c\\u0022assigner\\u0022:\\u0022cve@mitre.org\\u0022\\u002c\\u0022cvss\\u0022:7.5\\u002c\\u0022cvss-time\\u0022:null\\u002c\\u0022cvss-vector\\u0022:null\\u002c\\u0022cwe\\u0022:\\u0022CWE-287\\u0022\\u002c\\u0022id\\u0022:\\u0022CVE-2020-15506\\u0022\\u002c\\u0022impact.availability\\u0022:\\u0022PARTIAL\\u0022\\u002c\\u0022impact.confidentiality\\u0022:\\u0022PARTIAL\\u0022\\u002c\\u0022impact.integrity\\u0022:\\u0022PARTIAL\\u0022\\u002c\\u0022last-modified\\u0022:\\u00222020-09-18T17:15:00\\u0022\\u002c\\u0022references\\u0022:[\\u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available\\u0022]\\u002c\\u0022summary\\u0022:\\u0022An authentication bypass vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier\\u002c 10.4.0.0\\u002c 10.4.0.1\\u002c 10.4.0.2\\u002c 10.4.0.3\\u002c 10.5.1.0\\u002c 10.5.2.0 and 10.6.0.0 that allows remote attackers to bypass authentication mechanisms via unspecified vectors.\\u0022\\u002c\\u0022vulnerable_configuration\\u0022:[\\u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*\\u0022]\\u002c\\u0022vulnerable_configuration_cpe_2_2\\u0022:[]\\u002c\\u0022vulnerable_product\\u0022:[\\u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*\\u0022]}\\u002c{\\u0022Modified\\u0022:\\u00222020-02-21T15:13:00\\u0022\\u002c\\u0022Published\\u0022:1581635700000\\u002c\\u0022access.authentication\\u0022:\\u0022NONE\\u0022\\u002c\\u0022access.complexity\\u0022:\\u0022LOW\\u0022\\u002c\\u0022access.vector\\u0022:\\u0022NETWORK\\u0022\\u002c\\u0022assigner\\u0022:\\u0022cve@mitre.org\\u0022\\u002c\\u0022cvss\\u0022:10.0\\u002c\\u0022cvss-time\\u0022:\\u00222020-02-21T15:13:00\\u0022\\u002c\\u0022cvss-vector\\u0022:\\u0022AV:N\\/AC:L\\/Au:N\\/C:C\\/I:C\\/A:C\\u0022\\u002c\\u0022cwe\\u0022:\\u0022CWE-326\\u0022\\u002c\\u0022id\\u0022:\\u0022CVE-2013-7287\\u0022\\u002c\\u0022impact.availability\\u0022:\\u0022COMPLETE\\u0022\\u002c\\u0022impact.confidentiality\\u0022:\\u0022COMPLETE\\u0022\\u002c\\u0022impact.integrity\\u0022:\\u0022COMPLETE\\u0022\\u002c\\u0022last-modified\\u0022:null\\u002c\\u0022references\\u0022:[\\u0022http:\\/\\/seclists.org\\/fulldisclosure\\/2014\\/Apr\\/21\\u0022\\u002c\\u0022https:\\/\\/www.securityfocus.com\\/archive\\/1\\/531713\\u0022]\\u002c\\u0022summary\\u0022:\\u0022MobileIron VSP < 5.9.1 and Sentry < 5.0 has an insecure encryption scheme.\\u0022\\u002c\\u0022vulnerable_configuration\\u0022:[\\u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*\\u0022]\\u002c\\u0022vulnerable_configuration_cpe_2_2\\u0022:[]\\u002c\\u0022vulnerable_product\\u0022:[\\u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*\\u0022\\u002c\\u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*\\u0022]}]\").");
+    Clause rule = Parser.parseClause(
+        "assert(X) :- json_path(X, _, _, _, RawOutput), fn_assert_json(IsOk, fn_concat(X, \"-cRz86jrY\"), fn_to_json(RawOutput)), fn_is_true(IsOk).");
+
+    AbstractKnowledgeBase kb = kb();
+    kb.azzert(clause);
+    kb.azzert(rule);
+
+    Solver solver = new Solver(kb);
+    @com.google.errorprone.annotations.Var
+    Set<Clause> clauses = solver.solve(Parser.parseQuery("assert(\"jhWTAETz\")?"));
+
+    Assert.assertEquals(1, clauses.size());
+    Assert.assertEquals(1, kb.rules().size());
+    Assert.assertEquals(105, kb.facts().size());
+    Assert.assertEquals(3, kb.facts(new Literal("json", new Var(), new Var(), new Var())).size());
+    Assert.assertEquals(51,
+        kb.facts(new Literal("json_path", new Var(), new Var(), new Var(), new Var())).size());
+    Assert
+        .assertEquals(
+            51, kb
+                .facts(new Literal("json_path",
+                    Lists.newArrayList(new Var(), new Var(), new Var(), new Var(), new Var())))
+                .size());
+
+    // Here, the KB has been augmented with the facts generated by the assert(X) rule
+    clauses = solver.solve(Parser.parseQuery("json_path(\"jhWTAETz-cRz86jrY\", _, \"id\", _)?"));
+
+    Assert.assertEquals(3, clauses.size());
+    Assert.assertTrue(clauses.contains(Parser
+        .parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"0\", \"id\", \"CVE-2020-15505\").")));
+    Assert.assertTrue(clauses.contains(Parser
+        .parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"1\", \"id\", \"CVE-2020-15506\").")));
+    Assert.assertTrue(clauses.contains(
+        Parser.parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"2\", \"id\", \"CVE-2013-7287\").")));
+  }
+
+  @Test
+  public void testExistInKb() {
+
   }
 
   private InMemoryKnowledgeBase kb() {
