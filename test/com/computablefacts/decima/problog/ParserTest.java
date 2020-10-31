@@ -147,7 +147,7 @@ public class ParserTest {
   }
 
   @Test
-  public void testParseFnIsWithTwoFunctions() {
+  public void testParseFnIsWithOneFunction() {
 
     Clause rule1 = Parser.parseClause("is_valid(X) :- fn_is_true(fn_test(X)).");
     Clause rule2 = Parser.parseClause("is_valid(X) :- fn_test(Y, X), fn_is_true(Y).");
@@ -156,7 +156,7 @@ public class ParserTest {
   }
 
   @Test
-  public void testParseFnIsWithMoreThanTwoFunctions() {
+  public void testParseFnIsWithMoreThanOneFunction() {
 
     Clause rule =
         Parser.parseClause("is_valid(X, Y) :- fn_is_true(fn_and(fn_test(X), fn_test(Y))).");
@@ -166,6 +166,15 @@ public class ParserTest {
     Assert.assertTrue(rule.body().get(0).predicate().name().startsWith("fn_shadow_"));
     Assert.assertEquals(3, rule.body().get(0).predicate().arity());
     Assert.assertTrue(rule.body().get(1).isRelevant(new Literal("fn_is_true", new Var())));
+  }
+
+  @Test
+  public void testParseIs() {
+
+    Clause rule1 = Parser.parseClause("is_even(X) :- fn_mod(U, X, 2), U is 0.");
+    Clause rule2 = Parser.parseClause("is_even(X) :- fn_mod(U, X, 2), fn_is(U, 0)");
+
+    Assert.assertTrue(rule1.isRelevant(rule2));
   }
 
   @Test
