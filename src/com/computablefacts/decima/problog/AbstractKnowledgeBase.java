@@ -22,6 +22,7 @@ import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
 import com.computablefacts.nona.helpers.Codecs;
 import com.computablefacts.nona.types.BoxedType;
+import com.computablefacts.nona.types.Csv;
 import com.computablefacts.nona.types.Json;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -212,6 +213,40 @@ public abstract class AbstractKnowledgeBase {
         for (int i = 0; i < jsons.nbObjects(); i++) {
 
           String json = Codecs.asString(jsons.object(i));
+
+          azzert(Builder.json(uuid, Integer.toString(i, 10), json));
+          azzert(Builder.jsonPaths(uuid, Integer.toString(i, 10), json));
+        }
+        return BoxedType.create(true);
+      }
+    });
+
+    // Special operator. Allow KB modification at runtime.
+    definitions_.put("FN_ASSERT_CSV", new Function("ASSERT_CSV") {
+
+      @Override
+      protected boolean isCacheable() {
+
+        // The function's cache is shared between multiple processes
+        return false;
+      }
+
+      @Override
+      public BoxedType evaluate(List<BoxedType> parameters) {
+
+        Preconditions.checkArgument(parameters.size() == 2,
+            "ASSERT_CSV takes exactly two parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
+            parameters.get(0));
+        Preconditions.checkArgument(parameters.get(1).value() instanceof Csv,
+            "%s should be a csv array", parameters.get(1));
+
+        String uuid = parameters.get(0).asString();
+        Csv csvs = (Csv) parameters.get(1).value();
+
+        for (int i = 0; i < csvs.nbRows(); i++) {
+
+          String json = Codecs.asString(csvs.row(i));
 
           azzert(Builder.json(uuid, Integer.toString(i, 10), json));
           azzert(Builder.jsonPaths(uuid, Integer.toString(i, 10), json));
