@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ final public class Solver extends CommandLine {
 
         String factType = e.getKey().predicate().name();
         double confidenceScore = e.getValue().doubleValue();
-        Fact fact = new Fact(factType, confidenceScore, null, null, null, true);
+        Fact fact = new Fact(factType, confidenceScore, null, new Date(), null, true);
 
         for (AbstractTerm term : e.getKey().terms()) {
 
