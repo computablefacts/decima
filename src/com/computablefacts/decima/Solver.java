@@ -72,7 +72,7 @@ final public class Solver extends CommandLine {
 
         String factType = e.getKey().predicate().name();
         double confidenceScore = e.getValue().doubleValue();
-        Fact fact = new Fact(factType, confidenceScore);
+        Fact fact = new Fact(factType, confidenceScore, null, null, null, true);
 
         for (AbstractTerm term : e.getKey().terms()) {
 
