@@ -297,4 +297,20 @@ public class LiteralTest {
 
     Assert.assertNotEquals(literal3.tag(), literal4.tag());
   }
+
+  @Test
+  public void testToStringEncodesLf() {
+
+    Literal literal = new Literal("edge", new Const("a\nb"));
+
+    Assert.assertEquals("edge(\"a\\nb\")", literal.toString());
+  }
+
+  @Test
+  public void testToStringEncodesCrLf() {
+
+    Literal literal = new Literal("edge", new Const("a\r\nb"));
+
+    Assert.assertEquals("edge(\"a\\nb\")", literal.toString());
+  }
 }
