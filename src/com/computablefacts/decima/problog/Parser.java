@@ -359,7 +359,8 @@ public final class Parser {
         }
       } while (scan.nextToken() == ',');
 
-      Preconditions.checkState(scan.ttype == ')', "[line " + scan.lineno() + "] Expected ')'");
+      Preconditions.checkState(scan.ttype == ')', "[line " + scan.lineno()
+          + "] Expected ')', terms = [" + Joiner.on(',').join(terms) + "]");
     }
     return list(new Literal(probability, negated ? "~" + lhs : lhs, terms));
   }
