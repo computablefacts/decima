@@ -133,7 +133,7 @@
                             <rules>
                                 <restrictImports
                                         implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
-                                    <reason>Morta must not inherit from Morta</reason>
+                                    <reason>Decima must not inherit from Morta</reason>
                                     <bannedImport>com.computablefacts.morta.**</bannedImport>
                                 </restrictImports>
                                 <restrictImports
