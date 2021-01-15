@@ -21,6 +21,7 @@ import com.computablefacts.nona.functions.stringoperators.ToInteger;
 import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
 import com.computablefacts.nona.helpers.Codecs;
+import com.computablefacts.nona.helpers.RandomString;
 import com.computablefacts.nona.types.BoxedType;
 import com.computablefacts.nona.types.Csv;
 import com.computablefacts.nona.types.Json;

@@ -14,7 +14,7 @@ import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Const;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.RandomString;
+import com.computablefacts.nona.helpers.RandomString;
 import com.computablefacts.nona.helpers.CommandLine;
 import com.computablefacts.nona.helpers.Files;
 import com.github.wnameless.json.flattener.JsonFlattener;

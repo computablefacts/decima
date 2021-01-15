@@ -41,7 +41,7 @@
     </developers>
 
     <properties>
-        <nona.version>1.16</nona.version>
+        <junon.version>0.1-SNAPSHOT</junon.version>
         <jsonflattener.version>0.8.1</jsonflattener.version>
         <jcip.version>1.0-1</jcip.version>
         <error-prone.version>2.3.1</error-prone.version>
@@ -62,8 +62,8 @@
     <dependencies>
         <dependency>
             <groupId>com.computablefacts</groupId>
-            <artifactId>nona</artifactId>
-            <version>${nona.version}</version>
+            <artifactId>junon</artifactId>
+            <version>${junon.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.wnameless.json</groupId>
