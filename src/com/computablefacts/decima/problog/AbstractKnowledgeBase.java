@@ -183,8 +183,8 @@ public abstract class AbstractKnowledgeBase {
     // TODO : legacy functions. Remove ASAP.
     definitions_.put("FN_EQ", new Equal());
     definitions_.put("FN_CSV_VALUE", new CsvValue());
-    definitions_.put("FN_LOWER_CASE", new ToUpperCase());
-    definitions_.put("FN_UPPER_CASE", new ToLowerCase());
+    definitions_.put("FN_LOWER_CASE", new ToLowerCase());
+    definitions_.put("FN_UPPER_CASE", new ToUpperCase());
     definitions_.put("FN_INT", new ToInteger());
     definitions_.put("FN_LENGTH", new StrLength());
 
