@@ -3,6 +3,7 @@ package com.computablefacts.decima.problog;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +43,7 @@ final public class Subgoal {
   private final Set<Map.Entry<Subgoal, Clause>> waiters_ = ConcurrentHashMap.newKeySet();
 
   // Facts derived for this subgoal
-  private final Set<Clause> facts_ = ConcurrentHashMap.newKeySet();
+  private final InMemorySubgoalFacts facts_ = new InMemorySubgoalFacts();
 
   Subgoal(int id, Literal literal) {
 
@@ -58,7 +59,7 @@ final public class Subgoal {
     this(subgoal.id_, subgoal.literal_);
 
     // TODO : copy trie
-    facts_.addAll(subgoal.facts_);
+    facts_.add(subgoal.facts_);
 
     subgoal.waiters_.forEach(
         e -> waiters_.add(new AbstractMap.SimpleEntry<>(new Subgoal(e.getKey()), e.getValue())));
@@ -96,8 +97,8 @@ final public class Subgoal {
     return literal_;
   }
 
-  Set<Clause> facts() {
-    return facts_;
+  Iterator<Clause> facts() {
+    return facts_.facts();
   }
 
   Set<Map.Entry<Subgoal, Clause>> waiters() {

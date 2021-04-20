@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 public class SolverTest {
 
@@ -35,7 +36,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("child", new Var());
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(2, proofs.size());
@@ -67,7 +68,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("son", new Var(), new Const("alice"));
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(1, proofs.size());
@@ -98,7 +99,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("human", new Var());
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(2, proofs.size());
@@ -130,7 +131,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("path", new Const("a"), new Var());
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(3, proofs.size());
@@ -163,7 +164,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query1 = new Literal("three", new Var());
     Set<Clause> proofs1 = solver.proofs(query1);
-    Set<Clause> solutions1 = solver.solve(query1);
+    Set<Clause> solutions1 = Sets.newHashSet(solver.solve(query1));
 
     // Verify answers
     Assert.assertEquals(1, proofs1.size());
@@ -177,7 +178,7 @@ public class SolverTest {
     // four(Z)?
     Literal query2 = new Literal("four", new Var());
     Set<Clause> proofs2 = solver.proofs(query2);
-    Set<Clause> solutions2 = solver.solve(query2);
+    Set<Clause> solutions2 = Sets.newHashSet(solver.solve(query2));
 
     // Verify answers
     Assert.assertEquals(1, proofs2.size());
@@ -208,7 +209,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("hasMoreItems", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(3, proofs.size());
@@ -245,7 +246,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(4, proofs.size());
@@ -294,7 +295,7 @@ public class SolverTest {
     Solver solver = solver(kb);
     Literal query = new Literal("match", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
-    Set<Clause> solutions = solver.solve(query);
+    Set<Clause> solutions = Sets.newHashSet(solver.solve(query));
 
     // Verify answers
     Assert.assertEquals(1, proofs.size());

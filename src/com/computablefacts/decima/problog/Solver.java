@@ -9,9 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
@@ -99,7 +102,7 @@ public class Solver {
    * @param query goal.
    * @return facts answering the query.
    */
-  public Set<Clause> solve(Literal query) {
+  public Iterator<Clause> solve(Literal query) {
 
     Preconditions.checkNotNull(query, "query should not be null");
 
@@ -148,7 +151,7 @@ public class Solver {
       List<AbstractTerm> newTerms = literal.terms().stream()
           .map(t -> t.isConst() ? t : new Const("_")).collect(Collectors.toList());
 
-      if (sub.facts().isEmpty()) {
+      if (!sub.hasFacts()) {
 
         // The positive version of the rule yielded no fact
         // => resume the current rule evaluation
@@ -160,8 +163,12 @@ public class Solver {
 
         // The positive version of the rule yielded at least one fact
         // => fail the current rule evaluation iif the probability of the produced facts is 0
+        Iterator<Clause> facts = sub.facts();
 
-        for (Clause fact : sub.facts()) {
+        while (facts.hasNext()) {
+
+          Clause fact = facts.next();
+
           if (fact.head().isRelevant(base)) {
 
             Clause newFact;
@@ -273,12 +280,14 @@ public class Solver {
 
       sub.addWaiter(subgoal, clause);
 
-      if (sub.facts().isEmpty() && first.isGrounded()) {
+      if (!sub.hasFacts() && first.isGrounded()) {
         cleanSubgoal(subgoal, first);
       }
 
-      for (Clause fact : sub.facts()) {
-        ground(subgoal, clause, fact);
+      Iterator<Clause> facts = sub.facts();
+
+      while (facts.hasNext()) {
+        ground(subgoal, clause, facts.next());
       }
     }
   }
@@ -417,7 +426,7 @@ public class Solver {
 
     Map<String, Set<Clause>> proofs = new HashMap<>();
 
-    subgoal.facts().forEach(fact -> {
+    subgoal.facts().forEachRemaining(fact -> {
       if (!proofs.containsKey(fact.head().tag())) {
         proofs.put(fact.head().tag(), new HashSet<>());
       }
@@ -659,7 +668,9 @@ public class Solver {
 
     Map<Predicate, Set<Clause>> facts = new HashMap<>();
 
-    subgoals_.values().stream().filter(s -> !s.hasRules()).flatMap(s -> s.facts().stream())
+    subgoals_.values().stream().filter(s -> !s.hasRules())
+        .flatMap(s -> StreamSupport
+            .stream(Spliterators.spliteratorUnknownSize(s.facts(), Spliterator.ORDERED), false))
         .forEach(fact -> {
           if (!facts.containsKey(fact.head().predicate())) {
             facts.put(fact.head().predicate(), new HashSet<>());
