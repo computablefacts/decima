@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -186,14 +187,11 @@ public class Solver {
       }
     } else {
 
-      Set<Clause> clauses = kb_.clauses(literal);
+      Iterator<Clause> clauses = kb_.clauses(literal);
 
-      // if (clauses.isEmpty()) {
-      // cleanWaiters(subgoal, literal);
-      // }
+      while (clauses.hasNext()) {
 
-      for (Clause clause : clauses) {
-
+        Clause clause = clauses.next();
         Clause renamed = clause.rename();
 
         List<Literal> list = new ArrayList<>(renamed.body().size() + 1);

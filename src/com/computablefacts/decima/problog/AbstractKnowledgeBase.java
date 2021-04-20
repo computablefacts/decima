@@ -3,6 +3,7 @@ package com.computablefacts.decima.problog;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import com.computablefacts.nona.types.Csv;
 import com.computablefacts.nona.types.Json;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
 
 /**
  * This class allows us to be agnostic from the storage layer. It is used to assert facts and rules.
@@ -44,17 +46,17 @@ public abstract class AbstractKnowledgeBase {
   public String toString() {
 
     StringBuilder builder = new StringBuilder();
+    Iterator<Clause> facts = facts();
+    Iterator<Clause> rules = rules();
 
-    for (Clause fact : facts()) {
-      builder.append(fact.toString());
+    while (facts.hasNext()) {
+      builder.append(facts.next().toString());
       builder.append(".\n");
     }
-
-    for (Clause rule : rules()) {
-      builder.append(rule.toString());
+    while (rules.hasNext()) {
+      builder.append(rules.next().toString());
       builder.append(".\n");
     }
-
     return builder.toString();
   }
 
@@ -140,25 +142,41 @@ public abstract class AbstractKnowledgeBase {
    * @param literal literal.
    * @return matching clauses.
    */
-  public Set<Clause> clauses(Literal literal) {
+  public Iterator<Clause> clauses(Literal literal) {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
 
-    Set<Clause> facts = facts(literal);
+    Iterator<Clause> facts = facts(literal);
 
-    if (!facts.isEmpty()) {
+    if (facts.hasNext()) {
       return facts;
     }
     return rules(literal);
   }
 
-  protected abstract Set<Clause> facts(@NotNull Literal literal);
+  protected abstract Iterator<Clause> facts(@NotNull Literal literal);
 
-  protected abstract Set<Clause> rules(@NotNull Literal literal);
+  protected abstract Iterator<Clause> rules(@NotNull Literal literal);
 
-  public abstract Set<Clause> facts();
+  public abstract Iterator<Clause> facts();
 
-  public abstract Set<Clause> rules();
+  public abstract Iterator<Clause> rules();
+
+  public long nbFacts(@NotNull Literal literal) {
+    return Iterators.size(facts(literal));
+  }
+
+  public long nbRules(@NotNull Literal literal) {
+    return Iterators.size(rules(literal));
+  }
+
+  public long nbFacts() {
+    return Iterators.size(facts());
+  }
+
+  public long nbRules() {
+    return Iterators.size(rules());
+  }
 
   /**
    * Return the list of available definitions for primitives.
@@ -285,10 +303,14 @@ public abstract class AbstractKnowledgeBase {
 
         String fact = predicate + "(" + Joiner.on(',').join(terms) + ")?";
         Literal query = Parser.parseQuery(fact);
-        Set<Clause> clauses = clauses(query);
-        boolean matchAtLeastOneFact = clauses.stream().anyMatch(Clause::isFact);
+        Iterator<Clause> clauses = clauses(query);
 
-        return BoxedType.create(matchAtLeastOneFact);
+        while (clauses.hasNext()) {
+          if (clauses.next().isFact()) {
+            return BoxedType.create(true);
+          }
+        }
+        return BoxedType.create(false);
       }
     });
   }

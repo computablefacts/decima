@@ -1,10 +1,10 @@
 package com.computablefacts.decima.problog;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -40,24 +40,24 @@ final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
   }
 
   @Override
-  protected Set<Clause> facts(@NotNull Literal literal) {
+  protected Iterator<Clause> facts(@NotNull Literal literal) {
     return facts_.getOrDefault(literal.predicate(), ConcurrentHashMap.newKeySet()).stream()
-        .filter(f -> f.head().isRelevant(literal)).collect(Collectors.toSet());
+        .filter(f -> f.head().isRelevant(literal)).iterator();
   }
 
   @Override
-  protected Set<Clause> rules(@NotNull Literal literal) {
+  protected Iterator<Clause> rules(@NotNull Literal literal) {
     return rules_.getOrDefault(literal.predicate(), ConcurrentHashMap.newKeySet()).stream()
-        .filter(r -> r.head().isRelevant(literal)).collect(Collectors.toSet());
+        .filter(r -> r.head().isRelevant(literal)).iterator();
   }
 
   @Override
-  public Set<Clause> facts() {
-    return facts_.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+  public Iterator<Clause> facts() {
+    return facts_.values().stream().flatMap(Collection::stream).iterator();
   }
 
   @Override
-  public Set<Clause> rules() {
-    return rules_.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+  public Iterator<Clause> rules() {
+    return rules_.values().stream().flatMap(Collection::stream).iterator();
   }
 }

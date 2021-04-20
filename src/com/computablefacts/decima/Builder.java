@@ -14,9 +14,9 @@ import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Const;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.nona.helpers.RandomString;
 import com.computablefacts.nona.helpers.CommandLine;
 import com.computablefacts.nona.helpers.Files;
+import com.computablefacts.nona.helpers.RandomString;
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -101,7 +101,7 @@ final public class Builder extends CommandLine {
     stopwatch.stop();
 
     if (showLogs) {
-      System.out.println("number of facts : " + kb.facts().size());
+      System.out.println("number of facts : " + kb.nbFacts());
       System.out.println("elapsed time : " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
     }
   }
