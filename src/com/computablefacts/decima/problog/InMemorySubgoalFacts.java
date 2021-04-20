@@ -34,7 +34,7 @@ final public class InMemorySubgoalFacts extends AbstractSubgoalFacts {
   }
 
   @Override
-  public void add(InMemorySubgoalFacts facts) {
-    facts_.addAll(facts.facts_);
+  public void add(AbstractSubgoalFacts facts) {
+    facts.facts().forEachRemaining(facts_::add);
   }
 }

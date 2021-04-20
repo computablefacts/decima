@@ -15,5 +15,5 @@ public abstract class AbstractSubgoalFacts {
 
   public abstract void add(Clause clause);
 
-  public abstract void add(InMemorySubgoalFacts facts);
+  public abstract void add(AbstractSubgoalFacts facts);
 }

@@ -43,7 +43,7 @@ final public class Subgoal {
   private final Set<Map.Entry<Subgoal, Clause>> waiters_ = ConcurrentHashMap.newKeySet();
 
   // Facts derived for this subgoal
-  private final InMemorySubgoalFacts facts_ = new InMemorySubgoalFacts();
+  private final AbstractSubgoalFacts facts_ = new InMemorySubgoalFacts();
 
   Subgoal(int id, Literal literal) {
 
