@@ -2,7 +2,6 @@ package com.computablefacts.decima.problog;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,11 +39,10 @@ final public class Subgoal {
   private final Literal literal_;
 
   // Parent rules benefiting from this sub-goal resolution
-  private final Set<Map.Entry<Subgoal, Clause>> waiters_ =
-      Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Set<Map.Entry<Subgoal, Clause>> waiters_ = ConcurrentHashMap.newKeySet();
 
   // Facts derived for this subgoal
-  private final Set<Clause> facts_ = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Set<Clause> facts_ = ConcurrentHashMap.newKeySet();
 
   Subgoal(int id, Literal literal) {
 
