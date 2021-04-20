@@ -1,18 +1,17 @@
 package com.computablefacts.decima.problog;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
 
-  private Map<Predicate, Set<Clause>> facts_ = new HashMap<>();
-  private Map<Predicate, Set<Clause>> rules_ = new HashMap<>();
+  private Map<Predicate, Set<Clause>> facts_ = new ConcurrentHashMap<>();
+  private Map<Predicate, Set<Clause>> rules_ = new ConcurrentHashMap<>();
 
   public InMemoryKnowledgeBase() {}
 
@@ -23,7 +22,7 @@ final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
     Predicate predicate = head.predicate();
 
     if (!facts_.containsKey(predicate)) {
-      facts_.put(predicate, new HashSet<>());
+      facts_.put(predicate, ConcurrentHashMap.newKeySet());
     }
     facts_.get(predicate).add(fact);
   }
@@ -35,20 +34,20 @@ final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
     Predicate predicate = head.predicate();
 
     if (!rules_.containsKey(predicate)) {
-      rules_.put(predicate, new HashSet<>());
+      rules_.put(predicate, ConcurrentHashMap.newKeySet());
     }
     rules_.get(predicate).add(rule);
   }
 
   @Override
   protected Set<Clause> facts(@NotNull Literal literal) {
-    return facts_.getOrDefault(literal.predicate(), new HashSet<>()).stream()
+    return facts_.getOrDefault(literal.predicate(), ConcurrentHashMap.newKeySet()).stream()
         .filter(f -> f.head().isRelevant(literal)).collect(Collectors.toSet());
   }
 
   @Override
   protected Set<Clause> rules(@NotNull Literal literal) {
-    return rules_.getOrDefault(literal.predicate(), new HashSet<>()).stream()
+    return rules_.getOrDefault(literal.predicate(), ConcurrentHashMap.newKeySet()).stream()
         .filter(r -> r.head().isRelevant(literal)).collect(Collectors.toSet());
   }
 
