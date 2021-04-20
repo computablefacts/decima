@@ -18,12 +18,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
 /**
  * See Theofrastos Mantadelis and Gerda Janssens (2010). "Nesting Probabilistic Inference" for
  * details.
  */
+@CheckReturnValue
 public class Estimator {
 
   private final RandomString randomString_ = new RandomString(7);

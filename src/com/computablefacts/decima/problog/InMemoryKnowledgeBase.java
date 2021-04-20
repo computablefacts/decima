@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.constraints.NotNull;
 
+import com.google.errorprone.annotations.CheckReturnValue;
+
+@CheckReturnValue
 final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
 
   private Map<Predicate, Set<Clause>> facts_ = new ConcurrentHashMap<>();

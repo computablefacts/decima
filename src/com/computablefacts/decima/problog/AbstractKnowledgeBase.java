@@ -29,10 +29,12 @@ import com.computablefacts.nona.types.Json;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
  * This class allows us to be agnostic from the storage layer. It is used to assert facts and rules.
  */
+@CheckReturnValue
 public abstract class AbstractKnowledgeBase {
 
   private final RandomString randomString_ = new RandomString(7);
