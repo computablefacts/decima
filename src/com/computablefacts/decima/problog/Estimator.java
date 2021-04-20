@@ -26,7 +26,7 @@ import com.google.errorprone.annotations.Var;
  * details.
  */
 @CheckReturnValue
-public class Estimator {
+final public class Estimator {
 
   private final RandomString randomString_ = new RandomString(7);
   private final Set<Clause> proofs_;
