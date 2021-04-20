@@ -40,7 +40,7 @@ import com.google.errorprone.annotations.Var;
  * </ul>
  */
 @CheckReturnValue
-public class Solver {
+final public class Solver {
 
   protected final AbstractKnowledgeBase kb_;
   protected final Map<String, Subgoal> subgoals_;
@@ -156,7 +156,6 @@ public class Solver {
 
         // The positive version of the rule yielded no fact
         // => resume the current rule evaluation
-
         Literal newFact = new Literal(newPredicate, newTerms);
 
         add(subgoal, new Clause(newFact));
