@@ -54,17 +54,6 @@ final public class Subgoal {
     literal_ = literal;
   }
 
-  Subgoal(Subgoal subgoal) {
-
-    this(subgoal.id_, subgoal.literal_);
-
-    // TODO : copy trie
-    facts_.add(subgoal.facts_);
-
-    subgoal.waiters_.forEach(
-        e -> waiters_.add(new AbstractMap.SimpleEntry<>(new Subgoal(e.getKey()), e.getValue())));
-  }
-
   @Override
   public boolean equals(Object o) {
     if (o == this) {

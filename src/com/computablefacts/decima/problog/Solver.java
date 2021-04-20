@@ -47,18 +47,11 @@ public class Solver {
   private final AtomicInteger id_ = new AtomicInteger(0);
 
   public Solver(AbstractKnowledgeBase kb) {
-    this(kb, new ConcurrentHashMap<>());
-  }
-
-  public Solver(AbstractKnowledgeBase kb, Map<String, Subgoal> subgoals) {
 
     Preconditions.checkNotNull(kb, "kb should not be null");
-    Preconditions.checkNotNull(subgoals, "subgoals should not be null");
 
     kb_ = kb;
     subgoals_ = new ConcurrentHashMap<>();
-
-    subgoals.forEach((k, v) -> subgoals_.put(k, new Subgoal(v)));
   }
 
   /**
