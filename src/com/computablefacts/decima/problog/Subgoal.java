@@ -43,15 +43,17 @@ final public class Subgoal {
   private final Set<Map.Entry<Subgoal, Clause>> waiters_ = ConcurrentHashMap.newKeySet();
 
   // Facts derived for this subgoal
-  private final AbstractSubgoalFacts facts_ = new InMemorySubgoalFacts();
+  private final AbstractSubgoalFacts facts_;
 
-  Subgoal(int id, Literal literal) {
+  public Subgoal(int id, Literal literal, AbstractSubgoalFacts facts) {
 
     Preconditions.checkArgument(id >= 0, "id must be >= 0");
     Preconditions.checkNotNull(literal, "literal should not be null");
+    Preconditions.checkNotNull(facts, "facts should not be null");
 
     id_ = id;
     literal_ = literal;
+    facts_ = facts;
   }
 
   @Override
