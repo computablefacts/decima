@@ -41,7 +41,7 @@
     </developers>
 
     <properties>
-        <junon.version>0.8</junon.version>
+        <junon.version>0.9</junon.version>
         <nona.version>1.24</nona.version>
         <jsonflattener.version>0.12.0</jsonflattener.version>
         <jcip.version>1.0-1</jcip.version>
