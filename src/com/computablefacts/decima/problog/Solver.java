@@ -17,6 +17,10 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
@@ -41,6 +45,8 @@ import com.google.errorprone.annotations.Var;
  */
 @CheckReturnValue
 final public class Solver {
+
+  private static final Logger logger_ = LoggerFactory.getLogger(Solver.class);
 
   protected final AbstractKnowledgeBase kb_;
   protected final Map<String, Subgoal> subgoals_;
@@ -128,12 +134,23 @@ final public class Solver {
 
     if (predicate.isPrimitive()) {
 
-      Literal lit = literal.execute(kb_.definitions());
+      Iterator<Literal> literals = literal.execute(kb_.definitions());
 
-      if (lit == null) {
+      if (literals == null) {
         cleanWaiters(subgoal, literal);
       } else {
-        add(subgoal, new Clause(lit));
+        while (literals.hasNext()) {
+
+          Clause clause = new Clause(literals.next());
+
+          if (clause.isFact()) {
+            add(subgoal, clause);
+          } else {
+            logger_.warn(LogFormatter.create(true)
+                .message("Primitives must only return Stream of facts. Clause ignored.")
+                .add("literal", literal.toString()).add("clause", clause.toString()).formatError());
+          }
+        }
       }
     } else if (predicate.isNegated()) {
 

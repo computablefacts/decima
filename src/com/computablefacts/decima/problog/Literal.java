@@ -2,7 +2,9 @@ package com.computablefacts.decima.problog;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -405,7 +407,7 @@ final public class Literal {
    * @param definitions functions definitions.
    * @return a fact or possibly null if it is a pass/fail function.
    */
-  public Literal execute(Map<String, Function> definitions) {
+  public Iterator<Literal> execute(Map<String, Function> definitions) {
 
     Preconditions.checkNotNull(definitions, "definitions should not be null");
     Preconditions.checkState(predicate_.isPrimitive(), "the current literal should be a primitive");
@@ -423,7 +425,8 @@ final public class Literal {
         String bool = ((Const) terms_.get(0)).value().toString();
 
         return Boolean.parseBoolean(bool)
-            ? new Literal(probability_, predicate_.name(), new Const(true))
+            ? Lists.newArrayList(new Literal(probability_, predicate_.name(), new Const(true)))
+                .iterator()
             : null;
       }
 
@@ -433,16 +436,26 @@ final public class Literal {
 
         String bool = ((Const) terms_.get(0)).value().toString();
 
-        return !Boolean.parseBoolean(bool)
-            ? new Literal(probability_, predicate_.name(), new Const(false))
+        return !Boolean.parseBoolean(bool) ? Lists
+            .newArrayList(new Literal(probability_, predicate_.name(), new Const(false))).iterator()
             : null;
+      }
+
+      if (predicate.endsWith("_MATERIALIZE_FACTS_QUERY")) {
+
+        Function function = compile2();
+        BoxedType<?> result = function.evaluate(definitions);
+
+        return result == null ? null
+            : result.isCollection() ? ((Collection<Literal>) result.asCollection()).iterator()
+                : result.value() instanceof Iterator ? (Iterator<Literal>) result.value() : null;
       }
     }
 
     Preconditions.checkState(isValidPrimitive(), "Literal is not a valid primitive : %s", this);
 
     Function function = compile();
-    BoxedType result = function.evaluate(definitions);
+    BoxedType<?> result = function.evaluate(definitions);
 
     Preconditions.checkState(
         result != null && (result.value() instanceof String || result.value() instanceof Number
@@ -452,8 +465,8 @@ final public class Literal {
     if (!isFirstTermVariable) { // => FN_IS()
 
       AbstractTerm first = terms_.get(0);
-      Comparable object = (Comparable) ((Const) first).value();
-      BoxedType boxedType = BoxedType.create(object);
+      Comparable<?> object = (Comparable<?>) ((Const) first).value();
+      BoxedType<?> boxedType = BoxedType.create(object);
 
       if (!boxedType.equals(result)) {
         return null;
@@ -463,8 +476,8 @@ final public class Literal {
     List<Object> parameters = functionParameters();
     parameters.add(0, result.value());
 
-    return new Literal(probability_, predicate_.name(),
-        parameters.stream().map(Const::new).collect(Collectors.toList()));
+    return Lists.newArrayList(new Literal(probability_, predicate_.name(),
+        parameters.stream().map(Const::new).collect(Collectors.toList()))).iterator();
   }
 
   private boolean isValidPrimitive() {
@@ -600,6 +613,19 @@ final public class Literal {
                   .join(terms_.stream().skip(1)
                       .map(term -> Function.wrap(((Const) term).value().toString())).iterator())
               + ")");
+    }
+    return new Function(mergeFunctions());
+  }
+
+  private Function compile2() {
+    if (functions_.size() <= 0) {
+      return new Function(
+          predicate_.name().toUpperCase() + "(" + Joiner.on(", ").join(terms_.stream().map(term -> {
+            if (term.isConst()) {
+              return Function.wrap(((Const) term).value().toString());
+            }
+            return Function.wrap("_");
+          }).iterator()) + ")");
     }
     return new Function(mergeFunctions());
   }

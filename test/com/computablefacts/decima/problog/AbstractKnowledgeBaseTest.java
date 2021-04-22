@@ -3,12 +3,21 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.TestUtils.parseClause;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.computablefacts.decima.robdd.Pair;
+import com.computablefacts.nona.Function;
+import com.computablefacts.nona.helpers.Codecs;
+import com.computablefacts.nona.types.BoxedType;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -281,7 +290,103 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertEquals(1, Sets.newHashSet(solver.solve(query3)).size());
   }
 
+  @Test
+  public void testStreamFactsQuery() {
+
+    // Dataset CRM1 -> 2 clients
+    String rule1 =
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm1\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+
+    // Dataset CRM2 -> 3 clients + 1 duplicate of CRM1
+    String rule2 =
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+
+    AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition(kb());
+    kb.azzert(Parser.parseClause(rule1));
+    kb.azzert(Parser.parseClause(rule2));
+
+    Solver solver = new Solver(kb);
+    Set<Clause> clauses =
+        Sets.newHashSet(solver.solve(Parser.parseQuery("clients(FirstName, LastName, Email)?")));
+
+    Assert.assertEquals(5, clauses.size());
+    Assert.assertTrue(clauses.contains(
+        Parser.parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
+    Assert.assertTrue(clauses
+        .contains(Parser.parseClause("clients(\"Lucy\", \"Ballmer\", \"lucyb56@gmail.com\").")));
+    Assert.assertTrue(clauses.contains(
+        Parser.parseClause("clients(\"Roger\", \"Bacon\", \"rogerbacon12@yahoo.com\").")));
+    Assert.assertTrue(clauses
+        .contains(Parser.parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
+    Assert.assertTrue(clauses
+        .contains(Parser.parseClause("clients(\"Anna\", \"Smith\", \"annasmith23@gmail.com\").")));
+  }
+
   private InMemoryKnowledgeBase kb() {
     return new InMemoryKnowledgeBase();
+  }
+
+  private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition(AbstractKnowledgeBase kb) {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
+        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+
+          @Override
+          protected boolean isCacheable() {
+            return false;
+          }
+
+          @Override
+          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+            Preconditions.checkArgument(parameters.size() >= 3,
+                "MOCK_MATERIALIZE_FACTS_QUERY takes at least three parameters.");
+            Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
+                parameters.get(0));
+
+            Map<String, Object> params = new HashMap<>();
+
+            for (int i = 1; i < parameters.size(); i = i + 2) {
+
+              String name = parameters.get(i).asString();
+              String value = "_".equals(parameters.get(i + 1).asString()) ? null
+                  : parameters.get(i + 1).asString();
+
+              params.put(name, value);
+            }
+
+            Map<String, Object> json;
+            String uri = parameters.get(0).asString();
+
+            if (uri.equals("http://localhost:3000/crm1")) {
+              json = Codecs.asObject(
+                  "{\"namespace\":\"crm1\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":2,\"first_name\":\"Lucy\",\"last_name\":\"Ballmer\",\"email\":\"lucyb56@gmail.com\"}]}");
+            } else if (uri.equals("http://localhost:3000/crm2")) {
+              json = Codecs.asObject(
+                  "{\"namespace\":\"crm2\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":3,\"first_name\":\"Anna\",\"last_name\":\"Smith\",\"email\":\"annasmith23@gmail.com\"},{\"id\":4,\"first_name\":\"Robert\",\"last_name\":\"Brown\",\"email\":\"bobbrown432@yahoo.com\"},{\"id\":5,\"first_name\":\"Roger\",\"last_name\":\"Bacon\",\"email\":\"rogerbacon12@yahoo.com\"}]}");
+            } else {
+              return BoxedType.empty();
+            }
+
+            List<Literal> facts =
+                ((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
+
+                  List<AbstractTerm> terms = new ArrayList<>();
+                  terms.add(new Const(parameters.get(0)));
+
+                  for (int i = 1; i < parameters.size(); i = i + 2) {
+                    String name = parameters.get(i).asString();
+                    terms.add(new Const(name));
+                    terms.add(new Const(fact.get(name)));
+                  }
+                  return new Literal("fn_" + name().toLowerCase(), terms);
+                }).collect(Collectors.toList());
+
+            if (uri.equals("http://localhost:3000/crm1")) {
+              return BoxedType.create(facts.iterator()); // For tests purposes !
+            }
+            return BoxedType.create(facts);
+          }
+        });
+    return kb;
   }
 }

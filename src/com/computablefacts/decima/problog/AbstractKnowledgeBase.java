@@ -1,7 +1,14 @@
 package com.computablefacts.decima.problog;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -12,8 +19,12 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.computablefacts.decima.Builder;
 import com.computablefacts.decima.robdd.Pair;
+import com.computablefacts.logfmt.LogFormatter;
 import com.computablefacts.nona.Function;
 import com.computablefacts.nona.functions.comparisonoperators.Equal;
 import com.computablefacts.nona.functions.csvoperators.CsvValue;
@@ -30,12 +41,15 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.google.errorprone.annotations.Var;
 
 /**
  * This class allows us to be agnostic from the storage layer. It is used to assert facts and rules.
  */
 @CheckReturnValue
 public abstract class AbstractKnowledgeBase {
+
+  private static final Logger logger_ = LoggerFactory.getLogger(AbstractKnowledgeBase.class);
 
   private final RandomString randomString_ = new RandomString(7);
   private final Map<String, Function> definitions_ = new ConcurrentHashMap<>();
@@ -315,6 +329,161 @@ public abstract class AbstractKnowledgeBase {
         return BoxedType.create(false);
       }
     });
+
+    /**
+     * Special operator. Execute a GET HTTP query and use the returned data as new facts.
+     *
+     * Example :
+     *
+     * <pre>
+     * fn_http_materialize_facts_query("https://api.cf.com/api/v0/facts/crm/client", "prenom",
+     *     Prenom, "nom", Nom, "email", Email)
+     * </pre>
+     *
+     * Result :
+     *
+     * <pre>
+     *  [
+     *    {
+     *      "namespace": "crm",
+     *      "class": "client",
+     *      "facts": [
+     *        {
+     * 	          "prenom": "Jane"
+     * 	          "nom": "Doe"
+     * 	  	      "email": "jane.doe@gmail.com"
+     *        }, {
+     * 	  	     "prenom": "John"
+     * 	  	      "nom": "Doe"
+     * 	  	      "email": "j.doe@gmail.com"
+     *        },
+     * 	      ...
+     *      ]
+     *    },
+     *    ...
+     *  ]
+     * </pre>
+     */
+    definitions_.put("FN_HTTP_MATERIALIZE_FACTS_QUERY",
+        new Function("HTTP_MATERIALIZE_FACTS_QUERY") {
+
+          @Override
+          protected boolean isCacheable() {
+
+            // The function's cache is shared between multiple processes
+            return false;
+          }
+
+          @Override
+          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+            Preconditions.checkArgument(parameters.size() >= 3,
+                "HTTP_MATERIALIZE_FACTS_QUERY takes at least three parameters.");
+            Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
+                parameters.get(0));
+
+            Base64.Encoder b64Encoder = Base64.getEncoder();
+            StringBuilder builder = new StringBuilder();
+
+            for (int i = 1; i < parameters.size(); i = i + 2) {
+
+              String name = parameters.get(i).asString();
+              String value = "_".equals(parameters.get(i + 1).asString()) ? ""
+                  : parameters.get(i + 1).asString();
+
+              if (builder.length() > 0) {
+                builder.append('&');
+              }
+              builder.append(name).append('=').append(Codecs.encodeB64(b64Encoder, value));
+            }
+
+            String httpUrl = parameters.get(0).asString();
+            String queryString = builder.toString();
+
+            try {
+
+              URL url = new URL(httpUrl);
+              HttpURLConnection con = (HttpURLConnection) url.openConnection();
+              con.setRequestMethod("GET");
+              con.setInstanceFollowRedirects(true);
+              con.setConnectTimeout(5 * 1000);
+              con.setReadTimeout(10 * 1000);
+              con.setDoOutput(true);
+
+              try (DataOutputStream out = new DataOutputStream(con.getOutputStream())) {
+                out.writeBytes(queryString);
+              }
+
+              StringBuilder result = new StringBuilder();
+              int status = con.getResponseCode();
+
+              if (status > 299) {
+                try (BufferedReader in =
+                    new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
+
+                  @Var
+                  String inputLine;
+
+                  while ((inputLine = in.readLine()) != null) {
+                    result.append(inputLine);
+                  }
+
+                  logger_.error(LogFormatter.create(true).message(result.toString()).formatError());
+                }
+                return BoxedType.empty();
+              }
+
+              try (BufferedReader in =
+                  new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+
+                @Var
+                String inputLine;
+
+                while ((inputLine = in.readLine()) != null) {
+                  result.append(inputLine);
+                }
+              }
+
+              con.disconnect();
+              List<Literal> facts = new ArrayList<>();
+              Map<String, Object>[] jsons = Codecs.asArray(result.toString());
+
+              for (Map<String, Object> json : jsons) {
+
+                if (!json.containsKey("namespace")) {
+                  return BoxedType.empty();
+                }
+                if (!json.containsKey("class")) {
+                  return BoxedType.empty();
+                }
+                if (!json.containsKey("facts")) {
+                  return BoxedType.empty();
+                }
+
+                // String namespace = (String) json.get("namespace");
+                // String clazz = (String) json.get("class");
+
+                facts.addAll(((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
+
+                  List<AbstractTerm> terms = new ArrayList<>();
+                  terms.add(new Const(parameters.get(0)));
+
+                  for (int i = 1; i < parameters.size(); i = i + 2) {
+                    String name = parameters.get(i).asString();
+                    terms.add(new Const(name));
+                    terms.add(new Const(fact.get(name)));
+                  }
+                  return new Literal("fn_" + name().toLowerCase(), terms);
+                }).collect(Collectors.toList()));
+              }
+              return BoxedType.create(facts);
+            } catch (IOException e) {
+              logger_.error(LogFormatter.create(true).message(e).formatError());
+              // fall through
+            }
+            return BoxedType.empty();
+          }
+        });
   }
 
   /**

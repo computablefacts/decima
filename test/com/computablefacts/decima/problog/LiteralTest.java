@@ -100,7 +100,7 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_eq", new Var(), new Const(2), new Const(2));
-    Literal newLiteral = literal.execute(kb.definitions());
+    Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(new Literal("fn_eq", new Const(true), new Const(2), new Const(2)),
         newLiteral);
@@ -111,7 +111,7 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is", new Const(2), new Const(2));
-    Literal newLiteral = literal.execute(kb.definitions());
+    Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(new Literal("fn_is", new Const(2), new Const(2)), newLiteral);
   }
@@ -121,7 +121,7 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is", new Var(), new Const(2));
-    Literal newLiteral = literal.execute(kb.definitions());
+    Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(new Literal("fn_is", new Const(2), new Const(2)), newLiteral);
   }
@@ -131,9 +131,8 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is", new Const(3), new Const(2));
-    Literal newLiteral = literal.execute(kb.definitions());
 
-    Assert.assertNull(newLiteral);
+    Assert.assertNull(literal.execute(kb.definitions()));
   }
 
   @Test
@@ -141,7 +140,7 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is_true", new Const(true));
-    Literal newLiteral = literal.execute(kb.definitions());
+    Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(new Literal("fn_is_true", new Const(true)), newLiteral);
   }
@@ -151,9 +150,8 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is_true", new Const(false));
-    Literal newLiteral = literal.execute(kb.definitions());
 
-    Assert.assertNull(newLiteral);
+    Assert.assertNull(literal.execute(kb.definitions()));
   }
 
   @Test
@@ -161,7 +159,7 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is_false", new Const(false));
-    Literal newLiteral = literal.execute(kb.definitions());
+    Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(new Literal("fn_is_false", new Const(false)), newLiteral);
   }
@@ -171,9 +169,8 @@ public class LiteralTest {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Literal literal = new Literal("fn_is_false", new Const(true));
-    Literal newLiteral = literal.execute(kb.definitions());
 
-    Assert.assertNull(newLiteral);
+    Assert.assertNull(literal.execute(kb.definitions()));
   }
 
   @Test
@@ -182,7 +179,7 @@ public class LiteralTest {
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     Clause clause = parseClause("is_ok(X) :- fn_eq(X, fn_add(1, 1), 2).");
     Literal literal = clause.body().get(0);
-    Literal newLiteral = literal.execute(kb.definitions());
+    Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(1, newLiteral.terms().size());
     Assert.assertEquals(new Const(true), newLiteral.terms().get(0));
@@ -198,7 +195,7 @@ public class LiteralTest {
     Map<Var, AbstractTerm> subst = new HashMap<>(); // substitute Y with 1
     subst.put((Var) clause.head().terms().get(1), new Const("1"));
 
-    Literal newLiteral = literal.subst(subst).execute(kb.definitions());
+    Literal newLiteral = literal.subst(subst).execute(kb.definitions()).next();
 
     Assert.assertEquals(2, newLiteral.terms().size());
     Assert.assertEquals(new Const(true), newLiteral.terms().get(0));
