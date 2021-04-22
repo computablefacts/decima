@@ -291,7 +291,7 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testStreamFactsQuery() {
+  public void testMockMaterializeFactsQuery1() {
 
     // Dataset CRM1 -> 2 clients
     String rule1 =
@@ -320,6 +320,32 @@ public class AbstractKnowledgeBaseTest {
         .contains(Parser.parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
     Assert.assertTrue(clauses
         .contains(Parser.parseClause("clients(\"Anna\", \"Smith\", \"annasmith23@gmail.com\").")));
+  }
+
+  @Test
+  public void testMockMaterializeFactsQuery2() {
+
+    // Dataset CRM1 -> 2 clients
+    String rule1 =
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm1\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+
+    // Dataset CRM2 -> 3 clients + 1 duplicate of CRM1
+    String rule2 =
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+
+    AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition(kb());
+    kb.azzert(Parser.parseClause(rule1));
+    kb.azzert(Parser.parseClause(rule2));
+
+    Solver solver = new Solver(kb);
+    Set<Clause> clauses =
+        Sets.newHashSet(solver.solve(Parser.parseQuery("clients(\"Robert\", LastName, Email)?")));
+
+    Assert.assertEquals(2, clauses.size());
+    Assert.assertTrue(clauses.contains(
+        Parser.parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
+    Assert.assertTrue(clauses
+        .contains(Parser.parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
   }
 
   private InMemoryKnowledgeBase kb() {
@@ -354,6 +380,7 @@ public class AbstractKnowledgeBaseTest {
               params.put(name, value);
             }
 
+            // Mock two distinct API calls
             Map<String, Object> json;
             String uri = parameters.get(0).asString();
 
@@ -367,6 +394,19 @@ public class AbstractKnowledgeBaseTest {
               return BoxedType.empty();
             }
 
+            // Mock server-side filtering
+            json.put("facts",
+                ((List<Map<String, Object>>) json.get("facts")).stream().filter(fact -> {
+                  for (Map.Entry<String, Object> param : params.entrySet()) {
+                    if (param.getValue() != null && fact.containsKey(param.getKey())
+                        && !param.getValue().equals(fact.get(param.getKey()))) {
+                      return false;
+                    }
+                  }
+                  return true;
+                }).collect(Collectors.toList()));
+
+            // Transform API result
             List<Literal> facts =
                 ((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
 
