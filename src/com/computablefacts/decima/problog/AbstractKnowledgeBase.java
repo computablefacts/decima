@@ -219,7 +219,7 @@ public abstract class AbstractKnowledgeBase {
       }
 
       @Override
-      public BoxedType evaluate(List<BoxedType> parameters) {
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
         Preconditions.checkArgument(parameters.size() == 2,
             "ASSERT_JSON takes exactly two parameters.");
@@ -253,7 +253,7 @@ public abstract class AbstractKnowledgeBase {
       }
 
       @Override
-      public BoxedType evaluate(List<BoxedType> parameters) {
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
         Preconditions.checkArgument(parameters.size() == 2,
             "ASSERT_CSV takes exactly two parameters.");
@@ -287,7 +287,7 @@ public abstract class AbstractKnowledgeBase {
       }
 
       @Override
-      public BoxedType evaluate(List<BoxedType> parameters) {
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
         Preconditions.checkArgument(parameters.size() > 1,
             "EXIST_IN_KB takes at least two parameters.");
