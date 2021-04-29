@@ -336,8 +336,8 @@ public abstract class AbstractKnowledgeBase {
      * Example :
      *
      * <pre>
-     * fn_http_materialize_facts_query("https://api.cf.com/api/v0/facts/crm/client", "prenom",
-     *     Prenom, "nom", Nom, "email", Email)
+     * fn_http_materialize_facts_query("https://api.cf.com/api/v0/facts/crm/client", "prenom", _,
+     *     Prenom, "nom", _, Nom, "email", _, Email)
      * </pre>
      *
      * Result :
@@ -377,24 +377,27 @@ public abstract class AbstractKnowledgeBase {
           @Override
           public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-            Preconditions.checkArgument(parameters.size() >= 3,
-                "HTTP_MATERIALIZE_FACTS_QUERY takes at least three parameters.");
+            Preconditions.checkArgument(parameters.size() >= 4,
+                "HTTP_MATERIALIZE_FACTS_QUERY takes at least four parameters.");
             Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
                 parameters.get(0));
 
             Base64.Encoder b64Encoder = Base64.getEncoder();
             StringBuilder builder = new StringBuilder();
 
-            for (int i = 1; i < parameters.size(); i = i + 2) {
+            for (int i = 1; i < parameters.size(); i = i + 3) {
 
               String name = parameters.get(i).asString();
-              String value = "_".equals(parameters.get(i + 1).asString()) ? ""
+              String filter = "_".equals(parameters.get(i + 1).asString()) ? ""
                   : parameters.get(i + 1).asString();
+              String value = "_".equals(parameters.get(i + 2).asString()) ? ""
+                  : parameters.get(i + 2).asString();
 
               if (builder.length() > 0) {
                 builder.append('&');
               }
-              builder.append(name).append('=').append(Codecs.encodeB64(b64Encoder, value));
+              builder.append(name).append('=')
+                  .append(Codecs.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
             }
 
             String httpUrl = parameters.get(0).asString();
@@ -468,9 +471,11 @@ public abstract class AbstractKnowledgeBase {
                   List<AbstractTerm> terms = new ArrayList<>();
                   terms.add(new Const(parameters.get(0)));
 
-                  for (int i = 1; i < parameters.size(); i = i + 2) {
+                  for (int i = 1; i < parameters.size(); i = i + 3) {
                     String name = parameters.get(i).asString();
+                    String filter = parameters.get(i + 1).asString();
                     terms.add(new Const(name));
+                    terms.add(new Const(filter));
                     terms.add(new Const(fact.get(name)));
                   }
                   return new Literal("fn_" + name().toLowerCase(), terms);
