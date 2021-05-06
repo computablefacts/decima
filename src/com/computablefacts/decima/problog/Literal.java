@@ -147,7 +147,7 @@ final public class Literal {
         builder.append(term.toString());
       } else {
         builder.append('"');
-        builder.append(Function.encode(term.toString()).replaceAll("\r\n|\n", "\\\\n"));
+        builder.append(Function.encode(term.toString()));
         builder.append('"');
       }
     }
