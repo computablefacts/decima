@@ -300,7 +300,7 @@ public class LiteralTest {
 
     Literal literal = new Literal("edge", new Const("a\nb"));
 
-    Assert.assertEquals("edge(\"a\\nb\")", literal.toString());
+    Assert.assertEquals("edge(\"a\\u000db\")", literal.toString());
   }
 
   @Test
@@ -308,6 +308,6 @@ public class LiteralTest {
 
     Literal literal = new Literal("edge", new Const("a\r\nb"));
 
-    Assert.assertEquals("edge(\"a\\nb\")", literal.toString());
+    Assert.assertEquals("edge(\"a\\u000a\\u000db\")", literal.toString());
   }
 }
