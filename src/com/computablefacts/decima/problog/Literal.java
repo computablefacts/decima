@@ -399,6 +399,8 @@ final public class Literal {
       if (!t1.equals(t2)) {
         env = t1.unify(t2, env);
         if (env == null) {
+          logger_.info("t1 : " + t1);
+          logger_.info("t2 : " + t2);
           return env;
         }
       }
