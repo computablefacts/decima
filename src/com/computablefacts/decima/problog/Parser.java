@@ -14,6 +14,7 @@ import java.util.Set;
 
 import com.computablefacts.nona.Function;
 import com.computablefacts.nona.helpers.RandomString;
+import com.computablefacts.nona.helpers.StringIterator;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -348,12 +349,7 @@ public final class Parser {
         if (scan.nextToken() == StreamTokenizer.TT_WORD) {
           terms.add(stringToVarOrConst(map, numberOrString(scan)));
         } else if (scan.ttype == '"' || scan.ttype == '\'') {
-          // HOTFIX : the backslash characters are removed from the string. Why ?
-          // This must be kept in sync with com.computablefacts.nona.Function.encode(...)
-          // and com.computablefacts.nona.Function.decode(...)
-          String str = scan.sval.replace("u0028", "(").replace("u0029", ")").replace("u0022", "\"")
-              .replace("u002c", ",").replace("u000a", "\r").replace("u000d", "\n");
-          terms.add(new Const(str));
+          terms.add(new Const(decode(scan.sval)));
         } else {
           Preconditions.checkState(false,
               "[line " + scan.lineno() + "] Expected term in expression");
@@ -424,12 +420,7 @@ public final class Parser {
           terms.add(term);
         }
       } else if (scan.ttype == '"' || scan.ttype == '\'') {
-        // HOTFIX : the backslash characters are removed from the string. Why ?
-        // This must be kept in sync with com.computablefacts.nona.Function.encode(...)
-        // and com.computablefacts.nona.Function.decode(...)
-        String str = scan.sval.replace("u0028", "(").replace("u0029", ")").replace("u0022", "\"")
-            .replace("u002c", ",").replace("u000a", "\r").replace("u000d", "\n");
-        terms.add(new Const(str));
+        terms.add(new Const(decode(scan.sval)));
       } else {
         Preconditions.checkState(false, "[line " + scan.lineno() + "] Expected term in expression");
       }
@@ -714,5 +705,64 @@ public final class Parser {
     list.add(lit2);
 
     return list;
+  }
+
+  /**
+   * HOTFIX : the backslash characters are removed from the string. Why ?
+   *
+   * This function must be kept in sync with
+   * {@link com.computablefacts.nona.Function#encode(String)} and
+   * {@link com.computablefacts.nona.Function#decode(String)}.
+   */
+  private static String decode(String text) {
+
+    Preconditions.checkNotNull(text, "text should not be null");
+
+    StringBuilder builder = new StringBuilder(text.length());
+    StringIterator iterator = new StringIterator(text);
+
+    while (iterator.hasNext()) {
+      char c1 = iterator.next();
+      if (c1 != 'u' || !iterator.hasNext()) {
+        builder.append(c1);
+      } else {
+        char c2 = iterator.next();
+        if (c2 != '0' || !iterator.hasNext()) {
+          builder.append(c1).append(c2);
+        } else {
+          char c3 = iterator.next();
+          if (c3 != '0' || !iterator.hasNext()) {
+            builder.append(c1).append(c2).append(c3);
+          } else {
+            char c4 = iterator.next();
+            if ((c4 != '0' && c4 != '2' && c4 != '3') || !iterator.hasNext()) {
+              builder.append(c1).append(c2).append(c3).append(c4);
+            } else {
+              char c5 = iterator.next();
+              if (c4 == '0' && c5 == 'a') {
+                builder.append('\r');
+              } else if (c4 == '0' && c5 == 'd') {
+                builder.append('\n');
+              } else if (c4 == '2' && c5 == '2') {
+                builder.append('"');
+              } else if (c4 == '2' && c5 == '8') {
+                builder.append('(');
+              } else if (c4 == '2' && c5 == '9') {
+                builder.append(')');
+              } else if (c4 == '2' && c5 == 'c') {
+                builder.append(',');
+              } else if (c4 == '3' && c5 == 'a') {
+                builder.append(':');
+              } else if (c4 == '3' && c5 == 'd') {
+                builder.append('=');
+              } else {
+                builder.append(c1).append(c2).append(c3).append(c4).append(c5);
+              }
+            }
+          }
+        }
+      }
+    }
+    return builder.toString();
   }
 }
