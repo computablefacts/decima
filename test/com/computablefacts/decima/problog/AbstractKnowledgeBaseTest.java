@@ -352,18 +352,15 @@ public class AbstractKnowledgeBaseTest {
   @Test
   public void testMockMaterializeFactsQueryWithWildcardFilter() {
 
-    String rule1 =
-        "fichier(PATH, MD5) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"metadata.md5_after\", _, MD5).";
-    String rule2 =
+    String rule =
         "mes_fichiers_favoris(PATH, MD5) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"metadata.md5_after\", \"824a*\", MD5).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition2(kb());
-    kb.azzert(Parser.parseClause(rule1));
-    kb.azzert(Parser.parseClause(rule2));
+    kb.azzert(Parser.parseClause(rule));
 
     Solver solver = new Solver(kb);
-    Set<Clause> clauses =
-        Sets.newHashSet(solver.solve(Parser.parseQuery("mes_fichiers_favoris(PATH, MD5)?")));
+    Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, MD5)?");
+    Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 
     Assert.assertEquals(4, clauses.size());
     Assert.assertTrue(clauses.contains(Parser.parseClause(
@@ -403,6 +400,30 @@ public class AbstractKnowledgeBaseTest {
             new Const("The quick brown fox\njumps over\r\nthe lazy dog")));
 
     Assert.assertEquals(new Clause(literal), clauses.get(0));
+  }
+
+  @Test
+  public void testMockMaterializeFactsQueryWithColonsAndEquals() {
+
+    String rule =
+        "mes_fichiers_favoris(PATH, CONTENT) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, CONTENT).";
+
+    AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition4(kb());
+    kb.azzert(Parser.parseClause(rule));
+
+    Solver solver = new Solver(kb);
+    Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, CONTENT)?");
+    Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
+
+    Assert.assertEquals(4, clauses.size());
+    Assert.assertTrue(clauses.contains(Parser.parseClause(
+        "mes_fichiers_favoris(\"/var/sftp/file1.pdf\", \"lhs := rhs — function etc. definition\").")));
+    Assert.assertTrue(clauses.contains(Parser.parseClause(
+        "mes_fichiers_favoris(\"/var/sftp/file2.pdf\", \"x == val — test equality or represent a symbolic equation (!= for unequal)\").")));
+    Assert.assertTrue(clauses.contains(Parser.parseClause(
+        "mes_fichiers_favoris(\"/var/sftp/file2.pdf\", \"lhs := rhs — function etc. definition\").")));
+    Assert.assertTrue(clauses.contains(Parser.parseClause(
+        "mes_fichiers_favoris(\"/var/sftp/file3.pdf\", \"lhs := rhs — function etc. definition\").")));
   }
 
   private InMemoryKnowledgeBase kb() {
@@ -533,8 +554,6 @@ public class AbstractKnowledgeBaseTest {
 
             List<Literal> literals = new ArrayList<>();
 
-            System.out.println("parameters : " + parameters);
-
             String path = parameters.get(3).asString();
             String text = parameters.get(6).asString();
 
@@ -575,8 +594,37 @@ public class AbstractKnowledgeBaseTest {
                 literals.add(Parser.parseClause(literal + ".").head());
               }
             }
+            return BoxedType.create(literals);
+          }
+        });
+    return kb;
+  }
 
-            System.out.println("literals : " + literals);
+  private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition4(AbstractKnowledgeBase kb) {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
+        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+
+          @Override
+          protected boolean isCacheable() {
+            return false;
+          }
+
+          @Override
+          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+            List<Literal> literals = new ArrayList<>();
+            literals.add(Parser.parseClause(
+                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+                .head());
+            literals.add(Parser.parseClause(
+                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"x \\u003d\\u003d val — test equality or represent a symbolic equation (!\\u003d for unequal)\").")
+                .head());
+            literals.add(Parser.parseClause(
+                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+                .head());
+            literals.add(Parser.parseClause(
+                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+                .head());
 
             return BoxedType.create(literals);
           }
