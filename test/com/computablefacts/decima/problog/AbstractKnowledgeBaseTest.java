@@ -291,7 +291,7 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testMockMaterializeFactsQuery1() {
+  public void testMockMaterializeFactsQueryWithoutFixedTerms() {
 
     // Dataset CRM1 -> 2 clients
     String rule1 =
@@ -323,7 +323,7 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testMockMaterializeFactsQuery2() {
+  public void testMockMaterializeFactsQueryWithFixedTerms() {
 
     // Dataset CRM1 -> 2 clients
     String rule1 =
@@ -349,7 +349,7 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testMockMaterializeFactsQuery3() {
+  public void testMockMaterializeFactsQueryWithWildcardFilter() {
 
     String rule1 =
         "fichier(PATH, MD5) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"metadata.md5_after\", _, MD5).";
