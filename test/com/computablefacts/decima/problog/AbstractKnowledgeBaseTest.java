@@ -394,10 +394,15 @@ public class AbstractKnowledgeBaseTest {
     Solver solver = new Solver(kb);
     Literal query = Parser.parseQuery("fichier_duplique(PATH, TEXT)?");
     Iterator<Clause> iterator = solver.solve(query);
-    Set<Clause> clauses = Sets.newHashSet(iterator);
+    List<Clause> clauses = Lists.newArrayList(iterator);
 
-    System.out.println("clauses : " + clauses);
     Assert.assertEquals(1, clauses.size());
+
+    Literal literal =
+        new Literal("fichier_duplique", Lists.newArrayList(new Const("/var/sftp/file2.pdf"),
+            new Const("The quick brown fox\njumps over\r\nthe lazy dog")));
+
+    Assert.assertEquals(new Clause(literal), clauses.get(0));
   }
 
   private InMemoryKnowledgeBase kb() {
@@ -558,7 +563,6 @@ public class AbstractKnowledgeBaseTest {
                         new Const("metadata.path"), new Const("*"),
                         new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
                         new Const("The quick brown fox\njumps over\r\nthe lazy dog")));
-                System.out.println("literal : " + literal + ".");
                 literals.add(Parser.parseClause(literal + ".").head());
               }
               if (("_".equals(path) || "/var/sftp/file3.pdf".equals(path)) && ("_".equals(text)
