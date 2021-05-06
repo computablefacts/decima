@@ -352,7 +352,7 @@ public final class Parser {
           // This must be kept in sync with com.computablefacts.nona.Function.encode(...)
           // and com.computablefacts.nona.Function.decode(...)
           String str = scan.sval.replace("u0028", "(").replace("u0029", ")").replace("u0022", "\"")
-              .replace("u002c", ",");
+              .replace("u002c", ",").replace("u000a", "\r").replace("u000d", "\n");
           terms.add(new Const(str));
         } else {
           Preconditions.checkState(false,
@@ -424,7 +424,12 @@ public final class Parser {
           terms.add(term);
         }
       } else if (scan.ttype == '"' || scan.ttype == '\'') {
-        terms.add(new Const(scan.sval));
+        // HOTFIX : the backslash characters are removed from the string. Why ?
+        // This must be kept in sync with com.computablefacts.nona.Function.encode(...)
+        // and com.computablefacts.nona.Function.decode(...)
+        String str = scan.sval.replace("u0028", "(").replace("u0029", ")").replace("u0022", "\"")
+            .replace("u002c", ",").replace("u000a", "\r").replace("u000d", "\n");
+        terms.add(new Const(str));
       } else {
         Preconditions.checkState(false, "[line " + scan.lineno() + "] Expected term in expression");
       }

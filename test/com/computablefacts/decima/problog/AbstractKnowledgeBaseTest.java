@@ -5,6 +5,7 @@ import static com.computablefacts.decima.problog.TestUtils.parseClause;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -375,6 +376,30 @@ public class AbstractKnowledgeBaseTest {
         "mes_fichiers_favoris(\"/var/sftp/file3.pdf\", \"824a6d489b13f87d9006fe6842dd424b\").")));
   }
 
+  @Test
+  public void testMockMaterializeFactsQueryWithCarriageReturnAndLineFeed() {
+
+    String rule1 =
+        "fichier_dab(PATH, TEXT) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, TEXT).";
+    String rule2 =
+        "fichier_vam(PATH, TEXT) :- fn_mock_materialize_facts_query(\"https://localhost/facts/vam/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, TEXT).";
+    String rule3 =
+        "fichier_duplique(PATH, TEXT) :- fichier_dab(PATH, TEXT), fichier_vam(PATH, TEXT).";
+
+    AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition3(kb());
+    kb.azzert(Parser.parseClause(rule1));
+    kb.azzert(Parser.parseClause(rule2));
+    kb.azzert(Parser.parseClause(rule3));
+
+    Solver solver = new Solver(kb);
+    Literal query = Parser.parseQuery("fichier_duplique(PATH, TEXT)?");
+    Iterator<Clause> iterator = solver.solve(query);
+    Set<Clause> clauses = Sets.newHashSet(iterator);
+
+    System.out.println("clauses : " + clauses);
+    Assert.assertEquals(1, clauses.size());
+  }
+
   private InMemoryKnowledgeBase kb() {
     return new InMemoryKnowledgeBase();
   }
@@ -482,6 +507,72 @@ public class AbstractKnowledgeBaseTest {
             literals.add(Parser.parseClause(
                 "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
                 .head());
+
+            return BoxedType.create(literals);
+          }
+        });
+    return kb;
+  }
+
+  private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition3(AbstractKnowledgeBase kb) {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
+        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+
+          @Override
+          protected boolean isCacheable() {
+            return false;
+          }
+
+          @Override
+          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+            List<Literal> literals = new ArrayList<>();
+
+            System.out.println("parameters : " + parameters);
+
+            String path = parameters.get(3).asString();
+            String text = parameters.get(6).asString();
+
+            if (parameters.get(0).asString().equals("https://localhost/facts/dab/fichier")) {
+              if (("_".equals(path) || "/var/sftp/file1.pdf".equals(path)) && ("_".equals(text)
+                  || "The quick brown fox jumps over the lazy dog".equals(text))) {
+                literals.add(new Literal("fn_mock_materialize_facts_query",
+                    Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
+                        new Const("metadata.path"), new Const("*"),
+                        new Const("/var/sftp/file1.pdf"), new Const("content.text"), new Const("*"),
+                        new Const("The quick brown fox jumps over the lazy dog"))));
+              }
+              if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
+                  || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
+                literals.add(new Literal("fn_mock_materialize_facts_query",
+                    Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
+                        new Const("metadata.path"), new Const("*"),
+                        new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
+                        new Const("The quick brown fox\njumps over\r\nthe lazy dog"))));
+              }
+            } else {
+              if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
+                  || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
+                Literal literal = new Literal("fn_mock_materialize_facts_query",
+                    Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
+                        new Const("metadata.path"), new Const("*"),
+                        new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
+                        new Const("The quick brown fox\njumps over\r\nthe lazy dog")));
+                System.out.println("literal : " + literal + ".");
+                literals.add(Parser.parseClause(literal + ".").head());
+              }
+              if (("_".equals(path) || "/var/sftp/file3.pdf".equals(path)) && ("_".equals(text)
+                  || "The quick brown fox jumps over the lazy dog".equals(text))) {
+                Literal literal = new Literal("fn_mock_materialize_facts_query",
+                    Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
+                        new Const("metadata.path"), new Const("*"),
+                        new Const("/var/sftp/file3.pdf"), new Const("content.text"), new Const("*"),
+                        new Const("The quick brown fox jumps over the lazy dog")));
+                literals.add(Parser.parseClause(literal + ".").head());
+              }
+            }
+
+            System.out.println("literals : " + literals);
 
             return BoxedType.create(literals);
           }
