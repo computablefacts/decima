@@ -328,11 +328,6 @@ final public class Solver {
     Clause newClause = rule.resolve(fact.head()); // Rule minus first body literal
     Clause prevClause = rule.resolve2(fact.head()); // Rule with first body literal
 
-    logger_.info("rule : " + rule);
-    logger_.info("fact : " + fact);
-    logger_.info("newClause : " + newClause);
-    logger_.info("prevClause : " + prevClause);
-
     // Original rule
     subgoal.update(prevClause);
 
