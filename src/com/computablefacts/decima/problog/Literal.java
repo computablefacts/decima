@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.computablefacts.nona.Function;
 import com.computablefacts.nona.Generated;
 import com.computablefacts.nona.types.BoxedType;
@@ -26,6 +29,8 @@ import com.google.errorprone.annotations.CheckReturnValue;
  */
 @CheckReturnValue
 final public class Literal {
+
+  private static final Logger logger_ = LoggerFactory.getLogger(Literal.class);
 
   private final String tag_;
   private final Predicate predicate_;
@@ -607,25 +612,33 @@ final public class Literal {
 
   private Function compile() {
     if (functions_.size() <= 0) {
-      return new Function(
+      String function =
           predicate_.name().toUpperCase() + "("
               + Joiner.on(", ")
                   .join(terms_.stream().skip(1)
                       .map(term -> Function.wrap(((Const) term).value().toString())).iterator())
-              + ")");
+              + ")";
+      if (logger_.isInfoEnabled()) {
+        logger_.info(function);
+      }
+      return new Function(function);
     }
     return new Function(mergeFunctions());
   }
 
   private Function compile2() {
     if (functions_.size() <= 0) {
-      return new Function(
+      String function =
           predicate_.name().toUpperCase() + "(" + Joiner.on(", ").join(terms_.stream().map(term -> {
             if (term.isConst()) {
               return Function.wrap(((Const) term).value().toString());
             }
             return Function.wrap("_");
-          }).iterator()) + ")");
+          }).iterator()) + ")";
+      if (logger_.isInfoEnabled()) {
+        logger_.info(function);
+      }
+      return new Function(function);
     }
     return new Function(mergeFunctions());
   }
