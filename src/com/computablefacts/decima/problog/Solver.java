@@ -55,7 +55,7 @@ final public class Solver {
   private final BiFunction<Integer, Literal, Subgoal> newSubgoal_;
 
   private Subgoal rootSubgoal_ = null;
-  private int sampleSize_ = -1;
+  private int maxSampleSize_ = -1;
 
   public Solver(AbstractKnowledgeBase kb) {
     this(kb, (id, literal) -> new Subgoal(id, literal, new InMemorySubgoalFacts()));
@@ -121,11 +121,11 @@ final public class Solver {
    * UNFOLD the proofs.
    *
    * @param query goal.
-   * @param sampleSize stop the solver after the goal reach this number of solutions. If this number
-   *        is less than or equals to 0, returns all solutions.
+   * @param maxSampleSize stops the solver after the goal reaches this number of solutions or more. If
+   *        this number is less than or equals to 0, returns all solutions.
    * @return facts answering the query.
    */
-  public Iterator<Clause> solve(Literal query, int sampleSize) {
+  public Iterator<Clause> solve(Literal query, int maxSampleSize) {
 
     Preconditions.checkNotNull(query, "query should not be null");
 
@@ -133,10 +133,19 @@ final public class Solver {
     subgoals_.put(query.tag(), subgoal);
 
     rootSubgoal_ = subgoal;
-    sampleSize_ = sampleSize <= 0 ? -1 : sampleSize;
+    maxSampleSize_ = maxSampleSize <= 0 ? -1 : maxSampleSize;
 
     search(subgoal);
     return subgoal.facts();
+  }
+
+  /**
+   * Check if the number of samples asked by the caller has been reached.
+   *
+   * @return true iif the number of samples has been reached, false otherwise.
+   */
+  private boolean maxSampleSizeReached() {
+    return maxSampleSize_ > 0 && rootSubgoal_ != null && rootSubgoal_.nbFacts() >= maxSampleSize_;
   }
 
   /**
@@ -168,6 +177,9 @@ final public class Solver {
             logger_.warn(LogFormatter.create(true)
                 .message("Primitives must only return Stream of facts. Clause ignored.")
                 .add("literal", literal.toString()).add("clause", clause.toString()).formatError());
+          }
+          if (maxSampleSizeReached()) {
+            break;
           }
         }
       }
@@ -226,6 +238,9 @@ final public class Solver {
               cleanWaiters(subgoal, literal);
             }
           }
+          if (maxSampleSizeReached()) {
+            break;
+          }
         }
       }
     } else {
@@ -248,6 +263,9 @@ final public class Solver {
 
         if (env != null) {
           add(subgoal, renamed.subst(env));
+        }
+        if (maxSampleSizeReached()) {
+          break;
         }
       }
     }
@@ -280,14 +298,16 @@ final public class Solver {
     if (subgoal.containsFact(clause)) {
       return;
     }
-    if (sampleSize_ > 0 && subgoal.equals(rootSubgoal_) && rootSubgoal_.nbFacts() >= sampleSize_) {
-      return;
-    }
 
     subgoal.addFact(clause);
 
     for (Map.Entry<Subgoal, Clause> entry : subgoal.waiters()) {
+
       ground(entry.getKey(), entry.getValue(), clause);
+
+      if (maxSampleSizeReached()) {
+        return;
+      }
     }
   }
 
@@ -326,7 +346,12 @@ final public class Solver {
       Iterator<Clause> facts = sub.facts();
 
       while (facts.hasNext()) {
+
         ground(subgoal, clause, facts.next());
+
+        if (maxSampleSizeReached()) {
+          return;
+        }
       }
     }
   }
