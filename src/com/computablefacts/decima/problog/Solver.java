@@ -54,6 +54,9 @@ final public class Solver {
   private final AtomicInteger id_ = new AtomicInteger(0);
   private final BiFunction<Integer, Literal, Subgoal> newSubgoal_;
 
+  private Subgoal rootSubgoal_ = null;
+  private int sampleSize_ = -1;
+
   public Solver(AbstractKnowledgeBase kb) {
     this(kb, (id, literal) -> new Subgoal(id, literal, new InMemorySubgoalFacts()));
   }
@@ -110,11 +113,27 @@ final public class Solver {
    * @return facts answering the query.
    */
   public Iterator<Clause> solve(Literal query) {
+    return solve(query, -1);
+  }
+
+  /**
+   * First, sets up and calls the subgoal search procedure. Then, extracts the answers BUT DO NOT
+   * UNFOLD the proofs.
+   *
+   * @param query goal.
+   * @param sampleSize stop the solver after the goal reach this number of solutions. If this number
+   *        is less than or equals to 0, returns all solutions.
+   * @return facts answering the query.
+   */
+  public Iterator<Clause> solve(Literal query, int sampleSize) {
 
     Preconditions.checkNotNull(query, "query should not be null");
 
     Subgoal subgoal = newSubgoal_.apply(id_.getAndIncrement(), query);
     subgoals_.put(query.tag(), subgoal);
+
+    rootSubgoal_ = subgoal;
+    sampleSize_ = sampleSize <= 0 ? -1 : sampleSize;
 
     search(subgoal);
     return subgoal.facts();
@@ -259,6 +278,9 @@ final public class Solver {
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
 
     if (subgoal.containsFact(clause)) {
+      return;
+    }
+    if (sampleSize_ > 0 && subgoal.equals(rootSubgoal_) && rootSubgoal_.nbFacts() >= sampleSize_) {
       return;
     }
 

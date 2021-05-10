@@ -92,6 +92,10 @@ final public class Subgoal {
     return facts_.facts();
   }
 
+  int nbFacts() {
+    return facts_.nbFacts();
+  }
+
   Set<Map.Entry<Subgoal, Clause>> waiters() {
     return waiters_;
   }

@@ -271,6 +271,276 @@ public class SolverTest {
   }
 
   @Test
+  public void testSampleOfSizeMinus1() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
+    kb.azzert(parseClause("bagItems(\"green_bag\", 2)."));
+    kb.azzert(parseClause("bagItems(\"blue_bag\", 2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause(
+        "hasDifferentNumberOfItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_eq(U, A, B), fn_is_false(U)."));
+
+    // Query kb
+    // hasDifferentNumberOfItems(X, Y)?
+    Solver solver = solver(kb);
+    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query, -1));
+
+    // Verify answers
+    Assert.assertEquals(4, answers.size());
+
+    Clause first = Iterables.get(answers, 0);
+    Clause second = Iterables.get(answers, 1);
+    Clause third = Iterables.get(answers, 2);
+    Clause fourth = Iterables.get(answers, 3);
+
+    Assert.assertTrue(first.isFact());
+    Assert.assertTrue(second.isFact());
+    Assert.assertTrue(third.isFact());
+    Assert.assertTrue(fourth.isFact());
+
+    Clause answer1 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"green_bag\").");
+    Clause answer2 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\").");
+    Clause answer3 = Parser.parseClause("hasDifferentNumberOfItems(\"green_bag\", \"red_bag\").");
+    Clause answer4 = Parser.parseClause("hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\").");
+
+    Assert.assertTrue(first.equals(answer1) || first.equals(answer2) || first.equals(answer3)
+        || first.equals(answer4));
+    Assert.assertTrue(second.equals(answer1) || second.equals(answer2) || second.equals(answer3)
+        || second.equals(answer4));
+    Assert.assertTrue(third.equals(answer1) || third.equals(answer2) || third.equals(answer3)
+        || third.equals(answer4));
+    Assert.assertTrue(fourth.equals(answer1) || fourth.equals(answer2) || fourth.equals(answer3)
+        || fourth.equals(answer4));
+  }
+
+  @Test
+  public void testSampleOfSize1() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
+    kb.azzert(parseClause("bagItems(\"green_bag\", 2)."));
+    kb.azzert(parseClause("bagItems(\"blue_bag\", 2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause(
+        "hasDifferentNumberOfItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_eq(U, A, B), fn_is_false(U)."));
+
+    // Query kb
+    // hasDifferentNumberOfItems(X, Y)?
+    Solver solver = solver(kb);
+    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query, 1));
+
+    // Verify answers
+    Assert.assertEquals(1, answers.size());
+
+    Clause first = Iterables.get(answers, 0);
+
+    Assert.assertTrue(first.isFact());
+
+    Clause answer1 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"green_bag\").");
+    Clause answer2 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\").");
+    Clause answer3 = Parser.parseClause("hasDifferentNumberOfItems(\"green_bag\", \"red_bag\").");
+    Clause answer4 = Parser.parseClause("hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\").");
+
+    Assert.assertTrue(first.equals(answer1) || first.equals(answer2) || first.equals(answer3)
+        || first.equals(answer4));
+  }
+
+  @Test
+  public void testSampleOfSize2() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
+    kb.azzert(parseClause("bagItems(\"green_bag\", 2)."));
+    kb.azzert(parseClause("bagItems(\"blue_bag\", 2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause(
+        "hasDifferentNumberOfItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_eq(U, A, B), fn_is_false(U)."));
+
+    // Query kb
+    // hasDifferentNumberOfItems(X, Y)?
+    Solver solver = solver(kb);
+    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query, 2));
+
+    // Verify answers
+    Assert.assertEquals(2, answers.size());
+
+    Clause first = Iterables.get(answers, 0);
+    Clause second = Iterables.get(answers, 1);
+
+    Assert.assertTrue(first.isFact());
+    Assert.assertTrue(second.isFact());
+
+    Clause answer1 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"green_bag\").");
+    Clause answer2 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\").");
+    Clause answer3 = Parser.parseClause("hasDifferentNumberOfItems(\"green_bag\", \"red_bag\").");
+    Clause answer4 = Parser.parseClause("hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\").");
+
+    Assert.assertTrue(first.equals(answer1) || first.equals(answer2) || first.equals(answer3)
+        || first.equals(answer4));
+    Assert.assertTrue(second.equals(answer1) || second.equals(answer2) || second.equals(answer3)
+        || second.equals(answer4));
+  }
+
+  @Test
+  public void testSampleOfSize3() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
+    kb.azzert(parseClause("bagItems(\"green_bag\", 2)."));
+    kb.azzert(parseClause("bagItems(\"blue_bag\", 2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause(
+        "hasDifferentNumberOfItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_eq(U, A, B), fn_is_false(U)."));
+
+    // Query kb
+    // hasDifferentNumberOfItems(X, Y)?
+    Solver solver = solver(kb);
+    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query, 3));
+
+    // Verify answers
+    Assert.assertEquals(3, answers.size());
+
+    Clause first = Iterables.get(answers, 0);
+    Clause second = Iterables.get(answers, 1);
+    Clause third = Iterables.get(answers, 2);
+
+    Assert.assertTrue(first.isFact());
+    Assert.assertTrue(second.isFact());
+    Assert.assertTrue(third.isFact());
+
+    Clause answer1 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"green_bag\").");
+    Clause answer2 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\").");
+    Clause answer3 = Parser.parseClause("hasDifferentNumberOfItems(\"green_bag\", \"red_bag\").");
+    Clause answer4 = Parser.parseClause("hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\").");
+
+    Assert.assertTrue(first.equals(answer1) || first.equals(answer2) || first.equals(answer3)
+        || first.equals(answer4));
+    Assert.assertTrue(second.equals(answer1) || second.equals(answer2) || second.equals(answer3)
+        || second.equals(answer4));
+    Assert.assertTrue(third.equals(answer1) || third.equals(answer2) || third.equals(answer3)
+        || third.equals(answer4));
+  }
+
+  @Test
+  public void testSampleOfSize4() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
+    kb.azzert(parseClause("bagItems(\"green_bag\", 2)."));
+    kb.azzert(parseClause("bagItems(\"blue_bag\", 2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause(
+        "hasDifferentNumberOfItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_eq(U, A, B), fn_is_false(U)."));
+
+    // Query kb
+    // hasDifferentNumberOfItems(X, Y)?
+    Solver solver = solver(kb);
+    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query, 4));
+
+    // Verify answers
+    Assert.assertEquals(4, answers.size());
+
+    Clause first = Iterables.get(answers, 0);
+    Clause second = Iterables.get(answers, 1);
+    Clause third = Iterables.get(answers, 2);
+    Clause fourth = Iterables.get(answers, 3);
+
+    Assert.assertTrue(first.isFact());
+    Assert.assertTrue(second.isFact());
+    Assert.assertTrue(third.isFact());
+    Assert.assertTrue(fourth.isFact());
+
+    Clause answer1 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"green_bag\").");
+    Clause answer2 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\").");
+    Clause answer3 = Parser.parseClause("hasDifferentNumberOfItems(\"green_bag\", \"red_bag\").");
+    Clause answer4 = Parser.parseClause("hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\").");
+
+    Assert.assertTrue(first.equals(answer1) || first.equals(answer2) || first.equals(answer3)
+        || first.equals(answer4));
+    Assert.assertTrue(second.equals(answer1) || second.equals(answer2) || second.equals(answer3)
+        || second.equals(answer4));
+    Assert.assertTrue(third.equals(answer1) || third.equals(answer2) || third.equals(answer3)
+        || third.equals(answer4));
+    Assert.assertTrue(fourth.equals(answer1) || fourth.equals(answer2) || fourth.equals(answer3)
+        || fourth.equals(answer4));
+  }
+
+  @Test
+  public void testSampleOfSize5() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
+    kb.azzert(parseClause("bagItems(\"green_bag\", 2)."));
+    kb.azzert(parseClause("bagItems(\"blue_bag\", 2)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause(
+        "hasDifferentNumberOfItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_eq(U, A, B), fn_is_false(U)."));
+
+    // Query kb
+    // hasDifferentNumberOfItems(X, Y)?
+    Solver solver = solver(kb);
+    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query, 5));
+
+    // Verify answers
+    Assert.assertEquals(4, answers.size());
+
+    Clause first = Iterables.get(answers, 0);
+    Clause second = Iterables.get(answers, 1);
+    Clause third = Iterables.get(answers, 2);
+    Clause fourth = Iterables.get(answers, 3);
+
+    Assert.assertTrue(first.isFact());
+    Assert.assertTrue(second.isFact());
+    Assert.assertTrue(third.isFact());
+    Assert.assertTrue(fourth.isFact());
+
+    Clause answer1 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"green_bag\").");
+    Clause answer2 = Parser.parseClause("hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\").");
+    Clause answer3 = Parser.parseClause("hasDifferentNumberOfItems(\"green_bag\", \"red_bag\").");
+    Clause answer4 = Parser.parseClause("hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\").");
+
+    Assert.assertTrue(first.equals(answer1) || first.equals(answer2) || first.equals(answer3)
+        || first.equals(answer4));
+    Assert.assertTrue(second.equals(answer1) || second.equals(answer2) || second.equals(answer3)
+        || second.equals(answer4));
+    Assert.assertTrue(third.equals(answer1) || third.equals(answer2) || third.equals(answer3)
+        || third.equals(answer4));
+    Assert.assertTrue(fourth.equals(answer1) || fourth.equals(answer2) || fourth.equals(answer3)
+        || fourth.equals(answer4));
+  }
+
+  @Test
   public void testDoubleNegation() {
 
     // Create kb

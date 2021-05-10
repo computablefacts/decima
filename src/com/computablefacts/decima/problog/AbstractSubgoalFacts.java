@@ -13,6 +13,8 @@ public abstract class AbstractSubgoalFacts {
 
   public abstract Iterator<Clause> facts();
 
+  public abstract int nbFacts();
+
   public abstract void add(Clause clause);
 
   public abstract void add(AbstractSubgoalFacts facts);

@@ -29,6 +29,11 @@ final public class InMemorySubgoalFacts extends AbstractSubgoalFacts {
   }
 
   @Override
+  public int nbFacts() {
+    return facts_.size();
+  }
+
+  @Override
   public void add(Clause clause) {
     facts_.add(clause);
   }
