@@ -91,7 +91,7 @@ Decima has the ability to perform HTTP calls at runtime to fill the knowledge ba
 with new facts. The function for that is :
 
 ```
-fn_http_materialize_facts_query(https://<base_url>/<namespace>/<class>, <field_name_1>, <field_variable_1>, <field_name_2>, <field_variable_2>, ...)
+fn_http_materialize_facts(https://<base_url>/<namespace>/<class>, <field_name_1>, <field_variable_1>, <field_name_2>, <field_variable_2>, ...)
 ```
 
 At runtime, the following HTTP query will be performed (with each `field_variable_x` 
@@ -129,11 +129,11 @@ An example of use-case, is to merge the content of multiple data sources :
 ```
 // Dataset CRM1 -> 2 clients
 clients(FirstName, LastName, Email) :- 
-    fn_http_materialize_facts_query("http://localhost:3000/crm1", "first_name", FirstName, "last_name", LastName, "email", Email).
+    fn_http_materialize_facts("http://localhost:3000/crm1", "first_name", FirstName, "last_name", LastName, "email", Email).
 
 // Dataset CRM2 -> 3 clients
 clients(FirstName, LastName, Email) :- 
-    fn_http_materialize_facts_query("http://localhost:3000/crm2", "first_name", FirstName, "last_name", LastName, "email", Email).
+    fn_http_materialize_facts("http://localhost:3000/crm2", "first_name", FirstName, "last_name", LastName, "email", Email).
 
 // Merge both datasets
 clients(FirstName, LastName, Email)?

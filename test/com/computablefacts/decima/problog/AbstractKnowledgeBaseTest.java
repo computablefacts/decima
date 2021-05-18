@@ -296,11 +296,11 @@ public class AbstractKnowledgeBaseTest {
 
     // Dataset CRM1 -> 2 clients
     String rule1 =
-        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm1\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts(\"http://localhost:3000/crm1\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
 
     // Dataset CRM2 -> 3 clients + 1 duplicate of CRM1
     String rule2 =
-        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition1(kb());
     kb.azzert(Parser.parseClause(rule1));
@@ -328,11 +328,11 @@ public class AbstractKnowledgeBaseTest {
 
     // Dataset CRM1 -> 2 clients
     String rule1 =
-        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm1\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts(\"http://localhost:3000/crm1\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
 
     // Dataset CRM2 -> 3 clients + 1 duplicate of CRM1
     String rule2 =
-        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts_query(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
+        "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition1(kb());
     kb.azzert(Parser.parseClause(rule1));
@@ -353,7 +353,7 @@ public class AbstractKnowledgeBaseTest {
   public void testMockMaterializeFactsQueryWithWildcardFilter() {
 
     String rule =
-        "mes_fichiers_favoris(PATH, MD5) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"metadata.md5_after\", \"824a*\", MD5).";
+        "mes_fichiers_favoris(PATH, MD5) :- fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"metadata.md5_after\", \"824a*\", MD5).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition2(kb());
     kb.azzert(Parser.parseClause(rule));
@@ -377,9 +377,9 @@ public class AbstractKnowledgeBaseTest {
   public void testMockMaterializeFactsQueryWithCarriageReturnAndLineFeed() {
 
     String rule1 =
-        "fichier_dab(PATH, TEXT) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, TEXT).";
+        "fichier_dab(PATH, TEXT) :- fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, TEXT).";
     String rule2 =
-        "fichier_vam(PATH, TEXT) :- fn_mock_materialize_facts_query(\"https://localhost/facts/vam/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, TEXT).";
+        "fichier_vam(PATH, TEXT) :- fn_mock_materialize_facts(\"https://localhost/facts/vam/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, TEXT).";
     String rule3 =
         "fichier_duplique(PATH, TEXT) :- fichier_dab(PATH, TEXT), fichier_vam(PATH, TEXT).";
 
@@ -406,7 +406,7 @@ public class AbstractKnowledgeBaseTest {
   public void testMockMaterializeFactsQueryWithColonsAndEquals() {
 
     String rule =
-        "mes_fichiers_favoris(PATH, CONTENT) :- fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, CONTENT).";
+        "mes_fichiers_favoris(PATH, CONTENT) :- fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, CONTENT).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition4(kb());
     kb.azzert(Parser.parseClause(rule));
@@ -431,8 +431,8 @@ public class AbstractKnowledgeBaseTest {
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition1(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
-        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
+        new Function("MOCK_MATERIALIZE_FACTS") {
 
           @Override
           protected boolean isCacheable() {
@@ -443,7 +443,7 @@ public class AbstractKnowledgeBaseTest {
           public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
             Preconditions.checkArgument(parameters.size() >= 3,
-                "MOCK_MATERIALIZE_FACTS_QUERY takes at least three parameters.");
+                "MOCK_MATERIALIZE_FACTS takes at least three parameters.");
             Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
                 parameters.get(0));
 
@@ -509,8 +509,8 @@ public class AbstractKnowledgeBaseTest {
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition2(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
-        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
+        new Function("MOCK_MATERIALIZE_FACTS") {
 
           @Override
           protected boolean isCacheable() {
@@ -522,16 +522,16 @@ public class AbstractKnowledgeBaseTest {
 
             List<Literal> literals = new ArrayList<>();
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
                 .head());
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824afe9a2309abcf033bc74b7fe42a84\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824afe9a2309abcf033bc74b7fe42a84\").")
                 .head());
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
                 .head());
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
                 .head());
 
             return BoxedType.create(literals);
@@ -541,8 +541,8 @@ public class AbstractKnowledgeBaseTest {
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition3(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
-        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
+        new Function("MOCK_MATERIALIZE_FACTS") {
 
           @Override
           protected boolean isCacheable() {
@@ -560,7 +560,7 @@ public class AbstractKnowledgeBaseTest {
             if (parameters.get(0).asString().equals("https://localhost/facts/dab/fichier")) {
               if (("_".equals(path) || "/var/sftp/file1.pdf".equals(path)) && ("_".equals(text)
                   || "The quick brown fox jumps over the lazy dog".equals(text))) {
-                literals.add(new Literal("fn_mock_materialize_facts_query",
+                literals.add(new Literal("fn_mock_materialize_facts",
                     Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
                         new Const("metadata.path"), new Const("*"),
                         new Const("/var/sftp/file1.pdf"), new Const("content.text"), new Const("*"),
@@ -568,7 +568,7 @@ public class AbstractKnowledgeBaseTest {
               }
               if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
                   || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
-                literals.add(new Literal("fn_mock_materialize_facts_query",
+                literals.add(new Literal("fn_mock_materialize_facts",
                     Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
                         new Const("metadata.path"), new Const("*"),
                         new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
@@ -577,7 +577,7 @@ public class AbstractKnowledgeBaseTest {
             } else {
               if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
                   || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
-                Literal literal = new Literal("fn_mock_materialize_facts_query",
+                Literal literal = new Literal("fn_mock_materialize_facts",
                     Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
                         new Const("metadata.path"), new Const("*"),
                         new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
@@ -586,7 +586,7 @@ public class AbstractKnowledgeBaseTest {
               }
               if (("_".equals(path) || "/var/sftp/file3.pdf".equals(path)) && ("_".equals(text)
                   || "The quick brown fox jumps over the lazy dog".equals(text))) {
-                Literal literal = new Literal("fn_mock_materialize_facts_query",
+                Literal literal = new Literal("fn_mock_materialize_facts",
                     Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
                         new Const("metadata.path"), new Const("*"),
                         new Const("/var/sftp/file3.pdf"), new Const("content.text"), new Const("*"),
@@ -601,8 +601,8 @@ public class AbstractKnowledgeBaseTest {
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition4(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS_QUERY",
-        new Function("MOCK_MATERIALIZE_FACTS_QUERY") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
+        new Function("MOCK_MATERIALIZE_FACTS") {
 
           @Override
           protected boolean isCacheable() {
@@ -614,16 +614,16 @@ public class AbstractKnowledgeBaseTest {
 
             List<Literal> literals = new ArrayList<>();
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
                 .head());
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"x \\u003d\\u003d val — test equality or represent a symbolic equation (!\\u003d for unequal)\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"x \\u003d\\u003d val — test equality or represent a symbolic equation (!\\u003d for unequal)\").")
                 .head());
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
                 .head());
             literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts_query(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
                 .head());
 
             return BoxedType.create(literals);

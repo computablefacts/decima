@@ -336,8 +336,8 @@ public abstract class AbstractKnowledgeBase {
      * Example :
      *
      * <pre>
-     * fn_http_materialize_facts_query("https://api.cf.com/api/v0/facts/crm/client", "prenom", _,
-     *     Prenom, "nom", _, Nom, "email", _, Email)
+     * fn_http_materialize_facts("https://api.cf.com/api/v0/facts/crm/client", "prenom", _, Prenom,
+     *     "nom", _, Nom, "email", _, Email)
      * </pre>
      *
      * Result :
@@ -364,131 +364,130 @@ public abstract class AbstractKnowledgeBase {
      *  ]
      * </pre>
      */
-    definitions_.put("FN_HTTP_MATERIALIZE_FACTS_QUERY",
-        new Function("HTTP_MATERIALIZE_FACTS_QUERY") {
+    definitions_.put("FN_HTTP_MATERIALIZE_FACTS", new Function("HTTP_MATERIALIZE_FACTS") {
 
-          @Override
-          protected boolean isCacheable() {
+      @Override
+      protected boolean isCacheable() {
 
-            // The function's cache is shared between multiple processes
-            return false;
+        // The function's cache is shared between multiple processes
+        return false;
+      }
+
+      @Override
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+        Preconditions.checkArgument(parameters.size() >= 4,
+            "HTTP_MATERIALIZE_FACTS_QUERY takes at least four parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
+            parameters.get(0));
+
+        Base64.Encoder b64Encoder = Base64.getEncoder();
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 1; i < parameters.size(); i = i + 3) {
+
+          String name = parameters.get(i).asString();
+          String filter =
+              "_".equals(parameters.get(i + 1).asString()) ? "" : parameters.get(i + 1).asString();
+          String value =
+              "_".equals(parameters.get(i + 2).asString()) ? "" : parameters.get(i + 2).asString();
+
+          if (builder.length() > 0) {
+            builder.append('&');
+          }
+          builder.append(name).append('=')
+              .append(Codecs.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
+        }
+
+        String httpUrl = parameters.get(0).asString();
+        String queryString = builder.toString();
+
+        try {
+
+          URL url = new URL(httpUrl);
+          HttpURLConnection con = (HttpURLConnection) url.openConnection();
+          con.setRequestMethod("GET");
+          con.setInstanceFollowRedirects(true);
+          con.setConnectTimeout(5 * 1000);
+          con.setReadTimeout(10 * 1000);
+          con.setDoOutput(true);
+
+          try (DataOutputStream out = new DataOutputStream(con.getOutputStream())) {
+            out.writeBytes(queryString);
           }
 
-          @Override
-          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+          StringBuilder result = new StringBuilder();
+          int status = con.getResponseCode();
 
-            Preconditions.checkArgument(parameters.size() >= 4,
-                "HTTP_MATERIALIZE_FACTS_QUERY takes at least four parameters.");
-            Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
-                parameters.get(0));
+          if (status > 299) {
+            try (BufferedReader in =
+                new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
 
-            Base64.Encoder b64Encoder = Base64.getEncoder();
-            StringBuilder builder = new StringBuilder();
+              @Var
+              String inputLine;
 
-            for (int i = 1; i < parameters.size(); i = i + 3) {
-
-              String name = parameters.get(i).asString();
-              String filter = "_".equals(parameters.get(i + 1).asString()) ? ""
-                  : parameters.get(i + 1).asString();
-              String value = "_".equals(parameters.get(i + 2).asString()) ? ""
-                  : parameters.get(i + 2).asString();
-
-              if (builder.length() > 0) {
-                builder.append('&');
-              }
-              builder.append(name).append('=')
-                  .append(Codecs.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
-            }
-
-            String httpUrl = parameters.get(0).asString();
-            String queryString = builder.toString();
-
-            try {
-
-              URL url = new URL(httpUrl);
-              HttpURLConnection con = (HttpURLConnection) url.openConnection();
-              con.setRequestMethod("GET");
-              con.setInstanceFollowRedirects(true);
-              con.setConnectTimeout(5 * 1000);
-              con.setReadTimeout(10 * 1000);
-              con.setDoOutput(true);
-
-              try (DataOutputStream out = new DataOutputStream(con.getOutputStream())) {
-                out.writeBytes(queryString);
+              while ((inputLine = in.readLine()) != null) {
+                result.append(inputLine);
               }
 
-              StringBuilder result = new StringBuilder();
-              int status = con.getResponseCode();
-
-              if (status > 299) {
-                try (BufferedReader in =
-                    new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
-
-                  @Var
-                  String inputLine;
-
-                  while ((inputLine = in.readLine()) != null) {
-                    result.append(inputLine);
-                  }
-
-                  logger_.error(LogFormatter.create(true).message(result.toString()).formatError());
-                }
-                return BoxedType.empty();
-              }
-
-              try (BufferedReader in =
-                  new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-
-                @Var
-                String inputLine;
-
-                while ((inputLine = in.readLine()) != null) {
-                  result.append(inputLine);
-                }
-              }
-
-              con.disconnect();
-              List<Literal> facts = new ArrayList<>();
-              Map<String, Object>[] jsons = Codecs.asArray(result.toString());
-
-              for (Map<String, Object> json : jsons) {
-
-                if (!json.containsKey("namespace")) {
-                  return BoxedType.empty();
-                }
-                if (!json.containsKey("class")) {
-                  return BoxedType.empty();
-                }
-                if (!json.containsKey("facts")) {
-                  return BoxedType.empty();
-                }
-
-                // String namespace = (String) json.get("namespace");
-                // String clazz = (String) json.get("class");
-
-                facts.addAll(((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
-
-                  List<AbstractTerm> terms = new ArrayList<>();
-                  terms.add(new Const(parameters.get(0)));
-
-                  for (int i = 1; i < parameters.size(); i = i + 3) {
-                    String name = parameters.get(i).asString();
-                    String filter = parameters.get(i + 1).asString();
-                    terms.add(new Const(name));
-                    terms.add(new Const(filter));
-                    terms.add(new Const(fact.get(name)));
-                  }
-                  return new Literal("fn_" + name().toLowerCase(), terms);
-                }).collect(Collectors.toList()));
-              }
-              return BoxedType.create(facts);
-            } catch (IOException e) {
-              logger_.error(LogFormatter.create(true).message(e).formatError());
-              // fall through
+              logger_.error(LogFormatter.create(true).message(result.toString()).formatError());
             }
             return BoxedType.empty();
           }
-        });
+
+          try (
+              BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+
+            @Var
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+              result.append(inputLine);
+            }
+          }
+
+          con.disconnect();
+          List<Literal> facts = new ArrayList<>();
+          Map<String, Object>[] jsons = Codecs.asArray(result.toString());
+
+          for (Map<String, Object> json : jsons) {
+
+            if (!json.containsKey("namespace")) {
+              return BoxedType.empty();
+            }
+            if (!json.containsKey("class")) {
+              return BoxedType.empty();
+            }
+            if (!json.containsKey("facts")) {
+              return BoxedType.empty();
+            }
+
+            // String namespace = (String) json.get("namespace");
+            // String clazz = (String) json.get("class");
+
+            facts.addAll(((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
+
+              List<AbstractTerm> terms = new ArrayList<>();
+              terms.add(new Const(parameters.get(0)));
+
+              for (int i = 1; i < parameters.size(); i = i + 3) {
+                String name = parameters.get(i).asString();
+                String filter = parameters.get(i + 1).asString();
+                terms.add(new Const(name));
+                terms.add(new Const(filter));
+                terms.add(new Const(fact.get(name)));
+              }
+              return new Literal("fn_" + name().toLowerCase(), terms);
+            }).collect(Collectors.toList()));
+          }
+          return BoxedType.create(facts);
+        } catch (IOException e) {
+          logger_.error(LogFormatter.create(true).message(e).formatError());
+          // fall through
+        }
+        return BoxedType.empty();
+      }
+    });
   }
 
   /**

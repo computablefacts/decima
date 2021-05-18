@@ -441,7 +441,7 @@ final public class Literal {
             : null;
       }
 
-      if (predicate.endsWith("_MATERIALIZE_FACTS_QUERY")) {
+      if (predicate.endsWith("_MATERIALIZE_FACTS")) {
 
         Function function = compile2();
         BoxedType<?> result = function.evaluate(definitions);
