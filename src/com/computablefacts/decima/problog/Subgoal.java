@@ -33,6 +33,7 @@ final public class Subgoal {
   // KB rules benefiting from this sub-goal resolution
   public final Trie<Literal> trie_ = new Trie<>();
   public final Set<Clause> parents_ = new HashSet<>();
+  public final boolean trackRules_;
 
   // All maps and lists should support concurrency because they will be updated and enumerated at
   // the same time by the tabling algorithm
@@ -45,7 +46,7 @@ final public class Subgoal {
   // Facts derived for this subgoal
   private final AbstractSubgoalFacts facts_;
 
-  public Subgoal(int id, Literal literal, AbstractSubgoalFacts facts) {
+  public Subgoal(int id, Literal literal, AbstractSubgoalFacts facts, boolean trackRules) {
 
     Preconditions.checkArgument(id >= 0, "id must be >= 0");
     Preconditions.checkNotNull(literal, "literal should not be null");
@@ -54,6 +55,7 @@ final public class Subgoal {
     id_ = id;
     literal_ = literal;
     facts_ = facts;
+    trackRules_ = trackRules;
   }
 
   @Override
@@ -148,6 +150,10 @@ final public class Subgoal {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
 
+    if (!trackRules_) {
+      return;
+    }
+
     trie_.remove(lit -> {
       if (lit.isRelevant(literal)) {
 
@@ -169,9 +175,7 @@ final public class Subgoal {
           }
         }
 
-        if (nbMatch != 0 && nbNoMatch == 0) {
-          return true;
-        }
+        return nbMatch != 0 && nbNoMatch == 0;
       }
       return false;
     });
@@ -187,6 +191,10 @@ final public class Subgoal {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause.toString());
+
+    if (!trackRules_) {
+      return;
+    }
 
     // Due to how the tabling algorithm works, a good candidate rule to update is such that :
     // - the clause body MUST BE a suffix of the candidate rule body

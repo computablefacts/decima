@@ -58,7 +58,11 @@ final public class Solver {
   private int maxSampleSize_ = -1;
 
   public Solver(AbstractKnowledgeBase kb) {
-    this(kb, (id, literal) -> new Subgoal(id, literal, new InMemorySubgoalFacts()));
+    this(kb, true);
+  }
+
+  public Solver(AbstractKnowledgeBase kb, boolean trackRules) {
+    this(kb, (id, literal) -> new Subgoal(id, literal, new InMemorySubgoalFacts(), trackRules));
   }
 
   public Solver(AbstractKnowledgeBase kb, BiFunction<Integer, Literal, Subgoal> newSubgoal) {
@@ -73,7 +77,7 @@ final public class Solver {
 
   /**
    * First, sets up and calls the subgoal search procedure. Then, extracts the answers AND UNFOLD
-   * the proofs.
+   * the proofs. In order to work, subgoals must track rules i.e. {@code trackRules = true}.
    *
    * @param query goal.
    * @return proofs.
@@ -84,7 +88,8 @@ final public class Solver {
 
   /**
    * First, sets up and calls the subgoal search procedure. Then, extracts the answers AND UNFOLD
-   * the proofs until a maximum depth is reached.
+   * the proofs until a maximum depth is reached. In order to work, subgoals must track rules i.e.
+   * {@code trackRules = true}.
    *
    * @param query goal.
    * @param maxDepth maximum depth to unfold.
@@ -121,8 +126,8 @@ final public class Solver {
    * UNFOLD the proofs.
    *
    * @param query goal.
-   * @param maxSampleSize stops the solver after the goal reaches this number of solutions or more. If
-   *        this number is less than or equals to 0, returns all solutions.
+   * @param maxSampleSize stops the solver after the goal reaches this number of solutions or more.
+   *        If this number is less than or equals to 0, returns all solutions.
    * @return facts answering the query.
    */
   public Iterator<Clause> solve(Literal query, int maxSampleSize) {
@@ -252,11 +257,14 @@ final public class Solver {
         Clause clause = clauses.next();
         Clause renamed = clause.rename();
 
-        List<Literal> list = new ArrayList<>(renamed.body().size() + 1);
-        list.add(renamed.head());
-        list.addAll(renamed.body());
+        if (subgoal.trackRules_) {
 
-        subgoal.trie_.insert(list);
+          List<Literal> list = new ArrayList<>(renamed.body().size() + 1);
+          list.add(renamed.head());
+          list.addAll(renamed.body());
+
+          subgoal.trie_.insert(list);
+        }
 
         Map<com.computablefacts.decima.problog.Var, AbstractTerm> env =
             literal.unify(renamed.head());
