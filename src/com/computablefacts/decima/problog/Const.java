@@ -1,6 +1,11 @@
 package com.computablefacts.decima.problog;
 
+import java.nio.charset.StandardCharsets;
+
 import com.google.common.base.Preconditions;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -8,6 +13,8 @@ import com.google.errorprone.annotations.CheckReturnValue;
  */
 @CheckReturnValue
 final public class Const extends AbstractTerm {
+
+  private static final HashFunction MURMUR3_128 = Hashing.murmur3_128();
 
   private final String id_;
   private final Object value_;
@@ -45,6 +52,16 @@ final public class Const extends AbstractTerm {
 
     Preconditions.checkNotNull(str, "str should not be null");
 
-    return Integer.toString(str.length(), 10) + ":" + str;
+    return Integer.toString(str.length(), 10) + ":" + (str.length() <= 32 ? str : hash(str));
+  }
+
+  private String hash(String value) {
+
+    Hasher hasher = MURMUR3_128.newHasher();
+
+    if (value != null) {
+      hasher.putString(value, StandardCharsets.UTF_8);
+    }
+    return hasher.hash().toString();
   }
 }
