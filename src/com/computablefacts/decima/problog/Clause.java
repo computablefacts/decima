@@ -25,6 +25,9 @@ final public class Clause {
   private final Literal head_;
   private final List<Literal> body_;
 
+  private Boolean isGrounded_ = null;
+  private Boolean isFact_ = null;
+
   /**
    * Initialize a fact.
    *
@@ -245,7 +248,10 @@ final public class Clause {
    * @return true iif the current clause is a fact.
    */
   public boolean isFact() {
-    return head_.isGrounded() && body_.isEmpty();
+    if (isFact_ == null) {
+      isFact_ = head_.isGrounded() && body_.isEmpty();
+    }
+    return isFact_;
   }
 
   /**
@@ -263,15 +269,20 @@ final public class Clause {
    * @return true iif the current clause is grounded.
    */
   public boolean isGrounded() {
-    if (!head_.isGrounded()) {
-      return false;
-    }
-    for (Literal literal : body_) {
-      if (!literal.isGrounded()) {
-        return false;
+    if (isGrounded_ == null) {
+      if (!head_.isGrounded()) {
+        isGrounded_ = false;
+        return isGrounded_;
       }
+      for (Literal literal : body_) {
+        if (!literal.isGrounded()) {
+          isGrounded_ = false;
+          return isGrounded_;
+        }
+      }
+      isGrounded_ = true;
     }
-    return true;
+    return isGrounded_;
   }
 
   /**

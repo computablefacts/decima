@@ -34,6 +34,9 @@ final public class Literal {
   private final BigDecimal probability_;
   private final String id_;
 
+  private Boolean isGrounded_ = null;
+  private Boolean isSemiGrounded_ = null;
+
   @Generated
   public Literal(String predicate, AbstractTerm term) {
     this(BigDecimal.ONE, predicate, term);
@@ -144,7 +147,7 @@ final public class Literal {
       AbstractTerm term = terms_.get(i);
 
       if (!term.isConst()) {
-        builder.append(term.toString());
+        builder.append(term);
       } else {
         builder.append('"');
         builder.append(Function.encode(term.toString()));
@@ -241,12 +244,16 @@ final public class Literal {
    * @return true iif the current literal is grounded.
    */
   public boolean isGrounded() {
-    for (AbstractTerm term : terms_) {
-      if (!term.isConst()) {
-        return false;
+    if (isGrounded_ == null) {
+      for (AbstractTerm term : terms_) {
+        if (!term.isConst()) {
+          isGrounded_ = false;
+          return isGrounded_;
+        }
       }
+      isGrounded_ = true;
     }
-    return true;
+    return isGrounded_;
   }
 
   /**
@@ -255,14 +262,18 @@ final public class Literal {
    * @return true iif the current literal is semi-grounded.
    */
   public boolean isSemiGrounded() {
-    for (AbstractTerm term : terms_) {
-      if (!term.isConst()) {
-        if (!term.isWildcard()) {
-          return false;
+    if (isSemiGrounded_ == null) {
+      for (AbstractTerm term : terms_) {
+        if (!term.isConst()) {
+          if (!term.isWildcard()) {
+            isSemiGrounded_ = false;
+            return isSemiGrounded_;
+          }
         }
       }
+      isSemiGrounded_ = true;
     }
-    return true;
+    return isSemiGrounded_;
   }
 
   /**
