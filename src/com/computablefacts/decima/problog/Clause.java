@@ -368,45 +368,12 @@ final public class Clause {
 
   /**
    * Resolve the first literal in a rule with a given literal. If the two literals unify, a new
-   * clause is generated that has a body with one less literal, the first one.
-   *
-   * @param literal literal.
-   * @return a new clause or null on error.
-   */
-  public Clause resolve(Literal literal) {
-
-    Preconditions.checkNotNull(literal, "literal should not be null");
-    Preconditions.checkArgument(literal.isGrounded(), "literal should be grounded : %s",
-        literal.toString());
-
-    if (isFact()) {
-      return null;
-    }
-
-    Literal first = body_.get(0);
-    Map<Var, AbstractTerm> env = first.unify(literal.rename());
-
-    if (env == null) {
-      return null;
-    }
-
-    Literal head = head_.subst(env);
-    List<Literal> body = new ArrayList<>(body_.size() - 1);
-
-    for (int i = 1; i < body_.size(); i++) {
-      body.add(body_.get(i).subst(env));
-    }
-    return new Clause(head, body);
-  }
-
-  /**
-   * Resolve the first literal in a rule with a given literal. If the two literals unify, a new
    * clause is generated that has the same number of literals in the body.
    *
    * @param literal literal.
    * @return a new clause or null on error.
    */
-  public Clause resolve2(Literal literal) {
+  public Clause resolve(Literal literal) {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
     Preconditions.checkArgument(literal.isGrounded(), "literal should be grounded : %s",

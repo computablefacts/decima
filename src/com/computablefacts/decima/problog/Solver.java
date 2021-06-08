@@ -3,6 +3,7 @@ package com.computablefacts.decima.problog;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -379,9 +380,13 @@ final public class Solver {
     Preconditions.checkNotNull(fact, "fact should not be null");
     Preconditions.checkArgument(fact.isFact(), "clause should be a fact : %s", fact.toString());
 
-    @Var
-    Clause newClause = rule.resolve(fact.head()); // Rule minus first body literal
-    Clause prevClause = rule.resolve2(fact.head()); // Rule with first body literal
+    // Rule with first body literal
+    Clause prevClause = rule.resolve(fact.head());
+
+    // Rule minus first body literal
+    Clause newClause = prevClause == null ? null
+        : new Clause(prevClause.head(),
+            Collections.unmodifiableList(prevClause.body().subList(1, prevClause.body().size())));
 
     // Original rule
     subgoal.update(prevClause);
