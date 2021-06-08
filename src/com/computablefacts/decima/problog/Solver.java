@@ -304,11 +304,9 @@ final public class Solver {
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
 
-    if (subgoal.containsFact(clause)) {
+    if (!subgoal.addFact(clause)) {
       return;
     }
-
-    subgoal.addFact(clause);
 
     for (Map.Entry<Subgoal, Clause> entry : subgoal.waiters()) {
 

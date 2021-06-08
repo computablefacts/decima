@@ -119,22 +119,23 @@ final public class Subgoal {
     return !facts_.isEmpty();
   }
 
-  boolean containsFact(Clause clause) {
+  /**
+   * Try to add a fact to the subgoal.
+   *
+   * @param clause the fact to add.
+   * @return true iif the fact is not already present and has been added, false otherwise.
+   */
+  boolean addFact(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
 
-    return facts_.contains(clause);
-  }
+    boolean add = !containsFact(clause);
 
-  void addFact(Clause clause) {
-
-    Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
-
-    if (!containsFact(clause)) {
+    if (add) {
       facts_.add(clause);
     }
+    return add;
   }
 
   boolean hasRules() {
@@ -324,5 +325,13 @@ final public class Subgoal {
 
     // 4 - Create a new clause
     return new Clause(head, body);
+  }
+
+  private boolean containsFact(Clause clause) {
+
+    Preconditions.checkNotNull(clause, "clause should not be null");
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+
+    return facts_.contains(clause);
   }
 }
