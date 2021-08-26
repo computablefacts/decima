@@ -42,6 +42,9 @@ public class ToothacheTest {
     Literal query = new Literal("toothache", new Const("a"));
     Set<Clause> proofs = solver.proofs(query);
 
+    // Verify subgoals
+    Assert.assertEquals(8, solver.nbSubgoals());
+
     // Verify answers
     Assert.assertEquals(4, proofs.size());
 

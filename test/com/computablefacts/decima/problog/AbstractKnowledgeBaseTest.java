@@ -183,6 +183,7 @@ public class AbstractKnowledgeBaseTest {
     @com.google.errorprone.annotations.Var
     Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"jhWTAETz\")?")));
 
+    Assert.assertEquals(2, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
     Assert.assertEquals(1, kb.nbRules());
     Assert.assertEquals(105, kb.nbFacts());
@@ -221,6 +222,7 @@ public class AbstractKnowledgeBaseTest {
     @com.google.errorprone.annotations.Var
     Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"aIMuk3ze\")?")));
 
+    Assert.assertEquals(2, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
     Assert.assertEquals(1, kb.nbRules());
     Assert.assertEquals(11, kb.nbFacts());
@@ -269,6 +271,7 @@ public class AbstractKnowledgeBaseTest {
     @com.google.errorprone.annotations.Var
     Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"jhWTAETz\")?")));
 
+    Assert.assertEquals(5, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
     Assert.assertEquals(2, kb.nbRules());
     Assert.assertEquals(105, kb.nbFacts());
@@ -278,14 +281,7 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertEquals(51, kb.nbFacts(new Literal("json_path",
         Lists.newArrayList(new Var(), new Var(), new Var(), new Var(), new Var()))));
 
-    // Second test : queries must fail while the solver's subgoals are cached
-    Assert.assertEquals(0, Sets.newHashSet(solver.solve(query1)).size());
-    Assert.assertEquals(0, Sets.newHashSet(solver.solve(query2)).size());
-    Assert.assertEquals(0, Sets.newHashSet(solver.solve(query3)).size());
-
-    // Third test : queries must succeed after the solver's subgoals are removed
-    solver = new Solver(kb);
-
+    // Second test : queries must not fail i.e. subgoals should not be cached
     Assert.assertEquals(1, Sets.newHashSet(solver.solve(query1)).size());
     Assert.assertEquals(1, Sets.newHashSet(solver.solve(query2)).size());
     Assert.assertEquals(1, Sets.newHashSet(solver.solve(query3)).size());
@@ -310,6 +306,7 @@ public class AbstractKnowledgeBaseTest {
     Set<Clause> clauses =
         Sets.newHashSet(solver.solve(Parser.parseQuery("clients(FirstName, LastName, Email)?")));
 
+    Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(5, clauses.size());
     Assert.assertTrue(clauses.contains(
         Parser.parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
@@ -342,6 +339,7 @@ public class AbstractKnowledgeBaseTest {
     Set<Clause> clauses =
         Sets.newHashSet(solver.solve(Parser.parseQuery("clients(\"Robert\", LastName, Email)?")));
 
+    Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(2, clauses.size());
     Assert.assertTrue(clauses.contains(
         Parser.parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
@@ -362,6 +360,7 @@ public class AbstractKnowledgeBaseTest {
     Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, MD5)?");
     Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 
+    Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(4, clauses.size());
     Assert.assertTrue(clauses.contains(Parser.parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file1.pdf\", \"824a6d489b13f87d9006fe6842dd424b\").")));
@@ -393,6 +392,7 @@ public class AbstractKnowledgeBaseTest {
     Iterator<Clause> iterator = solver.solve(query);
     List<Clause> clauses = Lists.newArrayList(iterator);
 
+    Assert.assertEquals(4, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
 
     Literal literal =
@@ -415,6 +415,7 @@ public class AbstractKnowledgeBaseTest {
     Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, CONTENT)?");
     Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 
+    Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(4, clauses.size());
     Assert.assertTrue(clauses.contains(Parser.parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file1.pdf\", \"lhs := rhs — function etc. definition\").")));
@@ -431,204 +432,198 @@ public class AbstractKnowledgeBaseTest {
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition1(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
-        new Function("MOCK_MATERIALIZE_FACTS") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS", new Function("MOCK_MATERIALIZE_FACTS") {
 
-          @Override
-          protected boolean isCacheable() {
-            return false;
+      @Override
+      protected boolean isCacheable() {
+        return false;
+      }
+
+      @Override
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+        Preconditions.checkArgument(parameters.size() >= 3,
+            "MOCK_MATERIALIZE_FACTS takes at least three parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
+            parameters.get(0));
+
+        Map<String, Object> params = new HashMap<>();
+
+        for (int i = 1; i < parameters.size(); i = i + 2) {
+
+          String name = parameters.get(i).asString();
+          String value = "_".equals(parameters.get(i + 1).asString()) ? null
+              : parameters.get(i + 1).asString();
+
+          params.put(name, value);
+        }
+
+        // Mock two distinct API calls
+        Map<String, Object> json;
+        String uri = parameters.get(0).asString();
+
+        if (uri.equals("http://localhost:3000/crm1")) {
+          json = Codecs.asObject(
+              "{\"namespace\":\"crm1\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":2,\"first_name\":\"Lucy\",\"last_name\":\"Ballmer\",\"email\":\"lucyb56@gmail.com\"}]}");
+        } else if (uri.equals("http://localhost:3000/crm2")) {
+          json = Codecs.asObject(
+              "{\"namespace\":\"crm2\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":3,\"first_name\":\"Anna\",\"last_name\":\"Smith\",\"email\":\"annasmith23@gmail.com\"},{\"id\":4,\"first_name\":\"Robert\",\"last_name\":\"Brown\",\"email\":\"bobbrown432@yahoo.com\"},{\"id\":5,\"first_name\":\"Roger\",\"last_name\":\"Bacon\",\"email\":\"rogerbacon12@yahoo.com\"}]}");
+        } else {
+          return BoxedType.empty();
+        }
+
+        // Mock server-side filtering
+        json.put("facts", ((List<Map<String, Object>>) json.get("facts")).stream().filter(fact -> {
+          for (Map.Entry<String, Object> param : params.entrySet()) {
+            if (param.getValue() != null && fact.containsKey(param.getKey())
+                && !param.getValue().equals(fact.get(param.getKey()))) {
+              return false;
+            }
           }
+          return true;
+        }).collect(Collectors.toList()));
 
-          @Override
-          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+        // Transform API result
+        List<Literal> facts = ((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
 
-            Preconditions.checkArgument(parameters.size() >= 3,
-                "MOCK_MATERIALIZE_FACTS takes at least three parameters.");
-            Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
-                parameters.get(0));
+          List<AbstractTerm> terms = new ArrayList<>();
+          terms.add(new Const(parameters.get(0)));
 
-            Map<String, Object> params = new HashMap<>();
-
-            for (int i = 1; i < parameters.size(); i = i + 2) {
-
-              String name = parameters.get(i).asString();
-              String value = "_".equals(parameters.get(i + 1).asString()) ? null
-                  : parameters.get(i + 1).asString();
-
-              params.put(name, value);
-            }
-
-            // Mock two distinct API calls
-            Map<String, Object> json;
-            String uri = parameters.get(0).asString();
-
-            if (uri.equals("http://localhost:3000/crm1")) {
-              json = Codecs.asObject(
-                  "{\"namespace\":\"crm1\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":2,\"first_name\":\"Lucy\",\"last_name\":\"Ballmer\",\"email\":\"lucyb56@gmail.com\"}]}");
-            } else if (uri.equals("http://localhost:3000/crm2")) {
-              json = Codecs.asObject(
-                  "{\"namespace\":\"crm2\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":3,\"first_name\":\"Anna\",\"last_name\":\"Smith\",\"email\":\"annasmith23@gmail.com\"},{\"id\":4,\"first_name\":\"Robert\",\"last_name\":\"Brown\",\"email\":\"bobbrown432@yahoo.com\"},{\"id\":5,\"first_name\":\"Roger\",\"last_name\":\"Bacon\",\"email\":\"rogerbacon12@yahoo.com\"}]}");
-            } else {
-              return BoxedType.empty();
-            }
-
-            // Mock server-side filtering
-            json.put("facts",
-                ((List<Map<String, Object>>) json.get("facts")).stream().filter(fact -> {
-                  for (Map.Entry<String, Object> param : params.entrySet()) {
-                    if (param.getValue() != null && fact.containsKey(param.getKey())
-                        && !param.getValue().equals(fact.get(param.getKey()))) {
-                      return false;
-                    }
-                  }
-                  return true;
-                }).collect(Collectors.toList()));
-
-            // Transform API result
-            List<Literal> facts =
-                ((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
-
-                  List<AbstractTerm> terms = new ArrayList<>();
-                  terms.add(new Const(parameters.get(0)));
-
-                  for (int i = 1; i < parameters.size(); i = i + 2) {
-                    String name = parameters.get(i).asString();
-                    terms.add(new Const(name));
-                    terms.add(new Const(fact.get(name)));
-                  }
-                  return new Literal("fn_" + name().toLowerCase(), terms);
-                }).collect(Collectors.toList());
-
-            if (uri.equals("http://localhost:3000/crm1")) {
-              return BoxedType.create(facts.iterator()); // For tests purposes !
-            }
-            return BoxedType.create(facts);
+          for (int i = 1; i < parameters.size(); i = i + 2) {
+            String name = parameters.get(i).asString();
+            terms.add(new Const(name));
+            terms.add(new Const(fact.get(name)));
           }
-        });
+          return new Literal("fn_" + name().toLowerCase(), terms);
+        }).collect(Collectors.toList());
+
+        if (uri.equals("http://localhost:3000/crm1")) {
+          return BoxedType.create(facts.iterator()); // For tests purposes !
+        }
+        return BoxedType.create(facts);
+      }
+    });
     return kb;
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition2(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
-        new Function("MOCK_MATERIALIZE_FACTS") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS", new Function("MOCK_MATERIALIZE_FACTS") {
 
-          @Override
-          protected boolean isCacheable() {
-            return false;
-          }
+      @Override
+      protected boolean isCacheable() {
+        return false;
+      }
 
-          @Override
-          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+      @Override
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-            List<Literal> literals = new ArrayList<>();
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
-                .head());
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824afe9a2309abcf033bc74b7fe42a84\").")
-                .head());
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
-                .head());
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
-                .head());
+        List<Literal> literals = new ArrayList<>();
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
+            .head());
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824afe9a2309abcf033bc74b7fe42a84\").")
+            .head());
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
+            .head());
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
+            .head());
 
-            return BoxedType.create(literals);
-          }
-        });
+        return BoxedType.create(literals);
+      }
+    });
     return kb;
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition3(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
-        new Function("MOCK_MATERIALIZE_FACTS") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS", new Function("MOCK_MATERIALIZE_FACTS") {
 
-          @Override
-          protected boolean isCacheable() {
-            return false;
+      @Override
+      protected boolean isCacheable() {
+        return false;
+      }
+
+      @Override
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+        List<Literal> literals = new ArrayList<>();
+
+        String path = parameters.get(3).asString();
+        String text = parameters.get(6).asString();
+
+        if (parameters.get(0).asString().equals("https://localhost/facts/dab/fichier")) {
+          if (("_".equals(path) || "/var/sftp/file1.pdf".equals(path))
+              && ("_".equals(text) || "The quick brown fox jumps over the lazy dog".equals(text))) {
+            literals.add(new Literal("fn_mock_materialize_facts",
+                Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
+                    new Const("metadata.path"), new Const("*"), new Const("/var/sftp/file1.pdf"),
+                    new Const("content.text"), new Const("*"),
+                    new Const("The quick brown fox jumps over the lazy dog"))));
           }
-
-          @Override
-          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
-
-            List<Literal> literals = new ArrayList<>();
-
-            String path = parameters.get(3).asString();
-            String text = parameters.get(6).asString();
-
-            if (parameters.get(0).asString().equals("https://localhost/facts/dab/fichier")) {
-              if (("_".equals(path) || "/var/sftp/file1.pdf".equals(path)) && ("_".equals(text)
-                  || "The quick brown fox jumps over the lazy dog".equals(text))) {
-                literals.add(new Literal("fn_mock_materialize_facts",
-                    Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
-                        new Const("metadata.path"), new Const("*"),
-                        new Const("/var/sftp/file1.pdf"), new Const("content.text"), new Const("*"),
-                        new Const("The quick brown fox jumps over the lazy dog"))));
-              }
-              if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
-                  || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
-                literals.add(new Literal("fn_mock_materialize_facts",
-                    Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
-                        new Const("metadata.path"), new Const("*"),
-                        new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
-                        new Const("The quick brown fox\njumps over\r\nthe lazy dog"))));
-              }
-            } else {
-              if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
-                  || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
-                Literal literal = new Literal("fn_mock_materialize_facts",
-                    Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
-                        new Const("metadata.path"), new Const("*"),
-                        new Const("/var/sftp/file2.pdf"), new Const("content.text"), new Const("*"),
-                        new Const("The quick brown fox\njumps over\r\nthe lazy dog")));
-                literals.add(Parser.parseClause(literal + ".").head());
-              }
-              if (("_".equals(path) || "/var/sftp/file3.pdf".equals(path)) && ("_".equals(text)
-                  || "The quick brown fox jumps over the lazy dog".equals(text))) {
-                Literal literal = new Literal("fn_mock_materialize_facts",
-                    Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
-                        new Const("metadata.path"), new Const("*"),
-                        new Const("/var/sftp/file3.pdf"), new Const("content.text"), new Const("*"),
-                        new Const("The quick brown fox jumps over the lazy dog")));
-                literals.add(Parser.parseClause(literal + ".").head());
-              }
-            }
-            return BoxedType.create(literals);
+          if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
+              || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
+            literals.add(new Literal("fn_mock_materialize_facts",
+                Lists.newArrayList(new Const("https://localhost/facts/dab/fichier"),
+                    new Const("metadata.path"), new Const("*"), new Const("/var/sftp/file2.pdf"),
+                    new Const("content.text"), new Const("*"),
+                    new Const("The quick brown fox\njumps over\r\nthe lazy dog"))));
           }
-        });
+        } else {
+          if (("_".equals(path) || "/var/sftp/file2.pdf".equals(path)) && ("_".equals(text)
+              || "The quick brown fox\njumps over\r\nthe lazy dog".equals(text))) {
+            Literal literal = new Literal("fn_mock_materialize_facts",
+                Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
+                    new Const("metadata.path"), new Const("*"), new Const("/var/sftp/file2.pdf"),
+                    new Const("content.text"), new Const("*"),
+                    new Const("The quick brown fox\njumps over\r\nthe lazy dog")));
+            literals.add(Parser.parseClause(literal + ".").head());
+          }
+          if (("_".equals(path) || "/var/sftp/file3.pdf".equals(path))
+              && ("_".equals(text) || "The quick brown fox jumps over the lazy dog".equals(text))) {
+            Literal literal = new Literal("fn_mock_materialize_facts",
+                Lists.newArrayList(new Const("https://localhost/facts/vam/fichier"),
+                    new Const("metadata.path"), new Const("*"), new Const("/var/sftp/file3.pdf"),
+                    new Const("content.text"), new Const("*"),
+                    new Const("The quick brown fox jumps over the lazy dog")));
+            literals.add(Parser.parseClause(literal + ".").head());
+          }
+        }
+        return BoxedType.create(literals);
+      }
+    });
     return kb;
   }
 
   private AbstractKnowledgeBase addMockMaterializeFactsQueryDefinition4(AbstractKnowledgeBase kb) {
-    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS",
-        new Function("MOCK_MATERIALIZE_FACTS") {
+    kb.definitions().put("FN_MOCK_MATERIALIZE_FACTS", new Function("MOCK_MATERIALIZE_FACTS") {
 
-          @Override
-          protected boolean isCacheable() {
-            return false;
-          }
+      @Override
+      protected boolean isCacheable() {
+        return false;
+      }
 
-          @Override
-          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+      @Override
+      public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-            List<Literal> literals = new ArrayList<>();
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
-                .head());
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"x \\u003d\\u003d val — test equality or represent a symbolic equation (!\\u003d for unequal)\").")
-                .head());
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
-                .head());
-            literals.add(Parser.parseClause(
-                "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
-                .head());
+        List<Literal> literals = new ArrayList<>();
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+            .head());
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"x \\u003d\\u003d val — test equality or represent a symbolic equation (!\\u003d for unequal)\").")
+            .head());
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+            .head());
+        literals.add(Parser.parseClause(
+            "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"content.text\", \"*\", \"lhs \\u003a\\u003d rhs — function etc. definition\").")
+            .head());
 
-            return BoxedType.create(literals);
-          }
-        });
+        return BoxedType.create(literals);
+      }
+    });
     return kb;
   }
 }

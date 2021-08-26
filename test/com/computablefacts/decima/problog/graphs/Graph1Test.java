@@ -59,6 +59,9 @@ public class Graph1Test {
     Literal query = new Literal("path", new Const("1"), new Const("4"));
     Set<Clause> proofs = solver.proofs(query);
 
+    // Verify subgoals
+    Assert.assertEquals(14, solver.nbSubgoals());
+
     // Verify answers
     Assert.assertEquals(8, proofs.size());
 

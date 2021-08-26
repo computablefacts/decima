@@ -49,6 +49,9 @@ public class Graph5Test {
     Literal query = new Literal("path", new Const("1"), new Const("6"));
     Set<Clause> proofs = solver.proofs(query);
 
+    // Verify subgoals
+    Assert.assertEquals(14, solver.nbSubgoals());
+
     // Verify answers
     // path(1, 6) :- 0.6::edge(1, 2), 0.3::edge(2, 6).
     // path(1, 6) :- 0.6::edge(1, 2), 0.4::edge(2, 5), 0.2::edge(5, 6).

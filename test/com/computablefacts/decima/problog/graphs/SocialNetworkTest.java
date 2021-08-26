@@ -32,6 +32,9 @@ public class SocialNetworkTest {
     Literal query = new Literal("smokes", new Const("angelika"));
     Set<Clause> proofs = solver.proofs(query);
 
+    // Verify subgoals
+    Assert.assertEquals(11, solver.nbSubgoals());
+
     // Verify answers
     Assert.assertEquals(2, proofs.size());
     Assert.assertTrue(isValid(proofs,
@@ -53,6 +56,9 @@ public class SocialNetworkTest {
     Solver solver = solver(kb());
     Literal query = new Literal("smokes", new Const("joris"));
     Set<Clause> proofs = solver.proofs(query);
+
+    // Verify subgoals
+    Assert.assertEquals(22, solver.nbSubgoals());
 
     // Verify answers
     Assert.assertEquals(5, proofs.size());

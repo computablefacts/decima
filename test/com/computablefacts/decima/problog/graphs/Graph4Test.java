@@ -52,6 +52,9 @@ public class Graph4Test {
     Literal query = new Literal("path", new Const("b"), new Const("f"));
     Set<Clause> proofs = solver.proofs(query);
 
+    // Verify subgoals
+    Assert.assertEquals(14, solver.nbSubgoals());
+
     // Verify answers
     // path(b, f) :- 0.2::edge(b, d), 0.5::edge(d, f).
     // path(b, f) :- 0.8::edge(b, e), 0.3::edge(e, f).

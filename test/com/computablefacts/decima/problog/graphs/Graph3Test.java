@@ -48,6 +48,9 @@ public class Graph3Test {
     Literal query1 = new Literal("path", new Const("a"), new Const("d"));
     Set<Clause> proofs1 = solver.proofs(query1);
 
+    // Verify subgoals
+    Assert.assertEquals(12, solver.nbSubgoals());
+
     // Verify answers
     Assert.assertEquals(4, proofs1.size());
 

@@ -21,7 +21,6 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
@@ -74,6 +73,15 @@ final public class Solver {
     kb_ = kb;
     subgoals_ = new ConcurrentHashMap<>();
     newSubgoal_ = newSubgoal;
+  }
+
+  /**
+   * Return the number of subgoals.
+   *
+   * @return the number of subgoals.
+   */
+  public int nbSubgoals() {
+    return subgoals_.size();
   }
 
   /**
@@ -166,30 +174,10 @@ final public class Solver {
     Literal literal = subgoal.literal();
     Predicate predicate = literal.predicate();
 
-    if (predicate.isPrimitive()) {
+    Preconditions.checkState(!predicate.isPrimitive(), "predicate should not be a primitive : %s",
+        literal.toString());
 
-      Iterator<Literal> literals = literal.execute(kb_.definitions());
-
-      if (literals == null) {
-        cleanWaiters(subgoal, literal);
-      } else {
-        while (literals.hasNext()) {
-
-          Clause clause = new Clause(literals.next());
-
-          if (clause.isFact()) {
-            add(subgoal, clause);
-          } else {
-            logger_.warn(LogFormatter.create(true)
-                .message("Primitives must only return Stream of facts. Clause ignored.")
-                .add("literal", literal.toString()).add("clause", clause.toString()).formatError());
-          }
-          if (maxSampleSizeReached()) {
-            break;
-          }
-        }
-      }
-    } else if (predicate.isNegated()) {
+    if (predicate.isNegated()) {
 
       Preconditions.checkState(literal.isSemiGrounded(), "negated clauses should be grounded : %s",
           literal.toString());
@@ -331,6 +319,22 @@ final public class Solver {
     Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause.toString());
 
     Literal first = clause.body().get(0);
+
+    if (first.predicate().isPrimitive()) {
+
+      Iterator<Literal> literals = first.execute(kb_.definitions());
+
+      if (literals != null) {
+        while (literals.hasNext()) {
+          Clause fact = new Clause(literals.next());
+          ground(subgoal, clause, fact);
+        }
+        return;
+      }
+      cleanSubgoal(subgoal, first);
+      return;
+    }
+
     @Var
     Subgoal sub = subgoals_.get(first.tag());
 
@@ -558,7 +562,8 @@ final public class Solver {
     boolean isNegatedFact = !isRule && !isFact && isNegated;
 
     Preconditions.checkState(
-        (isRule && !isFact && !isNegatedFact) || (!isRule && (isFact || isNegatedFact)),
+        (isRule && !isFact && !isNegatedFact && !isPrimitive)
+            || (!isRule && (isFact || isNegatedFact || isPrimitive)),
         "[S2] inconsistent state for literal %s\nparent rule is %s", literal.toString(),
         rule.toString());
 
@@ -755,4 +760,3 @@ final public class Solver {
     return facts;
   }
 }
-
