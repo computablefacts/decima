@@ -388,10 +388,12 @@ final public class Solver {
     // Rule with first body literal
     Clause prevClause = rule.resolve(fact.head());
 
+    Preconditions.checkState(prevClause != null, "resolution failed : rule = %s / head = %s",
+        rule.toString(), fact.toString());
+
     // Rule minus first body literal
-    Clause newClause = prevClause == null ? null
-        : new Clause(prevClause.head(),
-            Collections.unmodifiableList(prevClause.body().subList(1, prevClause.body().size())));
+    Clause newClause = new Clause(prevClause.head(),
+        Collections.unmodifiableList(prevClause.body().subList(1, prevClause.body().size())));
 
     // Original rule
     subgoal.update(prevClause);
