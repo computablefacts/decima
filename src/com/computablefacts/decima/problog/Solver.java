@@ -328,6 +328,9 @@ final public class Solver {
         while (literals.hasNext()) {
           Clause fact = new Clause(literals.next());
           ground(subgoal, clause, fact);
+          if (maxSampleSizeReached()) {
+            break;
+          }
         }
         return;
       }
