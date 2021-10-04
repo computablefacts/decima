@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -21,7 +22,9 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
@@ -239,7 +242,21 @@ final public class Solver {
       }
     } else {
 
+      if (logger_.isDebugEnabled()) {
+        logger_.debug(LogFormatter.create(true).message("loading clauses")
+            .add("is_primitive", false).add("literal", literal).formatDebug());
+      }
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
       Iterator<Clause> clauses = kb_.clauses(literal);
+      stopwatch.stop();
+
+      if (logger_.isDebugEnabled()) {
+        logger_.debug(LogFormatter.create(true)
+            .message(
+                String.format("clauses loaded in %d ms", stopwatch.elapsed(TimeUnit.MILLISECONDS)))
+            .add("is_primitive", false).add("literal", literal).formatDebug());
+      }
 
       while (clauses.hasNext()) {
 
@@ -322,7 +339,23 @@ final public class Solver {
 
     if (first.predicate().isPrimitive()) {
 
+      if (logger_.isDebugEnabled()) {
+        logger_.debug(
+            LogFormatter.create(true).message("evaluating function").add("is_primitive", true)
+                .add("first_body_literal", first).add("rule", clause).formatDebug());
+      }
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
       Iterator<Literal> literals = first.execute(kb_.definitions());
+      stopwatch.stop();
+
+      if (logger_.isDebugEnabled()) {
+        logger_.debug(LogFormatter.create(true)
+            .message(String.format("function evaluated in %d ms",
+                stopwatch.elapsed(TimeUnit.MILLISECONDS)))
+            .add("is_primitive", true).add("first_body_literal", first).add("rule", clause)
+            .formatDebug());
+      }
 
       if (literals != null) {
         while (literals.hasNext()) {
