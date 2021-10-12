@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,9 +49,10 @@ final public class Solver extends CommandLine {
     String root = getStringCommand(args, "root", null);
     String dataset = getStringCommand(args, "dataset", null);
     boolean showLogs = getBooleanCommand(args, "show_logs", false);
+    boolean computeProbabilities = getBooleanCommand(args, "compute_probabilities", true);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
-    Map<Literal, BigDecimal> answers = apply(rules, facts, queries);
+    Map<Literal, BigDecimal> answers = apply(rules, facts, queries, computeProbabilities);
 
     if ("problob".equals(type)) {
 
@@ -107,7 +109,8 @@ final public class Solver extends CommandLine {
     }
   }
 
-  private static Map<Literal, BigDecimal> apply(File rules, File facts, File queries) {
+  private static Map<Literal, BigDecimal> apply(File rules, File facts, File queries,
+      boolean computeProbabilities) {
 
     Preconditions.checkNotNull(rules, "rules should not be null");
     Preconditions.checkNotNull(facts, "facts should not be null");
@@ -126,10 +129,12 @@ final public class Solver extends CommandLine {
     Set<Literal> questions = Files.lineStream(queries, StandardCharsets.UTF_8)
         .map(line -> Parser.parseQuery(line.getValue())).collect(Collectors.toSet());
 
-    return apply(questions, clauses);
+    return computeProbabilities ? applyWithProbabilities(questions, clauses)
+        : applyWithoutProbabilities(questions, clauses);
   }
 
-  private static Map<Literal, BigDecimal> apply(Set<Literal> questions, Set<Clause> clauses) {
+  private static Map<Literal, BigDecimal> applyWithProbabilities(Set<Literal> questions,
+      Set<Clause> clauses) {
 
     Preconditions.checkNotNull(questions, "questions should not be null");
     Preconditions.checkNotNull(clauses, "clauses should not be null");
@@ -147,6 +152,30 @@ final public class Solver extends CommandLine {
       Map<Clause, BigDecimal> probabilities = estimator.probabilities();
 
       probabilities.forEach((head, probability) -> answers.put(head.head(), probability));
+    }
+    return answers;
+  }
+
+  private static Map<Literal, BigDecimal> applyWithoutProbabilities(Set<Literal> questions,
+      Set<Clause> clauses) {
+
+    Preconditions.checkNotNull(questions, "questions should not be null");
+    Preconditions.checkNotNull(clauses, "clauses should not be null");
+
+    Map<Literal, BigDecimal> answers = new HashMap<>();
+    AbstractKnowledgeBase kb = new InMemoryKnowledgeBase();
+    clauses.forEach(kb::azzert);
+
+    com.computablefacts.decima.problog.Solver solver =
+        new com.computablefacts.decima.problog.Solver(kb, false);
+
+    for (Literal question : questions) {
+
+      Iterator<Clause> iterator = solver.solve(question);
+
+      while (iterator.hasNext()) {
+        answers.put(iterator.next().head(), BigDecimal.ONE);
+      }
     }
     return answers;
   }
