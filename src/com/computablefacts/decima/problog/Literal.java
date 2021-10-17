@@ -15,6 +15,7 @@ import com.computablefacts.nona.Generated;
 import com.computablefacts.nona.types.BoxedType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 
@@ -27,7 +28,9 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Literal {
 
-  private final List<String> id_;
+  private final ImmutableList<String> hash_;
+  private final String id_;
+  private final String tag_;
   private final Predicate predicate_;
   private final List<AbstractTerm> terms_;
   private final List<Literal> functions_; // a sequence of functions to execute
@@ -103,7 +106,10 @@ final public class Literal {
     predicate_ = new Predicate(predicate, terms.size());
     functions_ = new ArrayList<>(functions);
     terms_ = new ArrayList<>(terms);
-    id_ = createId();
+    hash_ = ImmutableList.copyOf(hash());
+    id_ = Joiner.on(':').join(hash_);
+    tag_ = hash_.stream().skip(1 /* probability */).map(t -> t.charAt(0) == 'v' ? "v" : t)
+        .collect(Collectors.joining(":"));
   }
 
   @Override
@@ -115,12 +121,12 @@ final public class Literal {
       return false;
     }
     Literal literal = (Literal) obj;
-    return probability_.compareTo(literal.probability_) == 0 && tag().equals(literal.tag());
+    return probability_.compareTo(literal.probability_) == 0 && tag_.equals(literal.tag_);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(probability_.stripTrailingZeros(), tag());
+    return Objects.hash(probability(), tag_);
   }
 
   @Override
@@ -129,7 +135,7 @@ final public class Literal {
     StringBuilder builder = new StringBuilder();
 
     if (BigDecimal.ONE.compareTo(probability_) != 0) {
-      builder.append(probability_.stripTrailingZeros());
+      builder.append(probability());
       builder.append("::");
     }
 
@@ -192,7 +198,7 @@ final public class Literal {
    * @return an identifier.
    */
   public String id() {
-    return Joiner.on(':').join(id_);
+    return id_;
   }
 
   /**
@@ -204,8 +210,7 @@ final public class Literal {
    * @return a tag.
    */
   public String tag() {
-    return id_.stream().skip(1 /* probability */).map(t -> t.charAt(0) == 'v' ? "v" : t)
-        .collect(Collectors.joining(":"));
+    return tag_;
   }
 
   /**
@@ -293,20 +298,20 @@ final public class Literal {
     Preconditions.checkNotNull(literal, "literal should not be null");
 
     // Check arity
-    if (id_.size() != literal.id_.size()) {
+    if (hash_.size() != literal.hash_.size()) {
       return false;
     }
 
     // Skip probability but check predicate
-    if (!id_.get(1).equals(literal.id_.get(1))) {
+    if (!hash_.get(1).equals(literal.hash_.get(1))) {
       return false;
     }
 
     // Check terms
-    for (int i = 2; i < literal.id_.size(); i++) {
+    for (int i = 2; i < literal.hash_.size(); i++) {
 
-      String t1 = id_.get(i);
-      String t2 = literal.id_.get(i);
+      String t1 = hash_.get(i);
+      String t2 = literal.hash_.get(i);
 
       if (t1.charAt(0) == 'c' && t2.charAt(0) == 'c') {
         if (!t1.equals(t2)) {
@@ -640,19 +645,19 @@ final public class Literal {
    *
    * @return a new identifier.
    */
-  private List<String> createId() {
+  private List<String> hash() {
 
-    List<String> id = new ArrayList<>();
-    id.add(probability_.stripTrailingZeros().toString());
-    id.add(predicate_.id());
+    List<String> hash = new ArrayList<>();
+    hash.add(probability().toString());
+    hash.add(predicate_.id());
 
     for (AbstractTerm term : terms_) {
       if (term.isConst()) {
-        id.add("c" + term.id());
+        hash.add("c" + term.id());
       } else {
-        id.add(term.id());
+        hash.add(term.id()); // id starts with 'v'
       }
     }
-    return id;
+    return hash;
   }
 }

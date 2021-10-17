@@ -21,7 +21,6 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Clause {
 
-  private final String id_;
   private final Literal head_;
   private final List<Literal> body_;
 
@@ -156,7 +155,6 @@ final public class Clause {
 
     head_ = head;
     body_ = new ArrayList<>(body);
-    id_ = createId();
   }
 
   @Override
@@ -171,7 +169,7 @@ final public class Clause {
     Clause clause = (Clause) obj;
 
     if (clause.isFact()) {
-      return id_.equals(clause.id_);
+      return head_.equals(clause.head_);
     }
     return head_.equals(clause.head_) && body_.equals(clause.body_);
   }
@@ -179,7 +177,7 @@ final public class Clause {
   @Override
   public int hashCode() {
     if (isFact()) {
-      return id_.hashCode();
+      return head_.hashCode();
     }
     return Objects.hash(head_, body_);
   }
@@ -188,7 +186,6 @@ final public class Clause {
   public String toString() {
 
     StringBuilder builder = new StringBuilder();
-
     builder.append(head_.toString());
 
     if (isRule()) {
@@ -207,15 +204,6 @@ final public class Clause {
   }
 
   /**
-   * Get the current clause identifier.
-   *
-   * @return the clause identifier.
-   */
-  public String id() {
-    return id_;
-  }
-
-  /**
    * Get the current clause head.
    *
    * @return the clause head.
@@ -231,15 +219,6 @@ final public class Clause {
    */
   public List<Literal> body() {
     return body_;
-  }
-
-  /**
-   * Check if the current clause is a primitive.
-   *
-   * @return true iif the current clause is a primitive.
-   */
-  public boolean isPrimitive() {
-    return head_.predicate().isPrimitive() && body_.isEmpty();
   }
 
   /**
@@ -295,10 +274,9 @@ final public class Clause {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
 
-    if (!head_.isRelevant(clause.head())) {
+    if (!head_.isRelevant(clause.head_)) {
       return false;
     }
-
     if (body_.size() != clause.body_.size()) {
       return false;
     }
@@ -398,29 +376,6 @@ final public class Clause {
       body.add(body_.get(i).subst(env));
     }
     return new Clause(head, body);
-  }
-
-  /**
-   * Build a new identifier.
-   *
-   * @return a new identifier.
-   */
-  private String createId() {
-
-    StringBuilder id = new StringBuilder();
-    id.append(addSize(head_.id()));
-
-    for (Literal literal : body_) {
-      id.append(addSize(literal.id()));
-    }
-    return id.toString();
-  }
-
-  private String addSize(String str) {
-
-    Preconditions.checkNotNull(str, "str should not be null");
-
-    return Integer.toString(str.length(), 10) + ":" + str;
   }
 
   /**
