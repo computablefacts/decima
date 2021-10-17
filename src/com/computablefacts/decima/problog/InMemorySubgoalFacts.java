@@ -29,7 +29,7 @@ final public class InMemorySubgoalFacts extends AbstractSubgoalFacts {
   }
 
   @Override
-  public int nbFacts() {
+  public int size() {
     return facts_.size();
   }
 

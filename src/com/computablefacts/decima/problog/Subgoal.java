@@ -88,7 +88,7 @@ final public class Subgoal {
   }
 
   int nbFacts() {
-    return facts_.nbFacts();
+    return facts_.size();
   }
 
   Set<Map.Entry<Subgoal, Clause>> waiters() {
