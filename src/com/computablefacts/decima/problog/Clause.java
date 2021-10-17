@@ -160,26 +160,26 @@ final public class Clause {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
-    if (!(o instanceof Clause)) {
+    if (!(obj instanceof Clause)) {
       return false;
     }
 
-    Clause clause = (Clause) o;
+    Clause clause = (Clause) obj;
 
     if (clause.isFact()) {
-      return Objects.equals(id_, clause.id_);
+      return id_.equals(clause.id_);
     }
-    return Objects.equals(head_, clause.head_) && Objects.equals(body_, clause.body_);
+    return head_.equals(clause.head_) && body_.equals(clause.body_);
   }
 
   @Override
   public int hashCode() {
     if (isFact()) {
-      return Objects.hash(id_);
+      return id_.hashCode();
     }
     return Objects.hash(head_, body_);
   }

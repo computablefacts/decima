@@ -1,7 +1,5 @@
 package com.computablefacts.decima.problog;
 
-import java.util.Objects;
-
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
 
@@ -41,20 +39,20 @@ final public class Predicate {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
-    if (!(o instanceof Predicate)) {
+    if (!(obj instanceof Predicate)) {
       return false;
     }
-    Predicate predicate = (Predicate) o;
-    return Objects.equals(id_, predicate.id_);
+    Predicate predicate = (Predicate) obj;
+    return id_.equals(predicate.id_);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id_);
+    return id_.hashCode();
   }
 
   @Override

@@ -109,16 +109,15 @@ final public class Literal {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
-    if (!(o instanceof Literal)) {
+    if (!(obj instanceof Literal)) {
       return false;
     }
-    Literal literal = (Literal) o;
-    return Objects.equals(probability_.stripTrailingZeros(),
-        literal.probability_.stripTrailingZeros()) && Objects.equals(tag_, literal.tag_);
+    Literal literal = (Literal) obj;
+    return probability_.compareTo(literal.probability_) == 0 && tag_.equals(literal.tag_);
   }
 
   @Override

@@ -1,7 +1,6 @@
 package com.computablefacts.decima.problog;
 
 import java.util.Map;
-import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
@@ -15,20 +14,20 @@ public abstract class AbstractTerm {
   protected AbstractTerm() {}
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
-    if (!(o instanceof AbstractTerm)) {
+    if (!(obj instanceof AbstractTerm)) {
       return false;
     }
-    AbstractTerm term = (AbstractTerm) o;
-    return Objects.equals(id(), term.id());
+    AbstractTerm term = (AbstractTerm) obj;
+    return id().equals(term.id());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id());
+    return id().hashCode();
   }
 
   /**
