@@ -27,12 +27,11 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Literal {
 
-  private final List<String> tag_;
+  private final List<String> id_;
   private final Predicate predicate_;
   private final List<AbstractTerm> terms_;
   private final List<Literal> functions_; // a sequence of functions to execute
   private final BigDecimal probability_;
-  private final String id_;
 
   private Boolean isGrounded_ = null;
   private Boolean isSemiGrounded_ = null;
@@ -105,7 +104,6 @@ final public class Literal {
     functions_ = new ArrayList<>(functions);
     terms_ = new ArrayList<>(terms);
     id_ = createId();
-    tag_ = createTag();
   }
 
   @Override
@@ -117,12 +115,12 @@ final public class Literal {
       return false;
     }
     Literal literal = (Literal) obj;
-    return probability_.compareTo(literal.probability_) == 0 && tag_.equals(literal.tag_);
+    return probability_.compareTo(literal.probability_) == 0 && tag().equals(literal.tag());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(probability_.stripTrailingZeros(), tag_);
+    return Objects.hash(probability_.stripTrailingZeros(), tag());
   }
 
   @Override
@@ -194,7 +192,7 @@ final public class Literal {
    * @return an identifier.
    */
   public String id() {
-    return id_;
+    return Joiner.on(':').join(id_);
   }
 
   /**
@@ -206,7 +204,8 @@ final public class Literal {
    * @return a tag.
    */
   public String tag() {
-    return Joiner.on(':').join(tag_);
+    return id_.stream().skip(1 /* probability */).map(t -> t.charAt(0) == 'v' ? "v" : t)
+        .collect(Collectors.joining(":"));
   }
 
   /**
@@ -294,20 +293,20 @@ final public class Literal {
     Preconditions.checkNotNull(literal, "literal should not be null");
 
     // Check arity
-    if (tag_.size() != literal.tag_.size()) {
+    if (id_.size() != literal.id_.size()) {
       return false;
     }
 
-    // Check predicate
-    if (!tag_.get(0).equals(literal.tag_.get(0))) {
+    // Skip probability but check predicate
+    if (!id_.get(1).equals(literal.id_.get(1))) {
       return false;
     }
 
     // Check terms
-    for (int i = 1; i < literal.tag_.size(); i++) {
+    for (int i = 2; i < literal.id_.size(); i++) {
 
-      String t1 = tag_.get(i);
-      String t2 = literal.tag_.get(i);
+      String t1 = id_.get(i);
+      String t2 = literal.id_.get(i);
 
       if (t1.charAt(0) == 'c' && t2.charAt(0) == 'c') {
         if (!t1.equals(t2)) {
@@ -641,40 +640,19 @@ final public class Literal {
    *
    * @return a new identifier.
    */
-  private String createId() {
+  private List<String> createId() {
 
-    StringBuilder id = new StringBuilder();
-    id.append(probability_);
-    id.append(':');
-    id.append(predicate_.id());
+    List<String> id = new ArrayList<>();
+    id.add(probability_.stripTrailingZeros().toString());
+    id.add(predicate_.id());
 
     for (AbstractTerm term : terms_) {
-      id.append(':').append(term.id());
-    }
-    return id.toString();
-  }
-
-  /**
-   * Build a new tag.
-   *
-   * @return a new tag.
-   */
-  private List<String> createTag() {
-
-    List<String> tag = new ArrayList<>();
-    // TODO : tag.add(probability_); ?
-    tag.add(predicate_.id());
-
-    for (int i = 0; i < terms_.size(); i++) {
-
-      AbstractTerm term = terms_.get(i);
-
       if (term.isConst()) {
-        tag.add("c" + term.id());
+        id.add("c" + term.id());
       } else {
-        tag.add("v" + i);
+        id.add(term.id());
       }
     }
-    return tag;
+    return id;
   }
 }
