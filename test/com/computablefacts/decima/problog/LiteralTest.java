@@ -243,12 +243,12 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("17:~edge/21:a1:b", literal0.id());
-    Assert.assertEquals("16:edge/21:a1:b", literal1.id());
+    Assert.assertEquals("1:~edge/2:a:b", literal0.id());
+    Assert.assertEquals("1:edge/2:a:b", literal1.id());
 
-    Assert.assertTrue(WildcardMatcher.match(literal2.id(), "1?:edge/21:av*"));
-    Assert.assertTrue(WildcardMatcher.match(literal3.id(), "1?:edge/2v*1:c"));
-    Assert.assertTrue(WildcardMatcher.match(literal4.id(), "1?:edge/2v*:b"));
+    Assert.assertTrue(WildcardMatcher.match(literal2.id(), "1:edge/2:a:v*"));
+    Assert.assertTrue(WildcardMatcher.match(literal3.id(), "1:edge/2:v*:c"));
+    Assert.assertTrue(WildcardMatcher.match(literal4.id(), "1:edge/2:v*:b"));
 
     Assert.assertNotEquals(literal0.id(), literal1.id());
     Assert.assertNotEquals(literal0.id(), literal2.id());
@@ -274,11 +274,11 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("7:~edge/21:a1:b", literal0.tag());
-    Assert.assertEquals("6:edge/21:a1:b", literal1.tag());
-    Assert.assertEquals("6:edge/21:av1", literal2.tag());
-    Assert.assertEquals("6:edge/2v01:c", literal3.tag());
-    Assert.assertEquals("6:edge/2v01:b", literal4.tag());
+    Assert.assertEquals("~edge/2:a:b", literal0.tag());
+    Assert.assertEquals("edge/2:a:b", literal1.tag());
+    Assert.assertEquals("edge/2:a:v1", literal2.tag());
+    Assert.assertEquals("edge/2:v0:c", literal3.tag());
+    Assert.assertEquals("edge/2:v0:b", literal4.tag());
 
     Assert.assertNotEquals(literal0.tag(), literal1.tag());
     Assert.assertNotEquals(literal0.tag(), literal2.tag());

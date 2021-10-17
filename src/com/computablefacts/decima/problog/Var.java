@@ -12,26 +12,26 @@ final public class Var extends AbstractTerm {
 
   private final static AtomicInteger ID = new AtomicInteger(0);
 
-  private final String id_;
   private final boolean isWildcard_;
+  private final int id_;
 
   public Var() {
     this(false);
   }
 
   public Var(boolean isWildcard) {
-    id_ = "v" + Integer.toString(ID.getAndIncrement(), 10);
+    id_ = ID.getAndIncrement();
     isWildcard_ = isWildcard;
   }
 
   @Override
   public String toString() {
-    return isWildcard_ ? "_" : id_.toUpperCase();
+    return isWildcard_ ? "_" : "V" + id_;
   }
 
   @Override
   public String id() {
-    return id_;
+    return "v" + id_;
   }
 
   @Override

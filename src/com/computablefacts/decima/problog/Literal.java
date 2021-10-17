@@ -651,10 +651,11 @@ final public class Literal {
 
     StringBuilder id = new StringBuilder();
     id.append(probability_);
-    id.append(addSize(predicate_.id()));
+    id.append(':');
+    id.append(predicate_.id());
 
     for (AbstractTerm term : terms_) {
-      id.append(term.id());
+      id.append(':').append(term.id());
     }
     return id.toString();
   }
@@ -668,25 +669,18 @@ final public class Literal {
 
     StringBuilder tag = new StringBuilder();
     // TODO : tag.append(probability_); ?
-    tag.append(addSize(predicate_.id()));
+    tag.append(predicate_.id());
 
     for (int i = 0; i < terms_.size(); i++) {
 
       AbstractTerm term = terms_.get(i);
 
       if (term.isConst()) {
-        tag.append(term.id());
+        tag.append(':').append(term.id());
       } else {
-        tag.append("v" + Integer.toString(i, 10));
+        tag.append(":v").append(i);
       }
     }
     return tag.toString();
-  }
-
-  private String addSize(String str) {
-
-    Preconditions.checkNotNull(str, "str should not be null");
-
-    return Integer.toString(str.length(), 10) + ":" + str;
   }
 }

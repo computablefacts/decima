@@ -16,12 +16,26 @@ final public class Const extends AbstractTerm {
 
   private static final HashFunction MURMUR3_128 = Hashing.murmur3_128();
 
-  private final String id_;
   private final Object value_;
 
   public Const(Object value) {
     value_ = Preconditions.checkNotNull(value, "value should not be null");
-    id_ = addSize(value_.toString());
+  }
+
+  private static String hash(Object value) {
+
+    Hasher hasher = MURMUR3_128.newHasher();
+
+    if (value != null) {
+
+      String newValue = value.toString();
+
+      if (newValue.length() <= 32) {
+        return newValue;
+      }
+      hasher.putString(newValue, StandardCharsets.UTF_8);
+    }
+    return hasher.hash().toString();
   }
 
   @Override
@@ -31,7 +45,7 @@ final public class Const extends AbstractTerm {
 
   @Override
   public String id() {
-    return id_;
+    return hash(value_);
   }
 
   @Override
@@ -46,22 +60,5 @@ final public class Const extends AbstractTerm {
 
   public Object value() {
     return value_;
-  }
-
-  private String addSize(String str) {
-
-    Preconditions.checkNotNull(str, "str should not be null");
-
-    return Integer.toString(str.length(), 10) + ":" + (str.length() <= 32 ? str : hash(str));
-  }
-
-  private String hash(String value) {
-
-    Hasher hasher = MURMUR3_128.newHasher();
-
-    if (value != null) {
-      hasher.putString(value, StandardCharsets.UTF_8);
-    }
-    return hasher.hash().toString();
   }
 }
