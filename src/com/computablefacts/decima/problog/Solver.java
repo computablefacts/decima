@@ -14,8 +14,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -53,9 +52,7 @@ final public class Solver {
 
   protected final AbstractKnowledgeBase kb_;
   protected final Map<String, Subgoal> subgoals_;
-
-  private final AtomicInteger id_ = new AtomicInteger(0);
-  private final BiFunction<Integer, Literal, Subgoal> newSubgoal_;
+  private final Function<Literal, Subgoal> newSubgoal_;
 
   private Subgoal rootSubgoal_ = null;
   private int maxSampleSize_ = -1;
@@ -65,10 +62,10 @@ final public class Solver {
   }
 
   public Solver(AbstractKnowledgeBase kb, boolean trackRules) {
-    this(kb, (id, literal) -> new Subgoal(id, literal, new InMemorySubgoalFacts(), trackRules));
+    this(kb, literal -> new Subgoal(literal, new InMemorySubgoalFacts(), trackRules));
   }
 
-  public Solver(AbstractKnowledgeBase kb, BiFunction<Integer, Literal, Subgoal> newSubgoal) {
+  public Solver(AbstractKnowledgeBase kb, Function<Literal, Subgoal> newSubgoal) {
 
     Preconditions.checkNotNull(kb, "kb should not be null");
     Preconditions.checkNotNull(newSubgoal, "newSubgoal should not be null");
@@ -113,7 +110,7 @@ final public class Solver {
     Preconditions.checkArgument(maxDepth == -1 || maxDepth >= 0,
         "maxDepth should be such as maxDepth == -1 or maxDepth >= 0");
 
-    Subgoal subgoal = newSubgoal_.apply(id_.getAndIncrement(), query);
+    Subgoal subgoal = newSubgoal_.apply(query);
     subgoals_.put(query.tag(), subgoal);
 
     search(subgoal);
@@ -146,7 +143,7 @@ final public class Solver {
 
     Preconditions.checkNotNull(query, "query should not be null");
 
-    Subgoal subgoal = newSubgoal_.apply(id_.getAndIncrement(), query);
+    Subgoal subgoal = newSubgoal_.apply(query);
     subgoals_.put(query.tag(), subgoal);
 
     rootSubgoal_ = subgoal;
@@ -187,7 +184,7 @@ final public class Solver {
 
       // Evaluate the positive version of the rule (i.e. negation as failure)
       Literal base = new Literal(predicate.baseName(), literal.terms());
-      Subgoal sub = newSubgoal_.apply(id_.getAndIncrement(), base);
+      Subgoal sub = newSubgoal_.apply(base);
 
       subgoals_.put(sub.literal().tag(), sub);
 
@@ -376,7 +373,7 @@ final public class Solver {
 
     if (sub == null) {
 
-      sub = newSubgoal_.apply(id_.getAndIncrement(), first);
+      sub = newSubgoal_.apply(first);
       sub.addWaiter(subgoal, clause);
 
       subgoals_.put(sub.literal().tag(), sub);

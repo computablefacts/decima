@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +36,6 @@ final public class Subgoal {
 
   // All maps and lists should support concurrency because they will be updated and enumerated at
   // the same time by the tabling algorithm
-  private final int id_;
   private final Literal literal_;
 
   // Parent rules benefiting from this sub-goal resolution
@@ -46,47 +44,42 @@ final public class Subgoal {
   // Facts derived for this subgoal
   private final AbstractSubgoalFacts facts_;
 
-  public Subgoal(int id, Literal literal, AbstractSubgoalFacts facts, boolean trackRules) {
+  public Subgoal(Literal literal, AbstractSubgoalFacts facts, boolean trackRules) {
 
-    Preconditions.checkArgument(id >= 0, "id must be >= 0");
     Preconditions.checkNotNull(literal, "literal should not be null");
     Preconditions.checkNotNull(facts, "facts should not be null");
 
-    id_ = id;
     literal_ = literal;
     facts_ = facts;
     trackRules_ = trackRules;
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(Object obj) {
+    if (obj == this) {
       return true;
     }
-    if (!(o instanceof Subgoal)) {
+    if (!(obj instanceof Subgoal)) {
       return false;
     }
-    Subgoal subgoal = (Subgoal) o;
-    return Objects.equals(literal_, subgoal.literal_);
+    Subgoal subgoal = (Subgoal) obj;
+    return literal_.equals(subgoal.literal_);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(literal_);
+    return literal_.hashCode();
   }
 
   @Generated
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("id", id_).add("literal", literal_)
-        .add("facts", facts_).add("parents", parents_).omitNullValues().toString();
+    return MoreObjects.toStringHelper(this).add("literal", literal_).add("facts", facts_)
+        .add("parents", parents_).omitNullValues().toString();
   }
 
-  int id() {
-    return id_;
-  }
-
-  Literal literal() {
+  @Generated
+  public Literal literal() {
     return literal_;
   }
 
