@@ -274,11 +274,11 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("~edge/2:a:b", literal0.tag());
-    Assert.assertEquals("edge/2:a:b", literal1.tag());
-    Assert.assertEquals("edge/2:a:v1", literal2.tag());
-    Assert.assertEquals("edge/2:v0:c", literal3.tag());
-    Assert.assertEquals("edge/2:v0:b", literal4.tag());
+    Assert.assertEquals("~edge/2:ca:cb", literal0.tag());
+    Assert.assertEquals("edge/2:ca:cb", literal1.tag());
+    Assert.assertEquals("edge/2:ca:v1", literal2.tag());
+    Assert.assertEquals("edge/2:v0:cc", literal3.tag());
+    Assert.assertEquals("edge/2:v0:cb", literal4.tag());
 
     Assert.assertNotEquals(literal0.tag(), literal1.tag());
     Assert.assertNotEquals(literal0.tag(), literal2.tag());

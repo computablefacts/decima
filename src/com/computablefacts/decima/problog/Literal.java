@@ -27,7 +27,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Literal {
 
-  private final String tag_;
+  private final List<String> tag_;
   private final Predicate predicate_;
   private final List<AbstractTerm> terms_;
   private final List<Literal> functions_; // a sequence of functions to execute
@@ -206,17 +206,7 @@ final public class Literal {
    * @return a tag.
    */
   public String tag() {
-    return tag_;
-  }
-
-  /**
-   * Literal key. The key is a tag with the literal probability prepended.
-   *
-   * @return a key.
-   */
-  @Deprecated
-  public String key() {
-    return probability_.stripTrailingZeros().toPlainString() + "::" + tag_;
+    return Joiner.on(':').join(tag_);
   }
 
   /**
@@ -303,19 +293,23 @@ final public class Literal {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
 
-    if (!predicate_.equals(literal.predicate())) {
+    // Check arity
+    if (tag_.size() != literal.tag_.size()) {
       return false;
     }
-    if (terms_.size() != literal.terms().size()) {
+
+    // Check predicate
+    if (!tag_.get(0).equals(literal.tag_.get(0))) {
       return false;
     }
 
-    for (int i = 0; i < literal.terms().size(); i++) {
+    // Check terms
+    for (int i = 1; i < literal.tag_.size(); i++) {
 
-      AbstractTerm t1 = terms_.get(i);
-      AbstractTerm t2 = literal.terms().get(i);
+      String t1 = tag_.get(i);
+      String t2 = literal.tag_.get(i);
 
-      if (t1.isConst() && t2.isConst()) {
+      if (t1.charAt(0) == 'c' && t2.charAt(0) == 'c') {
         if (!t1.equals(t2)) {
           return false;
         }
@@ -665,22 +659,22 @@ final public class Literal {
    *
    * @return a new tag.
    */
-  private String createTag() {
+  private List<String> createTag() {
 
-    StringBuilder tag = new StringBuilder();
-    // TODO : tag.append(probability_); ?
-    tag.append(predicate_.id());
+    List<String> tag = new ArrayList<>();
+    // TODO : tag.add(probability_); ?
+    tag.add(predicate_.id());
 
     for (int i = 0; i < terms_.size(); i++) {
 
       AbstractTerm term = terms_.get(i);
 
       if (term.isConst()) {
-        tag.append(':').append(term.id());
+        tag.add("c" + term.id());
       } else {
-        tag.append(":v").append(i);
+        tag.add("v" + i);
       }
     }
-    return tag.toString();
+    return tag;
   }
 }

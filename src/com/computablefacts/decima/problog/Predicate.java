@@ -10,7 +10,6 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Predicate {
 
-  private final String id_;
   private final String name_;
   private final int arity_;
   private final boolean isNegated_;
@@ -29,7 +28,6 @@ final public class Predicate {
 
     String newName = name.startsWith("~") ? name.substring(1) : name;
 
-    id_ = name + "/" + Integer.toString(arity, 10);
     name_ = name;
     arity_ = arity;
     isNegated_ = !name.equals(newName);
@@ -47,12 +45,12 @@ final public class Predicate {
       return false;
     }
     Predicate predicate = (Predicate) obj;
-    return id_.equals(predicate.id_);
+    return id().equals(predicate.id());
   }
 
   @Override
   public int hashCode() {
-    return id_.hashCode();
+    return id().hashCode();
   }
 
   @Override
@@ -66,7 +64,7 @@ final public class Predicate {
    * @return an unique identifier for the current predicate.
    */
   public String id() {
-    return id_;
+    return name_ + "/" + arity_;
   }
 
   /**
