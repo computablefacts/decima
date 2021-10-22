@@ -153,7 +153,7 @@ final public class Literal {
         builder.append(term);
       } else {
         builder.append('"');
-        builder.append(Function.encode(term.toString()));
+        builder.append(Parser.encode(term.toString(), '¤'));
         builder.append('"');
       }
     }

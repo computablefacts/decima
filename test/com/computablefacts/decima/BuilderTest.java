@@ -47,29 +47,29 @@ public class BuilderTest {
     String result = outContent_.toString().replace("\r", "");
 
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json(\"\", \"????????\", \"{\\u0022Actors\\u0022\\u003a[{\\u0022name\\u0022\\u003a\\u0022Tom Cruise\\u0022\\u002c\\u0022age\\u0022\\u003a56\\u002c\\u0022Born At\\u0022\\u003a\\u0022Syracuse\\u002c NY\\u0022\\u002c\\u0022Birthdate\\u0022\\u003a\\u0022July 3\\u002c 1962\\u0022\\u002c\\u0022photo\\u0022\\u003a\\u0022https\\u003a//jsonformatter.org/img/tom-cruise.jpg\\u0022\\u002c\\u0022wife\\u0022\\u003anull\\u002c\\u0022weight\\u0022\\u003a67.5\\u002c\\u0022hasChildren\\u0022\\u003atrue\\u002c\\u0022hasGreyHair\\u0022\\u003afalse\\u002c\\u0022children\\u0022\\u003a[\\u0022Suri\\u0022\\u002c\\u0022Isabella Jane\\u0022\\u002c\\u0022Connor\\u0022]}\\u002c{\\u0022name\\u0022\\u003a\\u0022Robert Downey Jr.\\u0022\\u002c\\u0022age\\u0022\\u003a53\\u002c\\u0022Born At\\u0022\\u003a\\u0022New York City\\u002c NY\\u0022\\u002c\\u0022Birthdate\\u0022\\u003a\\u0022April 4\\u002c 1965\\u0022\\u002c\\u0022photo\\u0022\\u003a\\u0022https\\u003a//jsonformatter.org/img/Robert-Downey-Jr.jpg\\u0022\\u002c\\u0022wife\\u0022\\u003a\\u0022Susan Downey\\u0022\\u002c\\u0022weight\\u0022\\u003a77.1\\u002c\\u0022hasChildren\\u0022\\u003atrue\\u002c\\u0022hasGreyHair\\u0022\\u003afalse\\u002c\\u0022children\\u0022\\u003a[\\u0022Indio Falconer\\u0022\\u002c\\u0022Avri Roel\\u0022\\u002c\\u0022Exton Elias\\u0022]}]}\").\n*"));
+        "*json(\"\", \"????????\", \"{¤u0022Actors¤u0022¤u003a[{¤u0022name¤u0022¤u003a¤u0022Tom Cruise¤u0022¤u002c¤u0022age¤u0022¤u003a56¤u002c¤u0022Born At¤u0022¤u003a¤u0022Syracuse¤u002c NY¤u0022¤u002c¤u0022Birthdate¤u0022¤u003a¤u0022July 3¤u002c 1962¤u0022¤u002c¤u0022photo¤u0022¤u003a¤u0022https¤u003a//jsonformatter.org/img/tom-cruise.jpg¤u0022¤u002c¤u0022wife¤u0022¤u003anull¤u002c¤u0022weight¤u0022¤u003a67.5¤u002c¤u0022hasChildren¤u0022¤u003atrue¤u002c¤u0022hasGreyHair¤u0022¤u003afalse¤u002c¤u0022children¤u0022¤u003a[¤u0022Suri¤u0022¤u002c¤u0022Isabella Jane¤u0022¤u002c¤u0022Connor¤u0022]}¤u002c{¤u0022name¤u0022¤u003a¤u0022Robert Downey Jr.¤u0022¤u002c¤u0022age¤u0022¤u003a53¤u002c¤u0022Born At¤u0022¤u003a¤u0022New York City¤u002c NY¤u0022¤u002c¤u0022Birthdate¤u0022¤u003a¤u0022April 4¤u002c 1965¤u0022¤u002c¤u0022photo¤u0022¤u003a¤u0022https¤u003a//jsonformatter.org/img/Robert-Downey-Jr.jpg¤u0022¤u002c¤u0022wife¤u0022¤u003a¤u0022Susan Downey¤u0022¤u002c¤u0022weight¤u0022¤u003a77.1¤u002c¤u0022hasChildren¤u0022¤u003atrue¤u002c¤u0022hasGreyHair¤u0022¤u003afalse¤u002c¤u0022children¤u0022¤u003a[¤u0022Indio Falconer¤u0022¤u002c¤u0022Avri Roel¤u0022¤u002c¤u0022Exton Elias¤u0022]}]}\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
         "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"children\", \"2\", \"Connor\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
         "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"children\", \"1\", \"Avri Roel\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"Born At\", \"Syracuse\\u002c NY\").\n*"));
+        "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"Born At\", \"Syracuse¤u002c NY\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"Birthdate\", \"April 4\\u002c 1965\").\n*"));
+        "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"Birthdate\", \"April 4¤u002c 1965\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
         "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"weight\", \"77.1\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"photo\", \"https\\u003a//jsonformatter.org/img/tom-cruise.jpg\").\n*"));
+        "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"photo\", \"https¤u003a//jsonformatter.org/img/tom-cruise.jpg\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
         "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"weight\", \"67.5\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"Birthdate\", \"July 3\\u002c 1962\").\n*"));
+        "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"Birthdate\", \"July 3¤u002c 1962\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
         "*json_path(\"\", \"????????\", \"Actors\", \"0\", \"wife\", \"null\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"Born At\", \"New York City\\u002c NY\").\n*"));
+        "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"Born At\", \"New York City¤u002c NY\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
-        "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"photo\", \"https\\u003a//jsonformatter.org/img/Robert-Downey-Jr.jpg\").\n*"));
+        "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"photo\", \"https¤u003a//jsonformatter.org/img/Robert-Downey-Jr.jpg\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
         "*json_path(\"\", \"????????\", \"Actors\", \"1\", \"children\", \"2\", \"Exton Elias\").\n*"));
     Assert.assertTrue(WildcardMatcher.match(result,
