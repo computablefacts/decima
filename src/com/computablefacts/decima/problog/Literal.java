@@ -615,12 +615,10 @@ final public class Literal {
 
   private Function compile() {
     if (functions_.size() <= 0) {
-      String function =
-          predicate_.name().toUpperCase() + "("
-              + Joiner.on(", ")
-                  .join(terms_.stream().skip(1)
-                      .map(term -> Function.wrap(((Const) term).value().toString())).iterator())
-              + ")";
+      String function = predicate_.name().toUpperCase() + "("
+          + terms_.stream().skip(1).map(term -> Function.wrap(((Const) term).value().toString()))
+              .collect(Collectors.joining(", "))
+          + ")";
       return new Function(function);
     }
     return new Function(mergeFunctions());
@@ -628,13 +626,12 @@ final public class Literal {
 
   private Function compile2() {
     if (functions_.size() <= 0) {
-      String function =
-          predicate_.name().toUpperCase() + "(" + Joiner.on(", ").join(terms_.stream().map(term -> {
-            if (term.isConst()) {
-              return Function.wrap(((Const) term).value().toString());
-            }
-            return Function.wrap("_");
-          }).iterator()) + ")";
+      String function = predicate_.name().toUpperCase() + "(" + terms_.stream().map(term -> {
+        if (term.isConst()) {
+          return Function.wrap(((Const) term).value().toString());
+        }
+        return Function.wrap("_");
+      }).collect(Collectors.joining(", ")) + ")";
       return new Function(function);
     }
     return new Function(mergeFunctions());
