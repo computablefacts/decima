@@ -1,19 +1,12 @@
 package com.computablefacts.decima.problog;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.computablefacts.asterix.Generated;
 import com.computablefacts.decima.robdd.Pair;
 import com.computablefacts.decima.trie.Trie;
-import com.computablefacts.nona.Generated;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;

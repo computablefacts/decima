@@ -2,7 +2,7 @@ package com.computablefacts.decima.robdd;
 
 import java.util.Objects;
 
-import com.computablefacts.nona.Generated;
+import com.computablefacts.asterix.Generated;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**

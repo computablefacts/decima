@@ -3,20 +3,15 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.TestUtils.parseClause;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.computablefacts.asterix.codecs.JsonCodec;
 import com.computablefacts.decima.robdd.Pair;
 import com.computablefacts.nona.Function;
-import com.computablefacts.nona.helpers.Codecs;
 import com.computablefacts.nona.types.BoxedType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -463,10 +458,10 @@ public class AbstractKnowledgeBaseTest {
         String uri = parameters.get(0).asString();
 
         if (uri.equals("http://localhost:3000/crm1")) {
-          json = Codecs.asObject(
+          json = JsonCodec.asObject(
               "{\"namespace\":\"crm1\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":2,\"first_name\":\"Lucy\",\"last_name\":\"Ballmer\",\"email\":\"lucyb56@gmail.com\"}]}");
         } else if (uri.equals("http://localhost:3000/crm2")) {
-          json = Codecs.asObject(
+          json = JsonCodec.asObject(
               "{\"namespace\":\"crm2\",\"class\":\"clients\",\"facts\":[{\"id\":1,\"first_name\":\"Robert\",\"last_name\":\"Schwartz\",\"email\":\"rob23@gmail.com\"},{\"id\":3,\"first_name\":\"Anna\",\"last_name\":\"Smith\",\"email\":\"annasmith23@gmail.com\"},{\"id\":4,\"first_name\":\"Robert\",\"last_name\":\"Brown\",\"email\":\"bobbrown432@yahoo.com\"},{\"id\":5,\"first_name\":\"Roger\",\"last_name\":\"Bacon\",\"email\":\"rogerbacon12@yahoo.com\"}]}");
         } else {
           return BoxedType.empty();

@@ -1,22 +1,14 @@
 package com.computablefacts.decima;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import com.computablefacts.decima.problog.AbstractTerm;
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.nona.helpers.CommandLine;
-import com.computablefacts.nona.helpers.Files;
-import com.computablefacts.nona.helpers.RandomString;
+import com.computablefacts.asterix.IO;
+import com.computablefacts.asterix.RandomString;
+import com.computablefacts.asterix.View;
+import com.computablefacts.asterix.console.ConsoleApp;
+import com.computablefacts.decima.problog.*;
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -26,7 +18,7 @@ import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
-final public class Builder extends CommandLine {
+final public class Builder extends ConsoleApp {
 
   private static final char SEPARATOR = '¤';
 
@@ -86,16 +78,16 @@ final public class Builder extends CommandLine {
 
     // Fill KB from ND-JSON file (see http://ndjson.org for details)
     RandomString rnd = new RandomString(8);
-    long nbFacts = Files.lineStream(input, StandardCharsets.UTF_8)
-        .filter(pair -> !Strings.isNullOrEmpty(pair.getValue()))
+    long nbFacts = View.of(input).index().filter(pair -> !Strings.isNullOrEmpty(pair.getValue()))
         .map(pair -> new AbstractMap.SimpleEntry<>(rnd.nextString(), pair.getValue()))
         .peek(pair -> kb.azzert(json("", pair.getKey(), pair.getValue())))
-        .peek(pair -> kb.azzert(jsonPaths("", pair.getKey(), pair.getValue()))).count();
+        .peek(pair -> kb.azzert(jsonPaths("", pair.getKey(), pair.getValue())))
+        .reduce(0, (carry, x) -> carry + 1);
 
     if (output == null) {
-      System.out.println(kb.toString());
+      System.out.println(kb);
     } else {
-      Files.create(new File(output), kb.toString());
+      boolean isOk = IO.writeText(new File(output), kb.toString(), false);
     }
 
     stopwatch.stop();

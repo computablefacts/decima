@@ -3,13 +3,8 @@ package com.computablefacts.decima.yaml;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Estimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Parser;
-import com.computablefacts.decima.problog.Solver;
-import com.computablefacts.nona.Generated;
+import com.computablefacts.asterix.Generated;
+import com.computablefacts.decima.problog.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;

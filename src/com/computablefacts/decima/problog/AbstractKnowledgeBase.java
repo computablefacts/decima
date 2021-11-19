@@ -7,13 +7,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -22,6 +16,9 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.computablefacts.asterix.RandomString;
+import com.computablefacts.asterix.codecs.Base64Codec;
+import com.computablefacts.asterix.codecs.JsonCodec;
 import com.computablefacts.decima.Builder;
 import com.computablefacts.decima.robdd.Pair;
 import com.computablefacts.logfmt.LogFormatter;
@@ -32,8 +29,6 @@ import com.computablefacts.nona.functions.stringoperators.StrLength;
 import com.computablefacts.nona.functions.stringoperators.ToInteger;
 import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
-import com.computablefacts.nona.helpers.Codecs;
-import com.computablefacts.nona.helpers.RandomString;
 import com.computablefacts.nona.types.BoxedType;
 import com.computablefacts.nona.types.Csv;
 import com.computablefacts.nona.types.Json;
@@ -247,7 +242,7 @@ public abstract class AbstractKnowledgeBase {
 
         for (int i = 0; i < jsons.nbObjects(); i++) {
 
-          String json = Codecs.asString(jsons.object(i));
+          String json = JsonCodec.asString(jsons.object(i));
 
           azzert(Builder.json(uuid, Integer.toString(i, 10), json));
           azzert(Builder.jsonPaths(uuid, Integer.toString(i, 10), json));
@@ -281,7 +276,7 @@ public abstract class AbstractKnowledgeBase {
 
         for (int i = 0; i < csvs.nbRows(); i++) {
 
-          String json = Codecs.asString(csvs.row(i));
+          String json = JsonCodec.asString(csvs.row(i));
 
           azzert(Builder.json(uuid, Integer.toString(i, 10), json));
           azzert(Builder.jsonPaths(uuid, Integer.toString(i, 10), json));
@@ -396,7 +391,7 @@ public abstract class AbstractKnowledgeBase {
             builder.append('&');
           }
           builder.append(name).append('=')
-              .append(Codecs.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
+              .append(Base64Codec.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
         }
 
         String httpUrl = parameters.get(0).asString();
@@ -448,7 +443,7 @@ public abstract class AbstractKnowledgeBase {
 
           con.disconnect();
           List<Literal> facts = new ArrayList<>();
-          Map<String, Object>[] jsons = Codecs.asArray(result.toString());
+          Map<String, Object>[] jsons = JsonCodec.asArray(result.toString());
 
           for (Map<String, Object> json : jsons) {
 

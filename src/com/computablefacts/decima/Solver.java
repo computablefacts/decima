@@ -2,38 +2,26 @@ package com.computablefacts.decima;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.computablefacts.decima.problog.AbstractKnowledgeBase;
-import com.computablefacts.decima.problog.AbstractTerm;
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Estimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Parser;
+import com.computablefacts.asterix.IO;
+import com.computablefacts.asterix.View;
+import com.computablefacts.asterix.codecs.JsonCodec;
+import com.computablefacts.asterix.console.ConsoleApp;
+import com.computablefacts.decima.problog.*;
 import com.computablefacts.junon.Fact;
 import com.computablefacts.junon.Metadata;
 import com.computablefacts.junon.Provenance;
-import com.computablefacts.nona.helpers.Codecs;
-import com.computablefacts.nona.helpers.CommandLine;
-import com.computablefacts.nona.helpers.Files;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
-final public class Solver extends CommandLine {
+final public class Solver extends ConsoleApp {
 
   public static void main(String[] args) {
 
@@ -63,7 +51,7 @@ final public class Solver extends CommandLine {
       if (output == null) {
         System.out.println(str);
       } else {
-        Files.create(new File(output), str);
+        boolean isOk = IO.writeText(new File(output), str, false);
       }
     } else {
 
@@ -92,12 +80,12 @@ final public class Solver extends CommandLine {
         return fact;
       }).collect(Collectors.toList());
 
-      String str = jsons.stream().map(Codecs::asString).collect(Collectors.joining("\n"));
+      String str = jsons.stream().map(JsonCodec::asString).collect(Collectors.joining("\n"));
 
       if (output == null) {
         System.out.println(str);
       } else {
-        Files.create(new File(output), str);
+        boolean isOk = IO.writeText(new File(output), str, false);
       }
     }
 
@@ -120,14 +108,10 @@ final public class Solver extends CommandLine {
     Preconditions.checkArgument(facts.exists(), "Missing facts : %s", facts);
     Preconditions.checkArgument(queries.exists(), "Missing queries : %s", queries);
 
-    Set<Clause> clauses = Sets.union(
-        Files.lineStream(rules, StandardCharsets.UTF_8)
-            .map(line -> Parser.parseClause(line.getValue())).collect(Collectors.toSet()),
-        Files.lineStream(facts, StandardCharsets.UTF_8)
-            .map(line -> Parser.parseClause(line.getValue())).collect(Collectors.toSet()));
+    Set<Clause> clauses = View.of(rules).map(Parser::parseClause)
+        .concat(View.of(facts).map(Parser::parseClause)).toSet();
 
-    Set<Literal> questions = Files.lineStream(queries, StandardCharsets.UTF_8)
-        .map(line -> Parser.parseQuery(line.getValue())).collect(Collectors.toSet());
+    Set<Literal> questions = View.of(queries).map(Parser::parseQuery).toSet();
 
     return computeProbabilities ? applyWithProbabilities(questions, clauses)
         : applyWithoutProbabilities(questions, clauses);

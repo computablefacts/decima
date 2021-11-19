@@ -7,10 +7,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.computablefacts.asterix.Generated;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Parser;
 import com.computablefacts.logfmt.LogFormatter;
-import com.computablefacts.nona.Generated;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -126,7 +126,7 @@ final public class Rules {
             StringBuilder builder = new StringBuilder();
             builder.append("\nTest failed for :").append(
                 "\n===[ RULE ]=============================================================================\n")
-                .append(rule.toString()).append(test.toString());
+                .append(rule).append(test);
 
             logger_.error(LogFormatter.create(true).message(builder.toString()).formatError());
             return false;

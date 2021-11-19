@@ -8,7 +8,8 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.nona.helpers.WildcardMatcher;
+import com.computablefacts.asterix.WildcardMatcher;
+
 
 public class LiteralTest {
 

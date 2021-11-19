@@ -3,15 +3,15 @@ package com.computablefacts.decima;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import com.computablefacts.asterix.IO;
+import com.computablefacts.asterix.console.ConsoleApp;
 import com.computablefacts.decima.yaml.Rules;
-import com.computablefacts.nona.helpers.CommandLine;
-import com.computablefacts.nona.helpers.Files;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
-final public class Compiler extends CommandLine {
+final public class Compiler extends ConsoleApp {
 
   public static void main(String[] args) {
 
@@ -27,7 +27,7 @@ final public class Compiler extends CommandLine {
     if (output == null) {
       System.out.println(rules.toString());
     } else {
-      Files.create(new File(output), rules.toString());
+      boolean isOk = IO.writeText(new File(output), rules.toString(), false);
     }
 
     stopwatch.stop();

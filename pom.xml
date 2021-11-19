@@ -42,8 +42,7 @@
 
     <properties>
         <junon.version>0.9</junon.version>
-        <nona.version>2.2</nona.version>
-        <jsonflattener.version>0.12.0</jsonflattener.version>
+        <nona.version>3.0</nona.version>
         <jcip.version>1.0-1</jcip.version>
         <error-prone.version>2.3.1</error-prone.version>
         <equalsverifier.version>3.4.2</equalsverifier.version>
@@ -70,11 +69,6 @@
             <groupId>com.computablefacts</groupId>
             <artifactId>nona</artifactId>
             <version>${nona.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.wnameless.json</groupId>
-            <artifactId>json-flattener</artifactId>
-            <version>${jsonflattener.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.stephenc.jcip</groupId>
@@ -137,6 +131,15 @@
                         </goals>
                         <configuration>
                             <rules>
+                                <restrictImports
+                                        implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
+                                    <reason>Decima must not inherit from Nona</reason>
+                                    <bannedImport>com.computablefacts.nona.**</bannedImport>
+                                    <exclusions>
+                                        <exclusion>com.computablefacts.decima.problog.AbstractKnowledgeBase</exclusion>
+                                        <exclusion>com.computablefacts.decima.problog.Literal</exclusion>
+                                    </exclusions>
+                                </restrictImports>
                                 <restrictImports
                                         implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
                                     <reason>Decima must not inherit from Morta</reason>

@@ -11,8 +11,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.computablefacts.asterix.WildcardMatcher;
 import com.computablefacts.decima.yaml.TestUtils;
-import com.computablefacts.nona.helpers.WildcardMatcher;
 import com.google.common.collect.Lists;
 
 @net.jcip.annotations.NotThreadSafe
