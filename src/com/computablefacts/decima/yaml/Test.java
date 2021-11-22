@@ -71,7 +71,7 @@ final public class Test {
     if (!Strings.isNullOrEmpty(output_)) {
 
       Set<Clause> facts = Parser.parseClauses(output_);
-      Estimator estimator = new Estimator(proofs(moreRules));
+      ProbabilityEstimator estimator = new ProbabilityEstimator(proofs(moreRules));
 
       return facts.stream().allMatch(fact -> {
         BigDecimal proba = estimator.probability(fact.head());
@@ -90,8 +90,7 @@ final public class Test {
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
     kb.azzert(clauses);
 
-    Solver solver = new Solver(kb);
-    Set<Clause> proofs = solver.proofs(query);
-    return proofs;
+    Solver solver = new Solver(kb, true);
+    return solver.proofs(query);
   }
 }

@@ -21,12 +21,12 @@ import com.google.errorprone.annotations.Var;
  * details.
  */
 @CheckReturnValue
-final public class Estimator {
+final public class ProbabilityEstimator {
 
   private final RandomString randomString_ = new RandomString(7);
   private final Set<Clause> proofs_;
 
-  public Estimator(Set<Clause> proofs) {
+  public ProbabilityEstimator(Set<Clause> proofs) {
 
     Preconditions.checkNotNull(proofs, "proofs should not be null");
     Preconditions.checkArgument(proofs.stream().allMatch(Clause::isGrounded),
@@ -98,7 +98,7 @@ final public class Estimator {
       return BigDecimal.ZERO;
     }
 
-    Estimator estimator = new Estimator(
+    ProbabilityEstimator estimator = new ProbabilityEstimator(
         proofs_.stream().filter(p -> p.isGrounded() && p.head().tag().equals(clause.head().tag()))
             .collect(Collectors.toSet()));
     int newScale =

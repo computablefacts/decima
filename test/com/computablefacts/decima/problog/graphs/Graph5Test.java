@@ -1,8 +1,6 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.isValid;
-import static com.computablefacts.decima.problog.TestUtils.kb;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -10,12 +8,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.Estimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Solver;
+import com.computablefacts.decima.problog.*;
 import com.google.common.collect.Lists;
 
 /**
@@ -45,7 +38,7 @@ public class Graph5Test {
 
     // Query kb
     // path(1, 6)?
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("path", new Const("1"), new Const("6"));
     Set<Clause> proofs = solver.proofs(query);
 
@@ -67,7 +60,7 @@ public class Graph5Test {
 
     // Verify BDD answer
     // 0.2167296::path(1, 6).
-    Estimator estimator = new Estimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 7);
 
     Assert.assertTrue(BigDecimal.valueOf(0.2167296).compareTo(probability) == 0);

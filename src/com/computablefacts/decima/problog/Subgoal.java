@@ -2,49 +2,44 @@ package com.computablefacts.decima.problog;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import com.computablefacts.asterix.Generated;
-import com.computablefacts.decima.robdd.Pair;
-import com.computablefacts.decima.trie.Trie;
-import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
-import com.google.errorprone.annotations.Var;
 
 /**
  * A subgoal is the item that is tabled by this algorithm.
  *
  * A subgoal has a literal, a set of facts, and an array of waiters. A waiter is a pair containing a
  * subgoal and a clause.
+ *
+ * All maps and lists should support concurrency because they will be updated and enumerated at the
+ * same time by the tabling algorithm
  */
 @CheckReturnValue
 final public class Subgoal {
 
-  // KB rules benefiting from this sub-goal resolution
-  public final Trie<Literal> trie_ = new Trie<>();
-  public final Set<Clause> parents_ = new HashSet<>();
-  public final boolean trackRules_;
-
-  // All maps and lists should support concurrency because they will be updated and enumerated at
-  // the same time by the tabling algorithm
   private final Literal literal_;
+  private final boolean computeProofs_;
 
   // Parent rules benefiting from this sub-goal resolution
   private final Set<Map.Entry<Subgoal, Clause>> waiters_ = ConcurrentHashMap.newKeySet();
 
   // Facts derived for this subgoal
   private final AbstractSubgoalFacts facts_;
+  private final List<Clause> rules_ = new ArrayList<>();
+  private final List<Clause> proofs_ = new ArrayList<>();
 
-  public Subgoal(Literal literal, AbstractSubgoalFacts facts, boolean trackRules) {
+  public Subgoal(Literal literal, AbstractSubgoalFacts facts, boolean computeProofs) {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
     Preconditions.checkNotNull(facts, "facts should not be null");
 
     literal_ = literal;
     facts_ = facts;
-    trackRules_ = trackRules;
+    computeProofs_ = computeProofs;
   }
 
   @Override
@@ -68,7 +63,7 @@ final public class Subgoal {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("literal", literal_).add("facts", facts_)
-        .add("parents", parents_).omitNullValues().toString();
+        .omitNullValues().toString();
   }
 
   @Generated
@@ -76,14 +71,29 @@ final public class Subgoal {
     return literal_;
   }
 
+  @Generated
+  Set<Clause> rules() {
+    return Sets.newHashSet(rules_);
+  }
+
+  @Generated
+  void addRule(Clause rule) {
+    if (rule != null) {
+      rules_.add(rule);
+    }
+  }
+
+  @Generated
   Iterator<Clause> facts() {
     return facts_.facts();
   }
 
+  @Generated
   int nbFacts() {
     return facts_.size();
   }
 
+  @Generated
   Set<Map.Entry<Subgoal, Clause>> waiters() {
     return waiters_;
   }
@@ -97,14 +107,6 @@ final public class Subgoal {
     waiters_.add(new AbstractMap.SimpleEntry<>(subgoal, clause));
   }
 
-  Set<Clause> groundedRules() {
-    return new HashSet<>(parents_);
-  }
-
-  boolean hasFacts() {
-    return !facts_.isEmpty();
-  }
-
   /**
    * Try to add a fact to the subgoal.
    *
@@ -116,7 +118,7 @@ final public class Subgoal {
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
 
-    boolean add = !containsFact(clause);
+    boolean add = !facts_.contains(clause);
 
     if (add) {
       facts_.add(clause);
@@ -124,200 +126,145 @@ final public class Subgoal {
     return add;
   }
 
-  boolean hasRules() {
-    return !parents_.isEmpty();
+  Collection<Clause> proofs() {
+    return proofs_;
   }
 
-  /**
-   * Remove all rules where one of the body literal matches a given literal.
-   *
-   * @param literal literal.
-   */
-  void cleanup(Literal literal) {
-
-    Preconditions.checkNotNull(literal, "literal should not be null");
-
-    if (!trackRules_) {
-      return;
-    }
-
-    trie_.remove(lit -> {
-      if (lit.isRelevant(literal)) {
-
-        @Var
-        int nbMatch = 0;
-        @Var
-        int nbNoMatch = 0;
-
-        for (int i = 0; i < literal.terms().size(); i++) {
-
-          AbstractTerm term1 = literal.terms().get(i);
-          AbstractTerm term2 = lit.terms().get(i);
-
-          // Match const against const and var against var
-          if (term1.getClass() == term2.getClass()) {
-            nbMatch++;
-          } else {
-            nbNoMatch++;
-          }
-        }
-
-        return nbMatch != 0 && nbNoMatch == 0;
-      }
-      return false;
-    });
-  }
-
-  /**
-   * Get the rule associated with a given clause.
-   *
-   * @param clause clause.
-   * @return matching rule or null.
-   */
-  void update(Clause clause) {
+  void push(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause.toString());
 
-    if (!trackRules_) {
+    if (!computeProofs_) {
       return;
     }
 
-    // Due to how the tabling algorithm works, a good candidate rule to update is such that :
-    // - the clause body MUST BE a suffix of the candidate rule body
-    // - the body literals in [0, candidate.body.size - clause.body.size[ of the candidate rule MUST
-    // BE grounded
+    @com.google.errorprone.annotations.Var
+    Clause prev = null;
 
-    List<Pair<Integer, Clause>> parents = new ArrayList<>();
-    Function<Stack<Pair<Integer, Literal>>, Boolean> fnSkip = input -> {
-
-      if (input.size() == 1) { // At depth 0 of the trie is the clause head
-        return !input.get(0).u.isRelevant(clause.head());
+    if (!proofs_.isEmpty()) {
+      for (int i = proofs_.size() - 1; i >= 0; i--) {
+        if (proofs_.get(i).head().isRelevant(clause.head())
+            && proofs_.get(i).hasSuffix(clause.body())) {
+          prev = proofs_.remove(i);
+          break;
+        }
       }
-      return false;
-    };
-    Function<Stack<Pair<Integer, Literal>>, Void> fnProcess = input -> {
+    }
 
-      int max = input.stream().mapToInt(p -> p.t).max().getAsInt();
-
-      if (!parents.isEmpty() && parents.get(0).t >= max) {
-        return null;
+    if (prev == null) {
+      for (int i = rules_.size() - 1; i >= 0; i--) {
+        if (rules_.get(i).head().isRelevant(clause.head())
+            && rules_.get(i).hasSuffix(clause.body())) {
+          prev = rules_.get(i);
+          break;
+        }
       }
+    }
 
-      Literal head = input.get(0).u;
-      List<Literal> body = input.stream().skip(1).map(p -> p.u).collect(Collectors.toList());
-      Clause candidate = new Clause(head, body);
+    Preconditions.checkState(prev != null, "prev should not be null");
 
-      if (body.size() < clause.body().size()) {
-        return null;
+    @com.google.errorprone.annotations.Var
+    Clause proof = merge(clause, prev);
+
+    if (!proof.isGrounded() && clause.isGrounded()) {
+
+      int length = proof.body().size() - clause.body().size();
+      List<Literal> prefix = proof.body().subList(0, length);
+
+      // If the clause is grounded but the proof is not, we must backtrack in the tree
+      for (int i = proofs_.size() - 1; i >= 0; i--) {
+        if (proofs_.get(i).hasPrefix(prefix)) {
+
+          List<Literal> body = new ArrayList<>(proofs_.get(i).body().subList(0, length));
+          boolean isGrounded = body.stream().allMatch(Literal::isGrounded);
+
+          Preconditions.checkState(isGrounded, "proof should be grounded : %s", proofs_.get(i));
+
+          body.addAll(proof.body().subList(length, proof.body().size()));
+          proof = new Clause(proof.head(), body);
+          break;
+        }
       }
+    }
 
-      @Var
-      boolean isOk = true;
+    proofs_.add(proof);
+  }
 
-      for (int k = 0; k < body.size(); k++) {
+  void pop(Clause clause) {
 
-        Literal lit1 = body.get(k);
+    Preconditions.checkNotNull(clause, "clause should not be null");
 
-        if (k < (body.size() - clause.body().size())) {
+    if (!computeProofs_) {
+      return;
+    }
 
-          // Check if the candidate rule prefix is grounded
-          if (!lit1.isGrounded()) {
-            isOk = false;
-            break;
-          }
-        } else {
+    // Deal with primitives
+    if (!proofs_.isEmpty()) {
 
-          // Check if the candidate rule suffix is relevant
-          Literal lit2 = clause.body().get(k - (body.size() - clause.body().size()));
+      List<Clause> removed = new ArrayList<>();
 
-          if (!lit1.isRelevant(lit2)) {
-            isOk = false;
-            break;
-          }
+      for (int i = proofs_.size() - 1; i >= 0; i--) {
+        if (proofs_.get(i).head().isRelevant(clause.head())
+            && proofs_.get(i).hasSuffix(clause.body())) {
+          removed.add(proofs_.get(i));
         }
       }
 
-      if (isOk) {
-        parents.clear();
-        parents.add(new Pair<>(max, candidate));
-      }
-      return null;
-    };
-
-    trie_.traverse(fnSkip, fnProcess);
-
-    if (parents.isEmpty()) {
-
-      // Quand on a une règle du type (R -> PREFIX LITERAL SUFFIX), et que :
-      //
-      // - le solveur a résolu chacun des litéraux de PREFIX
-      // - le solveur vient de résoudre LITERAL et cherche à mettre à jour la règle parent
-      // - le solveur a supprimé la règle parent car la résolution d'une autre règle a flaggé SUFFIX
-      // comme contenant un litéral invalide
-      //
-      // Alors la fusion de LITERAL avec la règle parent (inexistante) échoue.
-      return;
+      proofs_.removeAll(removed);
     }
 
-    // Only apply substitution to the most recent parent
-    Clause parent = parents.get(0).u;
-    Clause newParent = merge(clause, parent);
+    // Deal with negation
+    for (Map.Entry<Subgoal, Clause> waiter : waiters_) {
 
-    List<Literal> list = new ArrayList<>(newParent.body().size() + 1);
-    list.add(newParent.head());
-    list.addAll(newParent.body());
+      List<Clause> removed = new ArrayList<>();
+      List<Clause> stack = waiter.getKey().proofs_;
 
-    trie_.insert(list);
+      for (int i = stack.size() - 1; i >= 0; i--) {
+        if (stack.get(i).body().get(stack.get(i).body().size() - 1).isRelevant(clause.head())) {
+          removed.add(stack.get(i));
+        }
+      }
 
-    if (newParent.isGrounded() && clause.body().size() == 1) {
-      parents_.add(newParent); // Here, we evaluated the last body literal of a rule
+      stack.removeAll(removed);
     }
   }
 
-  private Clause merge(Clause clause, Clause candidate) {
+  private Clause merge(Clause cur, Clause prev) {
 
-    Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause.toString());
-    Preconditions.checkNotNull(candidate, "candidate should not be null");
-    Preconditions.checkArgument(candidate.isRule(), "candidate should be a rule : %s",
-        clause.toString());
+    Preconditions.checkNotNull(cur, "cur should not be null");
+    Preconditions.checkArgument(cur.isRule(), "cur should be a rule : %s", cur.toString());
+    Preconditions.checkNotNull(prev, "prev should not be null");
+    Preconditions.checkArgument(prev.isRule(), "prev should be a rule : %s", cur.toString());
+    Preconditions.checkArgument(cur.body().size() <= prev.body().size(),
+        "mismatch in body length : %s vs %s", prev.body(), cur.body());
 
     // 1 - Build env
-    Map<com.computablefacts.decima.problog.Var, AbstractTerm> env =
-        candidate.head().unify(clause.head());
+    Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = prev.head().unify(cur.head());
 
-    for (int i = 0; i < clause.body().size(); i++) {
+    for (int i = 0; i < cur.body().size(); i++) {
 
-      Literal lit1 = candidate.body().get(candidate.body().size() - clause.body().size() + i);
-      Literal lit2 = clause.body().get(i);
+      Literal lit1 = prev.body().get(prev.body().size() - cur.body().size() + i);
+      Literal lit2 = cur.body().get(i);
 
       env.putAll(lit1.unify(lit2));
     }
 
-    // 2 - Fill candidate rule
-    Clause merged = candidate.subst(env);
+    // 2 - Fill prev rule
+    Clause merged = prev.subst(env);
 
     // 3 - Transfer probabilities to the right literals
     Literal head = merged.head();
     List<Literal> body =
-        new ArrayList<>(merged.body().subList(0, merged.body().size() - clause.body().size()));
+        new ArrayList<>(merged.body().subList(0, merged.body().size() - cur.body().size()));
 
-    if (!clause.body().isEmpty()) {
-      body.add(clause.body().get(0));
-      body.addAll(merged.body().subList(merged.body().size() - clause.body().size() + 1,
+    if (!cur.body().isEmpty()) {
+      body.add(cur.body().get(0));
+      body.addAll(merged.body().subList(merged.body().size() - cur.body().size() + 1,
           merged.body().size()));
     }
 
-    // 4 - Create a new clause
+    // 4 - Create a new cur
     return new Clause(head, body);
-  }
-
-  private boolean containsFact(Clause clause) {
-
-    Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
-
-    return facts_.contains(clause);
   }
 }

@@ -128,11 +128,11 @@ final public class Solver extends ConsoleApp {
     clauses.forEach(kb::azzert);
 
     com.computablefacts.decima.problog.Solver solver =
-        new com.computablefacts.decima.problog.Solver(kb);
+        new com.computablefacts.decima.problog.Solver(kb, true);
 
     for (Literal question : questions) {
 
-      Estimator estimator = new Estimator(solver.proofs(question));
+      ProbabilityEstimator estimator = new ProbabilityEstimator(solver.proofs(question));
       Map<Clause, BigDecimal> probabilities = estimator.probabilities();
 
       probabilities.forEach((head, probability) -> answers.put(head.head(), probability));

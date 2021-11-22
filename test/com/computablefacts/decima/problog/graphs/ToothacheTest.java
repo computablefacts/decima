@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.Estimator;
+import com.computablefacts.decima.problog.ProbabilityEstimator;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
 import com.computablefacts.decima.problog.Solver;
@@ -38,7 +38,7 @@ public class ToothacheTest {
 
     // Query kb
     // path(1, 6)?
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("toothache", new Const("a"));
     Set<Clause> proofs = solver.proofs(query);
 
@@ -59,7 +59,7 @@ public class ToothacheTest {
 
     // Verify BDD answer
     // 0.11825::toothache(a).
-    Estimator estimator = new Estimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 5);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.11082).compareTo(probability));

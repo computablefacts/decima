@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.Estimator;
+import com.computablefacts.decima.problog.ProbabilityEstimator;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
 import com.computablefacts.decima.problog.Solver;
@@ -48,7 +48,7 @@ public class Graph4Test {
 
     // Query kb
     // path(b, f)?
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("path", new Const("b"), new Const("f"));
     Set<Clause> proofs = solver.proofs(query);
 
@@ -67,7 +67,7 @@ public class Graph4Test {
 
     // Verify BDD answer
     // 0.316::path(b, f).
-    Estimator estimator = new Estimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 3);
 
     Assert.assertTrue(BigDecimal.valueOf(0.316).compareTo(probability) == 0);

@@ -302,6 +302,56 @@ final public class Clause {
   }
 
   /**
+   * Check if a list of literals is a prefix of the current rule body literals.
+   *
+   * @param literals a list of literals.
+   * @return true iif the list of literals is a prefix of the current rule body literals, false
+   *         otherwise.
+   */
+  public boolean hasPrefix(List<Literal> literals) {
+
+    Preconditions.checkNotNull(literals, "literals should not be null");
+    Preconditions.checkState(isRule(), "the clause should be a rule : %s", toString());
+
+    if (body_.size() < literals.size()) {
+      return false;
+    }
+
+    for (int i = 0; i < literals.size(); i++) {
+      if (!body_.get(i).isRelevant(literals.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Check if a list of literals is a suffix of the current rule body literals.
+   *
+   * @param literals a list of literals.
+   * @return true iif the list of literals is a suffix of the current rule body literals, false
+   *         otherwise.
+   */
+  public boolean hasSuffix(List<Literal> literals) {
+
+    Preconditions.checkNotNull(literals, "literals should not be null");
+    Preconditions.checkState(isRule(), "the clause should be a rule : %s", toString());
+
+    if (body_.size() < literals.size()) {
+      return false;
+    }
+
+    int disp = body_.size() - literals.size();
+
+    for (int i = disp; i < body_.size(); i++) {
+      if (!body_.get(i).isRelevant(literals.get(i - disp))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Rename the variables in a clause. Every variable in the head is in the body, so the head can be
    * ignored while generating an environment.
    *

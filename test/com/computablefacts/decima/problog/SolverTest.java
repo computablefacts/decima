@@ -1,9 +1,6 @@
 package com.computablefacts.decima.problog;
 
-import static com.computablefacts.decima.problog.TestUtils.isValid;
-import static com.computablefacts.decima.problog.TestUtils.kb;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
-import static com.computablefacts.decima.problog.TestUtils.solver;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -600,7 +597,7 @@ public class SolverTest {
 
     // Query kb
     // a(X, Y)?
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("a", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
   }
@@ -626,7 +623,7 @@ public class SolverTest {
     // Query kb
     // a(X, X)?
     // p(X)?
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, true);
     Var x = new Var();
     Literal query1 = new Literal("a", x, x);
     List<Clause> proofs1 = new ArrayList<>(solver.proofs(query1));

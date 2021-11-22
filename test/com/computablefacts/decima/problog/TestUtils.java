@@ -11,7 +11,7 @@ final public class TestUtils {
   private TestUtils() {}
 
   public static Solver solver(InMemoryKnowledgeBase kb) {
-    return new Solver(kb);
+    return new Solver(kb, true);
   }
 
   public static InMemoryKnowledgeBase kb() {

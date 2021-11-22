@@ -111,28 +111,6 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertEquals(2, kb.nbRules());
   }
 
-  @Test
-  public void testIntersectionSet1SizeMoreThanSet2Size() {
-
-    Set<String> set1 = Sets.newHashSet("a", "b", "c", "d", "e");
-    Set<String> set2 = Sets.newHashSet("a", "b", "c");
-
-    Set<String> intersection = kb().intersection(set1, set2);
-
-    Assert.assertEquals(Sets.newHashSet("a", "b", "c"), intersection);
-  }
-
-  @Test
-  public void testIntersectionSet1SizeLessThanSet2Size() {
-
-    Set<String> set1 = Sets.newHashSet("a", "b", "c");
-    Set<String> set2 = Sets.newHashSet("a", "b", "c", "d", "e");
-
-    Set<String> intersection = kb().intersection(set1, set2);
-
-    Assert.assertEquals(Sets.newHashSet("a", "b", "c"), intersection);
-  }
-
   @Test(expected = IllegalArgumentException.class)
   public void testApplyRewriteRuleHeadOnFact() {
     Clause fact = parseClause("0.3::edge(a, b).");
@@ -174,7 +152,7 @@ public class AbstractKnowledgeBaseTest {
     kb.azzert(clause);
     kb.azzert(rule);
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     @com.google.errorprone.annotations.Var
     Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"jhWTAETz\")?")));
 
@@ -213,7 +191,7 @@ public class AbstractKnowledgeBaseTest {
     kb.azzert(clause);
     kb.azzert(rule);
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     @com.google.errorprone.annotations.Var
     Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"aIMuk3ze\")?")));
 
@@ -257,7 +235,7 @@ public class AbstractKnowledgeBaseTest {
 
     // First test : queries must fail while assert(X) has not been called
     @com.google.errorprone.annotations.Var
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
 
     Assert.assertEquals(0, Sets.newHashSet(solver.solve(query1)).size());
     Assert.assertEquals(0, Sets.newHashSet(solver.solve(query2)).size());
@@ -297,7 +275,7 @@ public class AbstractKnowledgeBaseTest {
     kb.azzert(Parser.parseClause(rule1));
     kb.azzert(Parser.parseClause(rule2));
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     Set<Clause> clauses =
         Sets.newHashSet(solver.solve(Parser.parseQuery("clients(FirstName, LastName, Email)?")));
 
@@ -330,7 +308,7 @@ public class AbstractKnowledgeBaseTest {
     kb.azzert(Parser.parseClause(rule1));
     kb.azzert(Parser.parseClause(rule2));
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     Set<Clause> clauses =
         Sets.newHashSet(solver.solve(Parser.parseQuery("clients(\"Robert\", LastName, Email)?")));
 
@@ -351,7 +329,7 @@ public class AbstractKnowledgeBaseTest {
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition2(kb());
     kb.azzert(Parser.parseClause(rule));
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, MD5)?");
     Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 
@@ -382,7 +360,7 @@ public class AbstractKnowledgeBaseTest {
     kb.azzert(Parser.parseClause(rule2));
     kb.azzert(Parser.parseClause(rule3));
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     Literal query = Parser.parseQuery("fichier_duplique(PATH, TEXT)?");
     Iterator<Clause> iterator = solver.solve(query);
     List<Clause> clauses = Lists.newArrayList(iterator);
@@ -406,7 +384,7 @@ public class AbstractKnowledgeBaseTest {
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition4(kb());
     kb.azzert(Parser.parseClause(rule));
 
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, false);
     Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, CONTENT)?");
     Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 

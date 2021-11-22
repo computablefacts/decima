@@ -147,24 +147,6 @@ public abstract class AbstractKnowledgeBase {
 
   protected abstract void azzertRule(@NotNull Clause rule);
 
-  /**
-   * Returns matching clauses (e.g. facts or rules) for a literal query.
-   *
-   * @param literal literal.
-   * @return matching clauses.
-   */
-  public Iterator<Clause> clauses(Literal literal) {
-
-    Preconditions.checkNotNull(literal, "literal should not be null");
-
-    Iterator<Clause> facts = facts(literal);
-
-    if (facts.hasNext()) {
-      return facts;
-    }
-    return rules(literal);
-  }
-
   protected abstract Iterator<Clause> facts(@NotNull Literal literal);
 
   protected abstract Iterator<Clause> rules(@NotNull Literal literal);
@@ -314,7 +296,7 @@ public abstract class AbstractKnowledgeBase {
 
         String fact = predicate + "(" + Joiner.on(',').join(terms) + ")?";
         Literal query = Parser.parseQuery(fact);
-        Iterator<Clause> clauses = clauses(query);
+        Iterator<Clause> clauses = facts(query);
 
         while (clauses.hasNext()) {
           if (clauses.next().isFact()) {
@@ -509,13 +491,15 @@ public abstract class AbstractKnowledgeBase {
       return new Pair<>(clause, null);
     }
 
+    Preconditions.checkState(!head.predicate().isNegated(),
+        "the rule head should not be negated : %s", clause);
+
     String predicate = head.predicate().name();
     BigDecimal probability = head.probability();
 
     // Create fact
     String newPredicate = "proba_" + randomString_.nextString().toLowerCase();
-    Literal newLiteral = new Literal(probability,
-        (head.predicate().isNegated() ? "~" : "") + newPredicate, new Const(true));
+    Literal newLiteral = new Literal(probability, newPredicate, new Const(true));
     Clause newFact = new Clause(newLiteral);
 
     // Rewrite clause
@@ -525,35 +509,5 @@ public abstract class AbstractKnowledgeBase {
     Clause newRule = new Clause(newHead, newBody);
 
     return new Pair<>(newRule, newFact);
-  }
-
-  /**
-   * Compute the intersection of two sets.
-   *
-   * @param set1 first set.
-   * @param set2 second set.
-   * @param <T> element type.
-   * @return intersection of set1 with set2.
-   */
-  protected <T> Set<T> intersection(Set<T> set1, Set<T> set2) {
-
-    Set<T> minCardinalitySet;
-    Set<T> maxCardinalitySet;
-    Set<T> intersection = new HashSet<>();
-
-    if (set1.size() <= set2.size()) {
-      minCardinalitySet = set1;
-      maxCardinalitySet = set2;
-    } else {
-      minCardinalitySet = set2;
-      maxCardinalitySet = set1;
-    }
-
-    for (T element : minCardinalitySet) {
-      if (maxCardinalitySet.contains(element)) {
-        intersection.add(element);
-      }
-    }
-    return intersection;
   }
 }

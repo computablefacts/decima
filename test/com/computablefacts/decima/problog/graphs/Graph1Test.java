@@ -1,8 +1,6 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.isValid;
-import static com.computablefacts.decima.problog.TestUtils.kb;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -10,12 +8,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.Estimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Solver;
+import com.computablefacts.decima.problog.*;
 import com.google.common.collect.Lists;
 
 /**
@@ -55,7 +48,7 @@ public class Graph1Test {
 
     // Query kb
     // path(1, 4)?
-    Solver solver = new Solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("path", new Const("1"), new Const("4"));
     Set<Clause> proofs = solver.proofs(query);
 
@@ -63,7 +56,7 @@ public class Graph1Test {
     Assert.assertEquals(14, solver.nbSubgoals());
 
     // Verify answers
-    Assert.assertEquals(8, proofs.size());
+    Assert.assertEquals(210, proofs.size());
 
     Assert.assertTrue(isValid(proofs, "path(1, 4)", Lists.newArrayList("0.9::edge(1,2)",
         "0.8::edge(2,3)", "0.7::edge(3,5)", "0.2::edge(5,4)")));
@@ -84,7 +77,7 @@ public class Graph1Test {
 
     // Verify BDD answer
     // 0.53864::path(1, 4).
-    Estimator estimator = new Estimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 5);
 
     Assert.assertTrue(BigDecimal.valueOf(0.53864).compareTo(probability) == 0);

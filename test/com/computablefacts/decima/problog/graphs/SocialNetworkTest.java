@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.Estimator;
+import com.computablefacts.decima.problog.ProbabilityEstimator;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
 import com.computablefacts.decima.problog.Solver;
@@ -43,7 +43,7 @@ public class SocialNetworkTest {
 
     // Verify BDD answer
     // 0.342::smokes(angelika).
-    BigDecimal probability = new Estimator(proofs).probability(query, 3);
+    BigDecimal probability = new ProbabilityEstimator(proofs).probability(query, 3);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.342).compareTo(probability));
   }
@@ -74,7 +74,7 @@ public class SocialNetworkTest {
 
     // Verify BDD answer
     // 0.42301296::smokes(joris).
-    Estimator estimator = new Estimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 8);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.42556811).compareTo(probability));
