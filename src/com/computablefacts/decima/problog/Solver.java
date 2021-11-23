@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.computablefacts.asterix.Generated;
+import com.computablefacts.asterix.trie.Trie;
 import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
@@ -90,6 +91,28 @@ final public class Solver {
 
     ProofAssistant assistant = new ProofAssistant(subgoals_.values());
     return assistant.proofs(root_.literal());
+  }
+
+  /**
+   * Map each proof to a trie.
+   *
+   * @param query goal.
+   * @return proofs.
+   */
+  public Map<Literal, Trie<Literal>> tries(Literal query) {
+
+    Preconditions.checkNotNull(query, "query should not be null");
+
+    Set<Clause> proofs = proofs(query);
+    Map<Literal, Trie<Literal>> tries = new HashMap<>();
+
+    for (Clause proof : proofs) {
+      if (!tries.containsKey(proof.head())) {
+        tries.put(proof.head(), new Trie<>());
+      }
+      tries.get(proof.head()).insert(proof.body());
+    }
+    return tries;
   }
 
   /**

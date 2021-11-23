@@ -4,6 +4,7 @@ import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,7 +12,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.computablefacts.asterix.trie.Trie;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class ProbabilityEstimatorTest {
 
@@ -49,10 +52,13 @@ public class ProbabilityEstimatorTest {
     // s1(1)?
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("s1", new Const(1));
-    Set<Clause> proofs = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(6, proofs.size());
+    Assert.assertEquals(1, tries.size());
+
     Assert.assertTrue(isValid(proofs, "s1(1)", Lists.newArrayList("0.5::b(1)")));
     Assert.assertTrue(isValid(proofs, "s1(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::b(2)")));
     Assert.assertTrue(isValid(proofs, "s1(1)", Lists.newArrayList("0.5::f(1, 3)", "0.5::b(3)")));
@@ -63,9 +69,16 @@ public class ProbabilityEstimatorTest {
     Assert.assertTrue(isValid(proofs, "s1(1)",
         Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 1)", "0.5::f(1, 3)", "0.5::b(3)")));
 
+    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
+    Assert.assertTrue(tries.get(proofs.get(1).head()).contains(proofs.get(1).body()));
+    Assert.assertTrue(tries.get(proofs.get(2).head()).contains(proofs.get(2).body()));
+    Assert.assertTrue(tries.get(proofs.get(3).head()).contains(proofs.get(3).body()));
+    Assert.assertTrue(tries.get(proofs.get(4).head()).contains(proofs.get(4).body()));
+    Assert.assertTrue(tries.get(proofs.get(5).head()).contains(proofs.get(5).body()));
+
     // Verify BDD answer
     // 0.734375::s1(1).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(query, 6);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.734375).compareTo(probability));
@@ -99,10 +112,13 @@ public class ProbabilityEstimatorTest {
     // s2(1)?
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("s2", new Const(1));
-    Set<Clause> proofs = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(6, proofs.size());
+    Assert.assertEquals(1, tries.size());
+
     Assert.assertTrue(isValid(proofs, "s2(1)", Lists.newArrayList("0.5::b(1)")));
     Assert.assertTrue(isValid(proofs, "s2(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::b(2)")));
     Assert.assertTrue(isValid(proofs, "s2(1)", Lists.newArrayList("0.5::f(1, 3)", "0.5::b(3)")));
@@ -113,9 +129,16 @@ public class ProbabilityEstimatorTest {
     Assert.assertTrue(isValid(proofs, "s2(1)",
         Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 1)", "0.5::f(1, 3)", "0.5::b(3)")));
 
+    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
+    Assert.assertTrue(tries.get(proofs.get(1).head()).contains(proofs.get(1).body()));
+    Assert.assertTrue(tries.get(proofs.get(2).head()).contains(proofs.get(2).body()));
+    Assert.assertTrue(tries.get(proofs.get(3).head()).contains(proofs.get(3).body()));
+    Assert.assertTrue(tries.get(proofs.get(4).head()).contains(proofs.get(4).body()));
+    Assert.assertTrue(tries.get(proofs.get(5).head()).contains(proofs.get(5).body()));
+
     // Verify BDD answer
     // 0.734375::s2(1).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(query, 6);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.734375).compareTo(probability));
@@ -167,9 +190,9 @@ public class ProbabilityEstimatorTest {
     Clause a2 = new Clause(new Literal("a", new Const(2)));
     Clause a3 = new Clause(new Literal("a", new Const(3)));
 
-    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probabilities.get(a1)) == 0);
-    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probabilities.get(a2)) == 0);
-    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probabilities.get(a3)) == 0);
+    Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a1)));
+    Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a2)));
+    Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a3)));
   }
 
   /**
@@ -189,15 +212,20 @@ public class ProbabilityEstimatorTest {
     // Query kb
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("~p", new Const(1));
-    Set<Clause> proofs = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(1, proofs.size());
+    Assert.assertEquals(1, tries.size());
+
     Assert.assertTrue(isValid(proofs, "0.7::~p(1)."));
+
+    Assert.assertTrue(tries.get(proofs.get(0).head()).paths().isEmpty());
 
     // Verify BDD answer
     // 0.7::~p(1).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(query);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.7).compareTo(probability));
@@ -230,17 +258,22 @@ public class ProbabilityEstimatorTest {
     // someHeads(X)?
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("someHeads", new Var());
-    Set<Clause> proofs = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(2, proofs.size());
+    Assert.assertEquals(1, tries.size());
 
     Assert.assertTrue(isValid(proofs, "someHeads(a)", Lists.newArrayList("0.5::heads1(a)")));
     Assert.assertTrue(isValid(proofs, "someHeads(a)", Lists.newArrayList("0.6::heads2(a)")));
 
+    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
+    Assert.assertTrue(tries.get(proofs.get(1).head()).contains(proofs.get(1).body()));
+
     // Verify BDD answer
     // 0.8::someHeads(a).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(new Literal("someHeads", new Const("a")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.8).compareTo(probability));
@@ -272,17 +305,21 @@ public class ProbabilityEstimatorTest {
     // twoHeads(X)?
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("twoHeads", new Var());
-    Set<Clause> proofs = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(1, proofs.size());
+    Assert.assertEquals(1, tries.size());
 
     Assert.assertTrue(
         isValid(proofs, "twoHeads(a)", Lists.newArrayList("0.5::heads1(a)", "0.6::heads2(a)")));
 
+    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
+
     // Verify BDD answer
     // 0.3::twoHeads(a).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(new Literal("twoHeads", new Const("a")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.3).compareTo(probability));
@@ -311,33 +348,42 @@ public class ProbabilityEstimatorTest {
     // p(2)?
     Solver solver = new Solver(kb, true);
     Literal query1 = new Literal("p", new Const("1"));
-    Set<Clause> proofs1 = solver.proofs(query1);
+    List<Clause> proofs1 = Lists.newArrayList(solver.proofs(query1));
+    Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
 
     Literal query2 = new Literal("p", new Const("2"));
-    Set<Clause> proofs2 = solver.proofs(query2);
+    List<Clause> proofs2 = Lists.newArrayList(solver.proofs(query2));
+    Map<Literal, Trie<Literal>> tries2 = solver.tries(query2);
 
     // Verify answers
     Assert.assertEquals(2, proofs1.size());
+    Assert.assertEquals(2, tries1.size());
 
     Assert.assertTrue(isValid(proofs1, "0.3::p(1)."));
     Assert.assertTrue(isValid(proofs1, "0.6::p(1)."));
 
+    Assert.assertTrue(tries1.get(proofs1.get(0).head()).paths().isEmpty());
+    Assert.assertTrue(tries1.get(proofs1.get(1).head()).paths().isEmpty());
+
     Assert.assertEquals(1, proofs2.size());
+    Assert.assertEquals(1, tries2.size());
 
     Assert.assertTrue(isValid(proofs2, "0.2::p(2)."));
+
+    Assert.assertTrue(tries2.get(proofs2.get(0).head()).paths().isEmpty());
 
     // Verify BDD answer
     // 0.72::p(1).
     // 0.2::p(2).
-    ProbabilityEstimator estimator1 = new ProbabilityEstimator(proofs1);
+    ProbabilityEstimator estimator1 = new ProbabilityEstimator(Sets.newHashSet(proofs1));
     BigDecimal probability1 = estimator1.probability(query1);
 
-    Assert.assertTrue(BigDecimal.valueOf(0.72).compareTo(probability1) == 0);
+    Assert.assertEquals(0, BigDecimal.valueOf(0.72).compareTo(probability1));
 
-    ProbabilityEstimator estimator2 = new ProbabilityEstimator(proofs2);
+    ProbabilityEstimator estimator2 = new ProbabilityEstimator(Sets.newHashSet(proofs2));
     BigDecimal probability2 = estimator2.probability(query2);
 
-    Assert.assertTrue(BigDecimal.valueOf(0.2).compareTo(probability2) == 0);
+    Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probability2));
   }
 
   /**
@@ -360,16 +406,20 @@ public class ProbabilityEstimatorTest {
     // ~p(1)?
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("~p", new Const("1"));
-    Set<Clause> proofs = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(1, proofs.size());
+    Assert.assertEquals(1, tries.size());
 
     Assert.assertTrue(isValid(proofs, "0.6::~p(1)."));
 
+    Assert.assertTrue(tries.get(proofs.get(0).head()).paths().isEmpty());
+
     // Verify BDD answer
     // 0.6::~p(1).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(query);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.6).compareTo(probability));
@@ -400,17 +450,22 @@ public class ProbabilityEstimatorTest {
     // p(1)?
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("p", new Const(1));
-    Set<Clause> clauses = solver.proofs(query);
+    List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
-    Assert.assertEquals(2, clauses.size());
+    Assert.assertEquals(2, proofs.size());
+    Assert.assertEquals(1, tries.size());
 
-    Assert.assertTrue(isValid(clauses, "p(1)", Lists.newArrayList("0.5::~t(1)")));
-    Assert.assertTrue(isValid(clauses, "p(1)", Lists.newArrayList("0.7::~t(2)")));
+    Assert.assertTrue(isValid(proofs, "p(1)", Lists.newArrayList("0.5::~t(1)")));
+    Assert.assertTrue(isValid(proofs, "p(1)", Lists.newArrayList("0.7::~t(2)")));
+
+    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
+    Assert.assertTrue(tries.get(proofs.get(1).head()).contains(proofs.get(1).body()));
 
     // Verify BDD answer
     // 0.85::p(1).
-    ProbabilityEstimator estimator = new ProbabilityEstimator(clauses);
+    ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
     BigDecimal probability = estimator.probability(query);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.85).compareTo(probability));
@@ -442,29 +497,60 @@ public class ProbabilityEstimatorTest {
     Solver solver = new Solver(kb, true);
 
     Literal query1 = new Literal("stressed", new Const(1));
-    Set<Clause> proofs1 = solver.proofs(query1);
+    List<Clause> proofs1 = Lists.newArrayList(solver.proofs(query1));
+    Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
 
     Literal query2 = new Literal("stressed", new Const(2));
-    Set<Clause> proofs2 = solver.proofs(query2);
+    List<Clause> proofs2 = Lists.newArrayList(solver.proofs(query2));
+    Map<Literal, Trie<Literal>> tries2 = solver.tries(query2);
 
     Literal query3 = new Literal("stressed", new Const(3));
-    Set<Clause> proofs3 = solver.proofs(query3);
+    List<Clause> proofs3 = Lists.newArrayList(solver.proofs(query3));
+    Map<Literal, Trie<Literal>> tries3 = solver.tries(query3);
+
+    // Verify answers
+    Assert.assertEquals(1, proofs1.size());
+    Assert.assertEquals(1, tries1.size());
+
+    // stressed("1") :- athlet("1"), 0.2::proba_0sr9pjn("true")
+    Assert.assertTrue(isValid(proofs1, "stressed(1)", Lists.newArrayList("athlet(1)")));
+
+    Assert.assertTrue(tries1.get(proofs1.get(0).head()).contains(proofs1.get(0).body()));
+
+    Assert.assertEquals(2, proofs2.size());
+    Assert.assertEquals(1, tries2.size());
+
+    // stressed("2") :- student("2"), 0.5::proba_8jyexcv("true")
+    // stressed("2") :- athlet("2"), 0.2::proba_0sr9pjn("true")
+    Assert.assertTrue(isValid(proofs2, "stressed(2)", Lists.newArrayList("student(2)")));
+    Assert.assertTrue(isValid(proofs2, "stressed(2)", Lists.newArrayList("athlet(2)")));
+
+    Assert.assertTrue(tries2.get(proofs2.get(0).head()).contains(proofs2.get(0).body()));
+    Assert.assertTrue(tries2.get(proofs2.get(1).head()).contains(proofs2.get(1).body()));
+
+    Assert.assertEquals(1, proofs3.size());
+    Assert.assertEquals(1, tries3.size());
+
+    // stressed("3") :- student("3"), 0.5::proba_8jyexcv("true")
+    Assert.assertTrue(isValid(proofs3, "stressed(3)", Lists.newArrayList("student(3)")));
+
+    Assert.assertTrue(tries3.get(proofs3.get(0).head()).contains(proofs3.get(0).body()));
 
     // Verify BDD answer
     // 0.2::stressed(1).
     // 0.6::stressed(2).
     // 0.5::stressed(3).
-    ProbabilityEstimator estimator1 = new ProbabilityEstimator(proofs1);
+    ProbabilityEstimator estimator1 = new ProbabilityEstimator(Sets.newHashSet(proofs1));
     BigDecimal probability1 = estimator1.probability(query1);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probability1));
 
-    ProbabilityEstimator estimator2 = new ProbabilityEstimator(proofs2);
+    ProbabilityEstimator estimator2 = new ProbabilityEstimator(Sets.newHashSet(proofs2));
     BigDecimal probability2 = estimator2.probability(query2);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.6).compareTo(probability2));
 
-    ProbabilityEstimator estimator3 = new ProbabilityEstimator(proofs3);
+    ProbabilityEstimator estimator3 = new ProbabilityEstimator(Sets.newHashSet(proofs3));
     BigDecimal probability3 = estimator3.probability(query3);
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.5).compareTo(probability3));

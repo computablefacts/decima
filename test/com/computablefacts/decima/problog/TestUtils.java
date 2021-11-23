@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 
 final public class TestUtils {
 
@@ -22,6 +23,10 @@ final public class TestUtils {
     return Parser.parseClause(clause);
   }
 
+  public static boolean isValid(List<Clause> proofs, String head, List<String> body) {
+    return isValid(Sets.newHashSet(proofs), head, body);
+  }
+
   public static boolean isValid(Set<Clause> proofs, String head, List<String> body) {
 
     Literal newHead = parseClause(head + ".").head();
@@ -36,6 +41,10 @@ final public class TestUtils {
       }
       return true;
     });
+  }
+
+  public static boolean isValid(List<Clause> proofs, String proof) {
+    return isValid(Sets.newHashSet(proofs), proof);
   }
 
   /**
