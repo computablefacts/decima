@@ -40,11 +40,11 @@ final public class ProofAssistant {
         .collect(Collectors.toSet());
   }
 
-  public Set<Clause> collect(Literal curLiteral) {
-    return collect(curLiteral, new HashSet<>(), 0);
+  public Set<Clause> proofs(Literal curLiteral) {
+    return proofs(curLiteral, new HashSet<>(), 0);
   }
 
-  private Set<Clause> collect(Literal curLiteral, Set<Clause> visited, int depth) {
+  private Set<Clause> proofs(Literal curLiteral, Set<Clause> visited, int depth) {
 
     Preconditions.checkNotNull(curLiteral, "curLiteral should not be null");
     Preconditions.checkNotNull(visited, "visited should not be null");
@@ -92,7 +92,7 @@ final public class ProofAssistant {
           }
         } else {
 
-          Set<Clause> proofz = collect(literal, newVisited, depth + 1);
+          Set<Clause> proofz = proofs(literal, newVisited, depth + 1);
 
           if (proofz.isEmpty()) {
             break; // a cycle has been detected in the current proof

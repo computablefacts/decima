@@ -74,7 +74,7 @@ final public class Solver {
 
   /**
    * First, sets up and calls the subgoal search procedure. Then, extracts the answers and unfold
-   * the proofs. In order to work, subgoals must track rules i.e. {@code trackRules = true}.
+   * the proofs. In order to work, subgoals must track rules i.e. {@code computeProofs = true}.
    *
    * @param query goal.
    * @return proofs.
@@ -88,8 +88,8 @@ final public class Solver {
 
     search(root_);
 
-    ProofAssistant proofs = new ProofAssistant(subgoals_.values());
-    return proofs.collect(root_.literal());
+    ProofAssistant assistant = new ProofAssistant(subgoals_.values());
+    return assistant.proofs(root_.literal());
   }
 
   /**
