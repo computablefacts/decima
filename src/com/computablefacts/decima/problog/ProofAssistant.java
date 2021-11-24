@@ -29,15 +29,17 @@ final public class ProofAssistant {
         .flatMap(subgoal -> Sets.newHashSet(subgoal.facts()).stream()).map(Clause::head)
         .collect(Collectors.toSet());
 
-    rulesWithoutSubRules_ = subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream())
-        .filter(rule -> rule.body().stream()
-            .allMatch(literal -> literal.predicate().isPrimitive() || facts_.contains(literal)))
-        .collect(Collectors.toSet());
+    rulesWithoutSubRules_ =
+        subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream()).filter(Clause::isGrounded)
+            .filter(rule -> rule.body().stream()
+                .allMatch(literal -> literal.predicate().isPrimitive() || facts_.contains(literal)))
+            .collect(Collectors.toSet());
 
-    rulesWithSubRules_ = subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream())
-        .filter(rule -> rule.body().stream()
-            .anyMatch(literal -> !literal.predicate().isPrimitive() && !facts_.contains(literal)))
-        .collect(Collectors.toSet());
+    rulesWithSubRules_ =
+        subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream()).filter(Clause::isGrounded)
+            .filter(rule -> rule.body().stream().anyMatch(
+                literal -> !literal.predicate().isPrimitive() && !facts_.contains(literal)))
+            .collect(Collectors.toSet());
   }
 
   public Set<Clause> proofs(Literal curLiteral) {
