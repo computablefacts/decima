@@ -62,8 +62,7 @@ final public class Subgoal {
   @Generated
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("literal", literal_).add("facts", facts_)
-        .omitNullValues().toString();
+    return MoreObjects.toStringHelper(this).add("literal", literal_).toString();
   }
 
   @Generated

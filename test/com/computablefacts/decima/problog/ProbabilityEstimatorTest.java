@@ -53,28 +53,6 @@ public class ProbabilityEstimatorTest {
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("s1", new Const(1));
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
-    Map<Literal, Trie<Literal>> tries = solver.tries(query);
-
-    // Verify answers
-    Assert.assertEquals(6, proofs.size());
-    Assert.assertEquals(1, tries.size());
-
-    Assert.assertTrue(isValid(proofs, "s1(1)", Lists.newArrayList("0.5::b(1)")));
-    Assert.assertTrue(isValid(proofs, "s1(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::b(2)")));
-    Assert.assertTrue(isValid(proofs, "s1(1)", Lists.newArrayList("0.5::f(1, 3)", "0.5::b(3)")));
-    Assert.assertTrue(
-        isValid(proofs, "s1(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 1)", "0.5::b(1)")));
-    Assert.assertTrue(
-        isValid(proofs, "s1(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 3)", "0.5::b(3)")));
-    Assert.assertTrue(isValid(proofs, "s1(1)",
-        Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 1)", "0.5::f(1, 3)", "0.5::b(3)")));
-
-    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
-    Assert.assertTrue(tries.get(proofs.get(1).head()).contains(proofs.get(1).body()));
-    Assert.assertTrue(tries.get(proofs.get(2).head()).contains(proofs.get(2).body()));
-    Assert.assertTrue(tries.get(proofs.get(3).head()).contains(proofs.get(3).body()));
-    Assert.assertTrue(tries.get(proofs.get(4).head()).contains(proofs.get(4).body()));
-    Assert.assertTrue(tries.get(proofs.get(5).head()).contains(proofs.get(5).body()));
 
     // Verify BDD answer
     // 0.734375::s1(1).
@@ -113,28 +91,6 @@ public class ProbabilityEstimatorTest {
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("s2", new Const(1));
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
-    Map<Literal, Trie<Literal>> tries = solver.tries(query);
-
-    // Verify answers
-    Assert.assertEquals(6, proofs.size());
-    Assert.assertEquals(1, tries.size());
-
-    Assert.assertTrue(isValid(proofs, "s2(1)", Lists.newArrayList("0.5::b(1)")));
-    Assert.assertTrue(isValid(proofs, "s2(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::b(2)")));
-    Assert.assertTrue(isValid(proofs, "s2(1)", Lists.newArrayList("0.5::f(1, 3)", "0.5::b(3)")));
-    Assert.assertTrue(
-        isValid(proofs, "s2(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 1)", "0.5::b(1)")));
-    Assert.assertTrue(
-        isValid(proofs, "s2(1)", Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 3)", "0.5::b(3)")));
-    Assert.assertTrue(isValid(proofs, "s2(1)",
-        Lists.newArrayList("0.5::f(1, 2)", "0.5::f(2, 1)", "0.5::f(1, 3)", "0.5::b(3)")));
-
-    Assert.assertTrue(tries.get(proofs.get(0).head()).contains(proofs.get(0).body()));
-    Assert.assertTrue(tries.get(proofs.get(1).head()).contains(proofs.get(1).body()));
-    Assert.assertTrue(tries.get(proofs.get(2).head()).contains(proofs.get(2).body()));
-    Assert.assertTrue(tries.get(proofs.get(3).head()).contains(proofs.get(3).body()));
-    Assert.assertTrue(tries.get(proofs.get(4).head()).contains(proofs.get(4).body()));
-    Assert.assertTrue(tries.get(proofs.get(5).head()).contains(proofs.get(5).body()));
 
     // Verify BDD answer
     // 0.734375::s2(1).
@@ -149,7 +105,6 @@ public class ProbabilityEstimatorTest {
    *
    * See https://github.com/ML-KULeuven/problog/blob/master/test/non_ground_query.pl
    */
-  @Ignore
   @Test
   public void testNonGroundQuery() {
 
@@ -175,9 +130,6 @@ public class ProbabilityEstimatorTest {
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("a", new Var());
     Set<Clause> proofs = solver.proofs(query);
-
-    // Verify answers
-    // TODO : check the number of clauses
 
     // Verify BDD answer
     // 0.2::a(1).

@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
  * Extracted from Angelika Kimmig, Bart Demoen and Luc De Raedt (2010). "On the Implementation of
  * the Probabilistic Logic Programming Language ProbLog"
  */
-public class Graph3Test {
+public class GraphWithoutCycle2Test {
 
   @Test
   public void testGraph() {

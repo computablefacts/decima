@@ -1,12 +1,15 @@
 package com.computablefacts.decima.problog;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.computablefacts.asterix.trie.Trie;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
+import com.google.errorprone.annotations.Var;
 
 /**
  * See Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic
@@ -20,6 +23,7 @@ final public class ProofAssistant {
   private final Set<Literal> facts_;
   private final Set<Clause> rulesWithSubRules_;
   private final Set<Clause> rulesWithoutSubRules_;
+  private final Map<Clause, Trie<Literal>> proofs_ = new HashMap<>();
 
   public ProofAssistant(Collection<Subgoal> subgoals) {
 
@@ -43,13 +47,12 @@ final public class ProofAssistant {
   }
 
   public Set<Clause> proofs(Literal curLiteral) {
-    return proofs(curLiteral, new HashSet<>(), 0);
+    return proofs(curLiteral, 0);
   }
 
-  private Set<Clause> proofs(Literal curLiteral, Set<Clause> visited, int depth) {
+  private Set<Clause> proofs(Literal curLiteral, int depth) {
 
     Preconditions.checkNotNull(curLiteral, "curLiteral should not be null");
-    Preconditions.checkNotNull(visited, "visited should not be null");
     Preconditions.checkArgument(depth >= 0, "depth should be >= 0");
 
     if (facts_.stream().anyMatch(fact -> fact.isRelevant(curLiteral))) {
@@ -64,25 +67,21 @@ final public class ProofAssistant {
         .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
 
     Set<Clause> proofs = new HashSet<>();
-    Set<Clause> rules =
-        Sets.difference(Sets.union(rulesWithoutSubRules, rulesWithSubRules), visited);
+    List<Clause> rules = new ArrayList<>();
+    rules.addAll(rulesWithoutSubRules);
+    rules.addAll(rulesWithSubRules);
 
     for (Clause rule : rules) {
-
-      Set<Clause> newVisited = new HashSet<>(visited);
-
-      if (rulesWithSubRules.stream().anyMatch(clause -> clause.isRelevant(rule))) {
-        newVisited.add(rule);
-      }
 
       Set<List<Literal>> newBodies = new HashSet<>();
 
       for (Literal literal : rule.body()) {
 
+        Set<Literal> facts =
+            facts_.stream().filter(fact -> fact.isRelevant(literal)).collect(Collectors.toSet());
         Set<List<Literal>> newNewBodies = new HashSet<>();
 
-        if (literal.predicate().isPrimitive()/* function */ || facts_.stream()
-            .anyMatch(fact -> fact.isRelevant(literal)) /* fact */) {
+        if (literal.predicate().isPrimitive() /* function */) {
           if (newBodies.isEmpty()) {
             newNewBodies.add(Lists.newArrayList(literal));
           } else {
@@ -92,29 +91,68 @@ final public class ProofAssistant {
               newNewBodies.add(nb);
             }
           }
-        } else {
-
-          Set<Clause> proofz = proofs(literal, newVisited, depth + 1);
-
-          if (proofz.isEmpty()) {
-            break; // a cycle has been detected in the current proof
-          }
-
-          for (Clause proof : proofz) {
+        } else if (!facts.isEmpty() /* fact */) {
+          for (Literal fact : facts) {
             if (newBodies.isEmpty()) {
-              if (proof.isFact()) {
-                newNewBodies.add(Lists.newArrayList(proof.head()));
-              } else {
-                newNewBodies.add(new ArrayList<>(proof.body()));
-              }
+              newNewBodies.add(Lists.newArrayList(fact));
             } else {
               for (List<Literal> body : newBodies) {
                 List<Literal> nb = new ArrayList<>(body);
-                if (proof.isFact()) {
-                  nb.add(proof.head());
-                } else {
-                  nb.addAll(proof.body());
-                }
+                nb.add(literal);
+                newNewBodies.add(nb);
+              }
+            }
+          }
+        } else { /* rule */
+
+          @Var
+          Set<Clause> proofz =
+              proofs_.entrySet().stream().filter(e -> e.getKey().head().isRelevant(literal))
+                  .flatMap(
+                      e -> e.getValue().paths().stream().map(path -> new Clause(literal, path)))
+                  .collect(Collectors.toSet());
+
+          if (proofz.isEmpty()) {
+            proofz = proofs(literal, depth + 1);
+          }
+
+          Preconditions.checkState(!proofz.isEmpty(), "goal cannot be proven : %s", rule);
+
+          // --[ BEGIN SHENANIGANS ]--
+          // Here, we have two kinds of proofs : 1/ proofs where all the body literals have a
+          // probability of 1 and 2/ proofs where at least one of the body literals have a
+          // probability different from 1. If more than one proof are in 1/, only keep the shortest
+          // ones. This reduction in the number of proofs should have no impact on the computation
+          // performed by the ProbabilityEstimator class.
+
+          Set<Clause> ones = new HashSet<>();
+          Set<Clause> others = new HashSet<>();
+
+          for (Clause proof : proofz) {
+
+            Preconditions.checkState(proof.isRule(), "proof should be a rule : %s", proof);
+
+            if (proof.body().stream().map(Literal::probability)
+                .allMatch(prob -> BigDecimal.ONE.compareTo(prob) == 0)) {
+              ones.add(proof);
+            } else {
+              others.add(proof);
+            }
+          }
+
+          OptionalInt minSize = ones.stream().mapToInt(proof -> proof.body().size()).min();
+          proofz = Sets.union(ones.stream().filter(p -> p.body().size() == minSize.getAsInt())
+              .collect(Collectors.toSet()), others);
+
+          // --[ END SHENANIGANS ]--
+
+          for (Clause proof : proofz) {
+            if (newBodies.isEmpty()) {
+              newNewBodies.add(new ArrayList<>(proof.body()));
+            } else {
+              for (List<Literal> body : newBodies) {
+                List<Literal> nb = new ArrayList<>(body);
+                nb.addAll(proof.body());
                 newNewBodies.add(nb);
               }
             }
@@ -124,9 +162,12 @@ final public class ProofAssistant {
         newBodies.clear();
         newBodies.addAll(newNewBodies);
       }
-
+      if (!proofs_.containsKey(rule)) {
+        proofs_.put(rule, new Trie<>());
+      }
       for (List<Literal> body : newBodies) {
         proofs.add(new Clause(rule.head(), body));
+        proofs_.get(rule).insert(body);
       }
     }
     return proofs;

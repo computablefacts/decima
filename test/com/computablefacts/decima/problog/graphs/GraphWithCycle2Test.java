@@ -1,6 +1,7 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.*;
+import static com.computablefacts.decima.problog.TestUtils.kb;
+import static com.computablefacts.decima.problog.TestUtils.parseClause;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -9,14 +10,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.computablefacts.decima.problog.*;
-import com.google.common.collect.Lists;
 
 /**
  * Extracted from Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a
  * Probabilistic Setting". Technical Communications of ICLP. 7. 124-133.
  * 10.4230/LIPIcs.ICLP.2010.124.
  */
-public class Graph2Test {
+public class GraphWithCycle2Test {
 
   @Test
   public void testGraph() {
@@ -45,21 +45,11 @@ public class Graph2Test {
     // Verify subgoals
     Assert.assertEquals(10, solver.nbSubgoals());
 
-    // Verify answers
-    Assert.assertEquals(3, proofs.size());
-
-    Assert.assertTrue(
-        isValid(proofs, "path(1,4)", Lists.newArrayList("0.1::edge(1,2)", "0.6::edge(2,4)")));
-    Assert.assertTrue(isValid(proofs, "path(1,4)",
-        Lists.newArrayList("0.5::edge(1,3)", "0.2::edge(3,2)", "0.6::edge(2,4)")));
-    Assert.assertTrue(isValid(proofs, "path(1,4)", Lists.newArrayList("0.1::edge(1,2)",
-        "0.3::edge(2,3)", "0.2::edge(3,2)", "0.6::edge(2,4)")));
-
     // Verify BDD answer
     // 0.114::path(1, 4).
     ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 3);
 
-    Assert.assertTrue(BigDecimal.valueOf(0.114).compareTo(probability) == 0);
+    Assert.assertEquals(0, BigDecimal.valueOf(0.114).compareTo(probability));
   }
 }

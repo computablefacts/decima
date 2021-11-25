@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
  * Extracted from Theofrastos Mantadelis and Gerda Janssens (2010). "Nesting Probabilistic
  * Inference"
  */
-public class Graph4Test {
+public class GraphWithoutCycle1Test {
 
   @Test
   public void testGraph() {

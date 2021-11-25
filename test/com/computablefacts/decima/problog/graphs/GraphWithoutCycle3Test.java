@@ -12,10 +12,9 @@ import com.computablefacts.decima.problog.*;
 import com.google.common.collect.Lists;
 
 /**
- * Extracted from Theofrastos Mantadelis and Gerda Janssens (2010). "Nesting Probabilistic
- * Inference"
+ * Extracted from https://dtai.cs.kuleuven.be/problog/tutorial/basic/04_pgraph.html
  */
-public class Graph5Test {
+public class GraphWithoutCycle3Test {
 
   @Test
   public void testGraph() {
@@ -63,6 +62,6 @@ public class Graph5Test {
     ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     BigDecimal probability = estimator.probability(query, 7);
 
-    Assert.assertTrue(BigDecimal.valueOf(0.2167296).compareTo(probability) == 0);
+    Assert.assertEquals(0, BigDecimal.valueOf(0.2167296).compareTo(probability));
   }
 }
