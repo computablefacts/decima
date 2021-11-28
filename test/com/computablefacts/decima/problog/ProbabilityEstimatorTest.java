@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.computablefacts.asterix.trie.Trie;
@@ -145,6 +144,42 @@ public class ProbabilityEstimatorTest {
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a1)));
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a2)));
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a3)));
+  }
+
+  /**
+   * Ground, non-ground query
+   *
+   * See https://github.com/ML-KULeuven/problog/blob/master/test/ground_nonground_bug_v4.pl
+   */
+  @Test
+  public void testGroundNonGroundQuery4() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = kb();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.1::p(1)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("p(X) :- p(1), fn_is(X, unk)."));
+    kb.azzert(parseClause("fill(X) :- fn_is(X, unk)."));
+    kb.azzert(parseClause("fill(X) :- p(X), fill(X)."));
+    kb.azzert(parseClause("q(X) :- fill(X)."));
+
+    // Query kb
+    // q(X)?
+    Solver solver = new Solver(kb, true);
+    Literal query = new Literal("q", new Var());
+    Set<Clause> proofs = solver.proofs(query);
+
+    // Verify BDD answer
+    // 0.1::q(unk).
+    ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
+    Map<Clause, BigDecimal> probabilities = estimator.probabilities();
+
+    Clause answer = new Clause(new Literal("q", new Const("unk")));
+
+    Assert.assertEquals(0, BigDecimal.valueOf(0.1).compareTo(probabilities.get(answer)));
   }
 
   /**

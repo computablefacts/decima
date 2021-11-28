@@ -29,7 +29,7 @@ final public class ProofAssistant {
 
     Preconditions.checkNotNull(subgoals, "subgoals should not be null");
 
-    facts_ = subgoals.stream().filter(subgoal -> subgoal.rules().isEmpty())
+    facts_ = subgoals.stream().filter(subgoal -> subgoal.proofs().isEmpty())
         .flatMap(subgoal -> Sets.newHashSet(subgoal.facts()).stream()).map(Clause::head)
         .collect(Collectors.toSet());
 
