@@ -353,13 +353,14 @@ final public class Solver {
         Hashing.murmur3_128().newHasher().putString(subgoal.literal().id(), StandardCharsets.UTF_8)
             .putString(clause.head().id(), StandardCharsets.UTF_8).hash().toString();
 
-    if (bf_.contains(hash)) {
+    if (!bf_.contains(hash)) {
+      bf_.add(hash);
+    } else {
       if (subgoal.contains(clause)) { // Potentially expensive call...
         return;
       }
     }
 
-    bf_.add(hash);
     subgoal.addFact(clause);
 
     for (Map.Entry<Subgoal, Clause> entry : subgoal.waiters()) {
