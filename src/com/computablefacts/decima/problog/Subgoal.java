@@ -83,6 +83,15 @@ final public class Subgoal {
   }
 
   @Generated
+  boolean contains(Clause clause) {
+
+    Preconditions.checkNotNull(clause, "clause should not be null");
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+
+    return facts_.contains(clause);
+  }
+
+  @Generated
   Iterator<Clause> facts() {
     return facts_.facts();
   }
@@ -107,22 +116,16 @@ final public class Subgoal {
   }
 
   /**
-   * Try to add a fact to the subgoal.
+   * Add a fact to the subgoal.
    *
    * @param clause the fact to add.
-   * @return true iif the fact is not already present and has been added, false otherwise.
    */
-  boolean addFact(Clause clause) {
+  void addFact(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
 
-    boolean add = !facts_.contains(clause);
-
-    if (add) {
-      facts_.add(clause);
-    }
-    return add;
+    facts_.add(clause);
   }
 
   Collection<Clause> proofs() {

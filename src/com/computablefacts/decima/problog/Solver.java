@@ -1,6 +1,7 @@
 package com.computablefacts.decima.problog;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -10,12 +11,14 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.computablefacts.asterix.BloomFilter;
 import com.computablefacts.asterix.Generated;
 import com.computablefacts.asterix.trie.Trie;
 import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
@@ -40,11 +43,14 @@ import com.google.errorprone.annotations.Var;
 @CheckReturnValue
 final public class Solver {
 
+  private static final double FALSE_POSITIVE_PROBABILITY = 0.05;
+  private static final int EXPECTED_NUMBER_OF_ELEMENTS = 10000000;
   private static final Logger logger_ = LoggerFactory.getLogger(Solver.class);
 
   private final AbstractKnowledgeBase kb_;
   private final Map<String, Subgoal> subgoals_;
   private final Function<Literal, Subgoal> newSubgoal_;
+  private final BloomFilter<String> bf_;
 
   private Subgoal root_ = null;
   private int maxSampleSize_ = -1;
@@ -54,6 +60,11 @@ final public class Solver {
   }
 
   public Solver(AbstractKnowledgeBase kb, Function<Literal, Subgoal> newSubgoal) {
+    this(kb, newSubgoal, FALSE_POSITIVE_PROBABILITY, EXPECTED_NUMBER_OF_ELEMENTS); // BF : ~72MB
+  }
+
+  public Solver(AbstractKnowledgeBase kb, Function<Literal, Subgoal> newSubgoal,
+      double falsePositiveProbability, int expectedNumberOfElements) {
 
     Preconditions.checkNotNull(kb, "kb should not be null");
     Preconditions.checkNotNull(newSubgoal, "newSubgoal should not be null");
@@ -61,6 +72,7 @@ final public class Solver {
     kb_ = kb;
     subgoals_ = new ConcurrentHashMap<>();
     newSubgoal_ = newSubgoal;
+    bf_ = new BloomFilter<>(falsePositiveProbability, expectedNumberOfElements);
   }
 
   /**
@@ -337,9 +349,18 @@ final public class Solver {
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
 
-    if (!subgoal.addFact(clause)) {
-      return;
+    String hash =
+        Hashing.murmur3_128().newHasher().putString(subgoal.literal().id(), StandardCharsets.UTF_8)
+            .putString(clause.head().id(), StandardCharsets.UTF_8).hash().toString();
+
+    if (bf_.contains(hash)) {
+      if (subgoal.contains(clause)) { // Potentially expensive call...
+        return;
+      }
     }
+
+    bf_.add(hash);
+    subgoal.addFact(clause);
 
     for (Map.Entry<Subgoal, Clause> entry : subgoal.waiters()) {
 
