@@ -462,7 +462,7 @@ final public class Literal {
     Preconditions.checkState(
         result != null && (result.value() instanceof String || result.value() instanceof Number
             || result.value() instanceof Boolean),
-        "The only return types allowed are String, Number and Boolean : %s", function.toString());
+        "The only return types allowed are String, Number and Boolean : %s", function);
 
     if (!isFirstTermVariable) { // => FN_IS()
 

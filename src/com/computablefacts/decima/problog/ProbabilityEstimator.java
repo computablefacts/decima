@@ -91,7 +91,7 @@ final public class ProbabilityEstimator {
   public BigDecimal probability(Clause clause, int nbSignificantDigits) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause);
     Preconditions.checkArgument(nbSignificantDigits > 0, "nbSignificantDigits should be > 0");
 
     if (proofs_.isEmpty()) {

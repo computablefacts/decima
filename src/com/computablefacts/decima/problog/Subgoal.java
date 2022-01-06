@@ -86,7 +86,7 @@ final public class Subgoal {
   boolean contains(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause);
 
     return facts_.contains(clause);
   }
@@ -110,7 +110,7 @@ final public class Subgoal {
 
     Preconditions.checkNotNull(subgoal, "subgoal should not be null");
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause.toString());
+    Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause);
 
     waiters_.add(new AbstractMap.SimpleEntry<>(subgoal, clause));
   }
@@ -123,7 +123,7 @@ final public class Subgoal {
   void addFact(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause);
 
     facts_.add(clause);
   }
@@ -135,7 +135,7 @@ final public class Subgoal {
   void push(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause.toString());
+    Preconditions.checkArgument(clause.isRule(), "clause should be a rule : %s", clause);
 
     if (!computeProofs_) {
       return;
@@ -235,9 +235,9 @@ final public class Subgoal {
   private Clause merge(Clause cur, Clause prev) {
 
     Preconditions.checkNotNull(cur, "cur should not be null");
-    Preconditions.checkArgument(cur.isRule(), "cur should be a rule : %s", cur.toString());
+    Preconditions.checkArgument(cur.isRule(), "cur should be a rule : %s", cur);
     Preconditions.checkNotNull(prev, "prev should not be null");
-    Preconditions.checkArgument(prev.isRule(), "prev should be a rule : %s", cur.toString());
+    Preconditions.checkArgument(prev.isRule(), "prev should be a rule : %s", cur);
     Preconditions.checkArgument(cur.body().size() <= prev.body().size(),
         "mismatch in body length : %s vs %s", prev.body(), cur.body());
 

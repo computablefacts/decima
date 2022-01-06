@@ -181,12 +181,12 @@ final public class Solver {
     Predicate predicate = literal.predicate();
 
     Preconditions.checkState(!predicate.isPrimitive(), "predicate should not be a primitive : %s",
-        literal.toString());
+        literal);
 
     if (predicate.isNegated()) {
 
       Preconditions.checkState(literal.isSemiGrounded(), "negated clauses should be grounded : %s",
-          literal.toString());
+          literal);
 
       // Evaluate the positive version of the rule (i.e. negation as failure)
       Literal base = new Literal(predicate.baseName(), literal.terms());
@@ -347,7 +347,7 @@ final public class Solver {
 
     Preconditions.checkNotNull(subgoal, "subgoal should not be null");
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause.toString());
+    Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause);
 
     String hash =
         Hashing.murmur3_128().newHasher().putString(subgoal.literal().id(), StandardCharsets.UTF_8)
@@ -384,7 +384,7 @@ final public class Solver {
 
     Preconditions.checkNotNull(subgoal, "subgoal should not be null");
     Preconditions.checkNotNull(rule, "rule should not be null");
-    Preconditions.checkArgument(rule.isRule(), "rule should be a rule : %s", rule.toString());
+    Preconditions.checkArgument(rule.isRule(), "rule should be a rule : %s", rule);
 
     subgoal.addRule(isInKb ? rule : null);
     Literal first = rule.body().get(0);
@@ -467,15 +467,15 @@ final public class Solver {
 
     Preconditions.checkNotNull(subgoal, "subgoal should not be null");
     Preconditions.checkNotNull(rule, "rule should not be null");
-    Preconditions.checkArgument(rule.isRule(), "clause should be a rule : %s", rule.toString());
+    Preconditions.checkArgument(rule.isRule(), "clause should be a rule : %s", rule);
     Preconditions.checkNotNull(fact, "fact should not be null");
-    Preconditions.checkArgument(fact.isFact(), "clause should be a fact : %s", fact.toString());
+    Preconditions.checkArgument(fact.isFact(), "clause should be a fact : %s", fact);
 
     // Rule with first body literal
     Clause prevClause = rule.resolve(fact.head());
 
     Preconditions.checkState(prevClause != null, "resolution failed : rule = %s / head = %s",
-        rule.toString(), fact.toString());
+        rule, fact);
 
     // Rule minus first body literal
     Clause newClause = new Clause(prevClause.head(),

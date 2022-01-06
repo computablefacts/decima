@@ -84,7 +84,7 @@ public abstract class AbstractKnowledgeBase {
   public void azzert(Clause clause) {
 
     Preconditions.checkNotNull(clause, "clause should not be null");
-    Preconditions.checkArgument(clause.isSafe(), "clause should be safe : %s", clause.toString());
+    Preconditions.checkArgument(clause.isSafe(), "clause should be safe : %s", clause);
 
     if (clause.head().predicate().isPrimitive()) {
       return; // Ignore assertions for primitives
@@ -110,21 +110,21 @@ public abstract class AbstractKnowledgeBase {
     BigDecimal probability = head.probability();
 
     Preconditions.checkState(!BigDecimal.ZERO.equals(probability),
-        "head probability must be != 0.0 : %s", newClause.toString());
+        "head probability must be != 0.0 : %s", newClause);
 
     if (clause.isFact()) {
       azzertFact(newClause);
     } else {
 
       Preconditions.checkState(BigDecimal.ONE.equals(probability),
-          "rule head should not have a probability attached : %s", newClause.toString());
+          "rule head should not have a probability attached : %s", newClause);
 
       for (int i = 0; i < newClause.body().size(); i++) {
 
         Literal literal = newClause.body().get(i);
 
         Preconditions.checkState(BigDecimal.ONE.equals(literal.probability()),
-            "body literals should not have probabilities attached : %s", newClause.toString());
+            "body literals should not have probabilities attached : %s", newClause);
       }
 
       azzertRule(newClause);
