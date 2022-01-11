@@ -1,6 +1,7 @@
 package com.computablefacts.decima.problog;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,8 +10,9 @@ import com.computablefacts.nona.Function;
 import com.computablefacts.nona.types.BoxedType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -22,7 +24,6 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Literal {
 
-  private final ImmutableList<String> hash_;
   private final String id_;
   private final String tag_;
   private final Predicate predicate_;
@@ -100,10 +101,21 @@ final public class Literal {
     predicate_ = new Predicate(predicate, terms.size());
     functions_ = new ArrayList<>(functions);
     terms_ = new ArrayList<>(terms);
-    hash_ = ImmutableList.copyOf(hash());
-    id_ = Joiner.on(':').join(hash_);
-    tag_ = hash_.stream().skip(1 /* probability */).map(t -> t.charAt(0) == 'v' ? "v" : t)
-        .collect(Collectors.joining(":"));
+
+    Hasher idHasher = Hashing.murmur3_128().newHasher();
+    Hasher tagHasher = Hashing.murmur3_128().newHasher();
+
+    idHasher.putString(probability().toString(), StandardCharsets.UTF_8);
+    idHasher.putString(predicate_.id(), StandardCharsets.UTF_8);
+    tagHasher.putString(predicate_.id(), StandardCharsets.UTF_8);
+
+    for (AbstractTerm term : terms_) {
+      idHasher.putString(term.id(), StandardCharsets.UTF_8);
+      tagHasher.putString(term.isConst() ? term.id() : "v", StandardCharsets.UTF_8);
+    }
+
+    id_ = idHasher.hash().toString();
+    tag_ = tagHasher.hash().toString();
   }
 
   @Override
@@ -291,23 +303,15 @@ final public class Literal {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
 
-    // Check arity
-    if (hash_.size() != literal.hash_.size()) {
+    if (!predicate().id().equals(literal.predicate().id())) {
       return false;
     }
+    for (int i = 0; i < terms_.size(); i++) {
 
-    // Skip probability but check predicate
-    if (!hash_.get(1).equals(literal.hash_.get(1))) {
-      return false;
-    }
+      AbstractTerm t1 = terms_.get(i);
+      AbstractTerm t2 = literal.terms_.get(i);
 
-    // Check terms
-    for (int i = 2; i < literal.hash_.size(); i++) {
-
-      String t1 = hash_.get(i);
-      String t2 = literal.hash_.get(i);
-
-      if (t1.charAt(0) == 'c' && t2.charAt(0) == 'c') {
+      if (t1.isConst() && t2.isConst()) {
         if (!t1.equals(t2)) {
           return false;
         }
@@ -629,26 +633,5 @@ final public class Literal {
       return new Function(function);
     }
     return new Function(mergeFunctions());
-  }
-
-  /**
-   * Build a new identifier.
-   *
-   * @return a new identifier.
-   */
-  private List<String> hash() {
-
-    List<String> hash = new ArrayList<>();
-    hash.add(probability().toString());
-    hash.add(predicate_.id());
-
-    for (AbstractTerm term : terms_) {
-      if (term.isConst()) {
-        hash.add("c" + term.id());
-      } else {
-        hash.add(term.id()); // id starts with 'v'
-      }
-    }
-    return hash;
   }
 }

@@ -8,8 +8,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.asterix.WildcardMatcher;
-
 
 public class LiteralTest {
 
@@ -244,12 +242,8 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("1:~edge/2:ca:cb", literal0.id());
-    Assert.assertEquals("1:edge/2:ca:cb", literal1.id());
-
-    Assert.assertTrue(WildcardMatcher.match(literal2.id(), "1:edge/2:ca:v*"));
-    Assert.assertTrue(WildcardMatcher.match(literal3.id(), "1:edge/2:v*:cc"));
-    Assert.assertTrue(WildcardMatcher.match(literal4.id(), "1:edge/2:v*:cb"));
+    Assert.assertEquals("8e512fa8d8eb9b20e6a87168bac22044", literal0.id());
+    Assert.assertEquals("840d328d783bf98cb83d5afc7d812e04", literal1.id());
 
     Assert.assertNotEquals(literal0.id(), literal1.id());
     Assert.assertNotEquals(literal0.id(), literal2.id());
@@ -275,11 +269,11 @@ public class LiteralTest {
     Literal literal3 = new Literal("edge", new Var(), new Const("c"));
     Literal literal4 = new Literal("edge", new Var(), new Const("b"));
 
-    Assert.assertEquals("~edge/2:ca:cb", literal0.tag());
-    Assert.assertEquals("edge/2:ca:cb", literal1.tag());
-    Assert.assertEquals("edge/2:ca:v", literal2.tag());
-    Assert.assertEquals("edge/2:v:cc", literal3.tag());
-    Assert.assertEquals("edge/2:v:cb", literal4.tag());
+    Assert.assertEquals("1781a23e222e35bb3317615267af99f5", literal0.tag());
+    Assert.assertEquals("61be2f4a14e842aa51410ff5375ac6f5", literal1.tag());
+    Assert.assertEquals("96e942fc8936d55b8126f005977afeb5", literal2.tag());
+    Assert.assertEquals("1d57132c5b2a97831e0ac2a64ce487d3", literal3.tag());
+    Assert.assertEquals("8d9e87d442b8bfe108f266bd0086a601", literal4.tag());
 
     Assert.assertNotEquals(literal0.tag(), literal1.tag());
     Assert.assertNotEquals(literal0.tag(), literal2.tag());
