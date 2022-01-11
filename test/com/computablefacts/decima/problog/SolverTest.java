@@ -418,10 +418,12 @@ public class SolverTest {
         .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
             || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
 
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body())
-        || tries.get(answer2.head()).contains(answer2.body())
-        || tries.get(answer3.head()).contains(answer3.body())
-        || tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertTrue((tries.containsKey(answer1.head())
+        && tries.get(answer1.head()).contains(answer1.body()))
+        || (tries.containsKey(answer2.head()) && tries.get(answer2.head()).contains(answer2.body()))
+        || (tries.containsKey(answer3.head()) && tries.get(answer3.head()).contains(answer3.body()))
+        || (tries.containsKey(answer4.head())
+            && tries.get(answer4.head()).contains(answer4.body())));
   }
 
   @Test
@@ -468,10 +470,12 @@ public class SolverTest {
         .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
             || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
 
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body())
-        || tries.get(answer2.head()).contains(answer2.body())
-        || tries.get(answer3.head()).contains(answer3.body())
-        || tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertTrue((tries.containsKey(answer1.head())
+        && tries.get(answer1.head()).contains(answer1.body()))
+        || (tries.containsKey(answer2.head()) && tries.get(answer2.head()).contains(answer2.body()))
+        || (tries.containsKey(answer3.head()) && tries.get(answer3.head()).contains(answer3.body()))
+        || (tries.containsKey(answer4.head())
+            && tries.get(answer4.head()).contains(answer4.body())));
   }
 
   @Test
@@ -518,10 +522,12 @@ public class SolverTest {
         .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
             || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
 
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body())
-        || tries.get(answer2.head()).contains(answer2.body())
-        || tries.get(answer3.head()).contains(answer3.body())
-        || tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertTrue((tries.containsKey(answer1.head())
+        && tries.get(answer1.head()).contains(answer1.body()))
+        || (tries.containsKey(answer2.head()) && tries.get(answer2.head()).contains(answer2.body()))
+        || (tries.containsKey(answer3.head()) && tries.get(answer3.head()).contains(answer3.body()))
+        || (tries.containsKey(answer4.head())
+            && tries.get(answer4.head()).contains(answer4.body())));
   }
 
   @Test
