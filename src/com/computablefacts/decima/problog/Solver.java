@@ -1,7 +1,6 @@
 package com.computablefacts.decima.problog;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +17,6 @@ import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
@@ -349,9 +347,7 @@ final public class Solver {
     Preconditions.checkNotNull(clause, "clause should not be null");
     Preconditions.checkArgument(clause.isFact(), "clause should be a fact : %s", clause);
 
-    String hash =
-        Hashing.murmur3_128().newHasher().putString(subgoal.literal().id(), StandardCharsets.UTF_8)
-            .putString(clause.head().id(), StandardCharsets.UTF_8).hash().toString();
+    String hash = subgoal.literal().id() + clause.head().id();
 
     if (!bf_.contains(hash)) {
       bf_.add(hash);
@@ -474,8 +470,8 @@ final public class Solver {
     // Rule with first body literal
     Clause prevClause = rule.resolve(fact.head());
 
-    Preconditions.checkState(prevClause != null, "resolution failed : rule = %s / head = %s",
-        rule, fact);
+    Preconditions.checkState(prevClause != null, "resolution failed : rule = %s / head = %s", rule,
+        fact);
 
     // Rule minus first body literal
     Clause newClause = new Clause(prevClause.head(),
