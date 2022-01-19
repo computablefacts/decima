@@ -3,15 +3,13 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.TestUtils.parseClause;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.computablefacts.asterix.codecs.JsonCodec;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class ParserTest {
@@ -281,5 +279,163 @@ public class ParserTest {
         "match(V474, V475) :- fn_match_regex(V476, V474, \"¤u0028?m¤u003a^OPEN¤u005c¤u005cs+[a-zA-Z0-9]+¤u005c¤u005cs+BUCKET¤u003a¤u005c¤u005cs+.*$¤u0029\"), fn_to_text(V475, V476)");
 
     Assert.assertEquals(clause1, clause2);
+  }
+
+  @Test
+  public void testProofOfConceptReorderBodyLiterals() {
+
+    Var x = new Var();
+    Var y = new Var();
+    Var u = new Var();
+
+    Literal fnIsTrue = new Literal("fn_is_true", u);
+    Literal fnLt = new Literal("fn_lt", u, x, y);
+    Literal nodeX = new Literal("node", x);
+    Literal nodeY = new Literal("node", y);
+    Literal edgeXY = new Literal("edge", x, y);
+
+    List<List<Literal>> permutations = new ArrayList<>();
+    permute(new Literal[] {fnIsTrue, fnLt, nodeX, nodeY}, 4, 4, permutations);
+
+    Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), fn_is_true(U).");
+
+    for (List<Literal> body : permutations) {
+      System.out.println(new Clause(edgeXY, body));
+      Clause actual = reorderBodyLiterals(new Clause(edgeXY, body));
+      Assert.assertTrue(expected.isRelevant(actual));
+    }
+  }
+
+  private void permute(Literal[] a, int size, int n, List<List<Literal>> output) {
+
+    // if size becomes 1 then prints the obtained permutation
+    if (size == 1) {
+      List<Literal> list = new ArrayList<>();
+      for (int i = 0; i < n; i++) {
+        list.add(a[i]);
+      }
+      output.add(list);
+    }
+    for (int i = 0; i < size; i++) {
+
+      permute(a, size - 1, n, output);
+
+      // if size is odd, swap 0th i.e (first) and (size-1)th i.e (last) element
+      if (size % 2 == 1) {
+        Literal temp = a[0];
+        a[0] = a[size - 1];
+        a[size - 1] = temp;
+      }
+
+      // If size is even, swap ith and (size-1)th i.e last element
+      else {
+        Literal temp = a[i];
+        a[i] = a[size - 1];
+        a[size - 1] = temp;
+      }
+    }
+  }
+
+  private Clause reorderBodyLiterals(Clause clause) {
+
+    List<Literal> body = new ArrayList<>(clause.body());
+
+    // Reorder the rule body literals to :
+    // - Ensure the output of one primitive is not used before it is computed
+    // - Ensure the parameter of one primitive is grounded before the primitive is executed
+    // - TODO : Take negated literals into account
+    body.sort((p1, p2) -> {
+      if (p1.predicate().isPrimitive() && p2.predicate().isPrimitive()) {
+
+        AbstractTerm output1 = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false") ? new Const(true)
+                : p1.terms().get(0);
+        List<AbstractTerm> parameters2 = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false") ? p2.terms()
+                : p2.terms().subList(1, p2.terms().size());
+
+        AbstractTerm output2 = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false") ? new Const(true)
+                : p2.terms().get(0);
+        List<AbstractTerm> parameters1 = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false") ? p1.terms()
+                : p1.terms().subList(1, p1.terms().size());
+
+        boolean dependsP1P2 = parameters1.contains(output2);
+        boolean dependsP2P1 = parameters2.contains(output1);
+
+        Preconditions.checkState(!(dependsP1P2 && dependsP2P1),
+            "cyclic dependency between primitives %s and %s detected", p1.predicate(),
+            p2.predicate());
+
+        if (dependsP1P2) {
+          System.out.println(p2 + " < " + p1);
+        }
+        if (dependsP2P1) {
+          System.out.println(p1 + " < " + p2);
+        }
+        return dependsP1P2 ? 1 : dependsP2P1 ? -1 : 0;
+      }
+      if (p1.predicate().isPrimitive()) {
+
+        AbstractTerm output = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false") ? new Const(true)
+                : p1.terms().get(0);
+        List<AbstractTerm> parameters = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false") ? p1.terms()
+                : p1.terms().subList(1, p1.terms().size());
+
+        boolean parameterDependency = parameters.stream().anyMatch(p -> p2.terms().contains(p));
+        boolean outputDependency = p2.terms().contains(output);
+
+        Preconditions.checkState(!(parameterDependency && outputDependency),
+            "cyclic dependency between primitive %s and rule %s detected", p1.predicate(),
+            p2.predicate());
+
+        if (parameterDependency) {
+          System.out.println(p2 + " < " + p1);
+        }
+        if (outputDependency) {
+          System.out.println(p1 + " < " + p2);
+        }
+        if (!parameterDependency && !outputDependency) {
+          System.out.println(p2 + " < " + p1);
+        }
+        return parameterDependency ? 1
+            : outputDependency ? -1
+                : 1 /* defer function execution, i.e. prioritize rules and fact */;
+      }
+      if (p2.predicate().isPrimitive()) {
+
+        AbstractTerm output = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false") ? new Const(true)
+                : p2.terms().get(0);
+        List<AbstractTerm> parameters = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false") ? p2.terms()
+                : p2.terms().subList(1, p2.terms().size());
+
+        boolean parameterDependency = parameters.stream().anyMatch(p -> p1.terms().contains(p));
+        boolean outputDependency = p1.terms().contains(output);
+
+        Preconditions.checkState(!(parameterDependency && outputDependency),
+            "cyclic dependency between primitive %s and rule %s detected", p2.predicate(),
+            p1.predicate());
+
+        if (parameterDependency) {
+          System.out.println(p1 + " < " + p2);
+        }
+        if (outputDependency) {
+          System.out.println(p2 + " < " + p1);
+        }
+        if (!parameterDependency && !outputDependency) {
+          System.out.println(p1 + " < " + p2);
+        }
+        return parameterDependency ? -1
+            : outputDependency ? 1
+                : -1 /* defer function execution, i.e. prioritize rules and fact */;
+      }
+      return 0; // the order does not matter
+    });
+    return new Clause(clause.head(), body);
   }
 }
