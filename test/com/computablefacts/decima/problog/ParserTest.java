@@ -282,7 +282,7 @@ public class ParserTest {
   }
 
   @Test
-  public void testProofOfConceptReorderBodyLiterals() {
+  public void testProofOfConceptReorderBodyLiterals1() {
 
     Var x = new Var();
     Var y = new Var();
@@ -300,8 +300,33 @@ public class ParserTest {
     Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), fn_is_true(U).");
 
     for (List<Literal> body : permutations) {
-      System.out.println(new Clause(edgeXY, body));
       Clause actual = reorderBodyLiterals(new Clause(edgeXY, body));
+      System.out.println(new Clause(edgeXY, body) + " -> " + actual);
+      Assert.assertTrue(expected.isRelevant(actual));
+    }
+  }
+
+  @Test
+  public void testProofOfConceptReorderBodyLiterals2() {
+
+    Var x = new Var();
+    Var y = new Var();
+    Var u = new Var();
+
+    Literal isFalse = new Literal("~is_false", u);
+    Literal fnLt = new Literal("fn_lt", u, x, y);
+    Literal nodeX = new Literal("node", x);
+    Literal nodeY = new Literal("node", y);
+    Literal edgeXY = new Literal("edge", x, y);
+
+    List<List<Literal>> permutations = new ArrayList<>();
+    permute(new Literal[] {isFalse, fnLt, nodeX, nodeY}, 4, 4, permutations);
+
+    Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), ~is_false(U).");
+
+    for (List<Literal> body : permutations) {
+      Clause actual = reorderBodyLiterals(new Clause(edgeXY, body));
+      System.out.println(new Clause(edgeXY, body) + " -> " + actual);
       Assert.assertTrue(expected.isRelevant(actual));
     }
   }
@@ -343,98 +368,139 @@ public class ParserTest {
     // Reorder the rule body literals to :
     // - Ensure the output of one primitive is not used before it is computed
     // - Ensure the parameter of one primitive is grounded before the primitive is executed
-    // - TODO : Take negated literals into account
+    // - Ensure negated literals are grounded
     body.sort((p1, p2) -> {
       if (p1.predicate().isPrimitive() && p2.predicate().isPrimitive()) {
 
-        AbstractTerm output1 = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false") ? new Const(true)
-                : p1.terms().get(0);
-        List<AbstractTerm> parameters2 = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false") ? p2.terms()
-                : p2.terms().subList(1, p2.terms().size());
+        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
+            p1.predicate());
+        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
+            p2.predicate());
 
-        AbstractTerm output2 = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false") ? new Const(true)
-                : p2.terms().get(0);
-        List<AbstractTerm> parameters1 = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false") ? p1.terms()
-                : p1.terms().subList(1, p1.terms().size());
+        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false");
+        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false");
 
-        boolean dependsP1P2 = parameters1.contains(output2);
-        boolean dependsP2P1 = parameters2.contains(output1);
+        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
+        List<AbstractTerm> p1Parameters =
+            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
 
-        Preconditions.checkState(!(dependsP1P2 && dependsP2P1),
+        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
+        List<AbstractTerm> p2Parameters =
+            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
+
+        boolean p1DependsOnP2 = p1Parameters.contains(p2Output);
+        boolean p2DependsOnP1 = p2Parameters.contains(p1Output);
+
+        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
             "cyclic dependency between primitives %s and %s detected", p1.predicate(),
             p2.predicate());
 
-        if (dependsP1P2) {
+        if (p1DependsOnP2) {
           System.out.println(p2 + " < " + p1);
         }
-        if (dependsP2P1) {
+        if (p2DependsOnP1) {
           System.out.println(p1 + " < " + p2);
         }
-        return dependsP1P2 ? 1 : dependsP2P1 ? -1 : 0;
+        if (!p1DependsOnP2 && !p2DependsOnP1) {
+          System.out.println(p2 + " ~ " + p1);
+        }
+        return p1DependsOnP2 ? 1 : p2DependsOnP1 ? -1 : 0 /* the order does not matter */;
       }
       if (p1.predicate().isPrimitive()) {
 
-        AbstractTerm output = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false") ? new Const(true)
-                : p1.terms().get(0);
-        List<AbstractTerm> parameters = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false") ? p1.terms()
-                : p1.terms().subList(1, p1.terms().size());
+        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
+            p1.predicate());
 
-        boolean parameterDependency = parameters.stream().anyMatch(p -> p2.terms().contains(p));
-        boolean outputDependency = p2.terms().contains(output);
+        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false");
+        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
+        List<AbstractTerm> p1Parameters =
+            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
 
-        Preconditions.checkState(!(parameterDependency && outputDependency),
+        boolean p1DependsOnP2 = p1Parameters.stream().anyMatch(p -> p2.terms().contains(p));
+        boolean p2DependsOnP1 = p2.terms().contains(p1Output);
+
+        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
             "cyclic dependency between primitive %s and rule %s detected", p1.predicate(),
             p2.predicate());
 
-        if (parameterDependency) {
+        if (p1DependsOnP2) {
           System.out.println(p2 + " < " + p1);
         }
-        if (outputDependency) {
+        if (p2DependsOnP1) {
           System.out.println(p1 + " < " + p2);
         }
-        if (!parameterDependency && !outputDependency) {
+        if (!p1DependsOnP2 && !p2DependsOnP1) {
           System.out.println(p2 + " < " + p1);
         }
-        return parameterDependency ? 1
-            : outputDependency ? -1
-                : 1 /* defer function execution, i.e. prioritize rules and fact */;
+        return p1DependsOnP2 ? 1
+            : p2DependsOnP1 ? -1 : 1 /* defer function execution, i.e. prioritize rules and fact */;
       }
       if (p2.predicate().isPrimitive()) {
 
-        AbstractTerm output = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false") ? new Const(true)
-                : p2.terms().get(0);
-        List<AbstractTerm> parameters = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false") ? p2.terms()
-                : p2.terms().subList(1, p2.terms().size());
+        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
+            p2.predicate());
 
-        boolean parameterDependency = parameters.stream().anyMatch(p -> p1.terms().contains(p));
-        boolean outputDependency = p1.terms().contains(output);
+        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false");
+        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
+        List<AbstractTerm> p2Parameters =
+            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
 
-        Preconditions.checkState(!(parameterDependency && outputDependency),
+        boolean p2DependsOnP1 = p2Parameters.stream().anyMatch(p -> p1.terms().contains(p));
+        boolean p1DependsOnP2 = p1.terms().contains(p2Output);
+
+        Preconditions.checkState(!(p2DependsOnP1 && p1DependsOnP2),
             "cyclic dependency between primitive %s and rule %s detected", p2.predicate(),
             p1.predicate());
 
-        if (parameterDependency) {
+        if (p2DependsOnP1) {
           System.out.println(p1 + " < " + p2);
         }
-        if (outputDependency) {
+        if (p1DependsOnP2) {
           System.out.println(p2 + " < " + p1);
         }
-        if (!parameterDependency && !outputDependency) {
+        if (!p2DependsOnP1 && !p1DependsOnP2) {
           System.out.println(p1 + " < " + p2);
         }
-        return parameterDependency ? -1
-            : outputDependency ? 1
-                : -1 /* defer function execution, i.e. prioritize rules and fact */;
+        return p2DependsOnP1 ? -1
+            : p1DependsOnP2 ? 1 : -1 /* defer function execution, i.e. prioritize rules and fact */;
       }
-      return 0; // the order does not matter
+
+      boolean p1IsNegated = p1.predicate().isNegated();
+      boolean p2IsNegated = p2.predicate().isNegated();
+
+      if (!p1IsNegated && !p2IsNegated) {
+        System.out.println(p1 + " ~ " + p2);
+        return 0; // the order does not matter
+      }
+
+      boolean p1DependsOnP2 =
+          p1IsNegated && p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
+      boolean p2DependsOnP1 =
+          p2IsNegated && p2.terms().stream().anyMatch(p -> p1.terms().contains(p));
+
+      Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
+          "cyclic dependency between rule %s and rule %s detected", p1.predicate(), p2.predicate());
+
+      if (p2DependsOnP1) {
+        System.out.println(p1 + " < " + p2);
+      }
+      if (p1DependsOnP2) {
+        System.out.println(p2 + " < " + p1);
+      }
+      if (!p2DependsOnP1 && !p1DependsOnP2) {
+        if (p1IsNegated) {
+          System.out.println(p1 + " < " + p2);
+        } else {
+          System.out.println(p2 + " < " + p1);
+        }
+      }
+      return p1DependsOnP2 ? 1
+          : p2DependsOnP1 ? -1
+              : p1IsNegated ? 1 /* defer negation, i.e. prioritize positive rules and fact */ : -1;
     });
     return new Clause(clause.head(), body);
   }
