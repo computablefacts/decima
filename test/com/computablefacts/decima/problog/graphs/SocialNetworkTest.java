@@ -1,22 +1,19 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.isValid;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
-import static com.computablefacts.decima.problog.TestUtils.solver;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.ProbabilityEstimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Solver;
-import com.computablefacts.decima.problog.TestUtils;
+import com.computablefacts.asterix.trie.Trie;
+import com.computablefacts.decima.problog.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * See http://csci431.artifice.cc/notes/problog.html
@@ -28,18 +25,26 @@ public class SocialNetworkTest {
 
     // Query kb
     // smokes(angelika)?
-    Solver solver = solver(kb());
+    Solver solver = new Solver(kb(), true);
     Literal query = new Literal("smokes", new Const("angelika"));
     Set<Clause> proofs = solver.proofs(query);
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
     Assert.assertEquals(11, solver.nbSubgoals());
 
     // Verify answers
     Assert.assertEquals(2, proofs.size());
-    Assert.assertTrue(isValid(proofs,
-        "smokes(angelika) :- friend(angelika, jonas), person(jonas), person(angelika), person(jonas)."));
-    Assert.assertTrue(isValid(proofs, "smokes(angelika) :- person(angelika)."));
+    Assert.assertEquals(1, answers.size());
+    Assert.assertEquals(1, tries.size());
+
+    Clause answer1 = buildClause("smokes(angelika)", Lists.newArrayList("friend(angelika, jonas)",
+        "person(jonas)", "person(angelika)", "person(jonas)"));
+    Clause answer2 = buildClause("smokes(angelika)", Lists.newArrayList("person(angelika)"));
+
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2)));
 
     // Verify BDD answer
     // 0.342::smokes(angelika).
@@ -53,24 +58,35 @@ public class SocialNetworkTest {
 
     // Query kb
     // smokes(joris)?
-    Solver solver = solver(kb());
+    Solver solver = new Solver(kb(), true);
     Literal query = new Literal("smokes", new Const("joris"));
     Set<Clause> proofs = solver.proofs(query);
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
     Assert.assertEquals(22, solver.nbSubgoals());
 
     // Verify answers
     Assert.assertEquals(5, proofs.size());
-    Assert.assertTrue(isValid(proofs,
-        "smokes(joris) :- friend(joris, dimitar), person(dimitar), person(joris), person(dimitar)."));
-    Assert.assertTrue(isValid(proofs, "smokes(joris) :- person(joris)."));
-    Assert.assertTrue(isValid(proofs,
-        "smokes(joris) :- friend(joris, angelika), person(angelika), person(joris), person(angelika)."));
-    Assert.assertTrue(isValid(proofs,
-        "smokes(joris) :- friend(joris, jonas), person(jonas), person(joris), person(jonas)."));
-    Assert.assertTrue(isValid(proofs,
-        "smokes(joris) :- friend(joris, angelika), person(angelika), person(joris), friend(angelika, jonas), person(jonas), person(angelika), person(jonas)."));
+    Assert.assertEquals(1, answers.size());
+    Assert.assertEquals(1, tries.size());
+
+    Clause answer1 = buildClause("smokes(joris)", Lists.newArrayList("friend(joris, dimitar)",
+        "person(dimitar)", "person(joris)", "person(dimitar)"));
+    Clause answer2 = buildClause("smokes(joris)", Lists.newArrayList("person(joris)"));
+    Clause answer3 = buildClause("smokes(joris)", Lists.newArrayList("friend(joris, angelika)",
+        "person(angelika)", "person(joris)", "person(angelika)"));
+    Clause answer4 = buildClause("smokes(joris)", Lists.newArrayList("friend(joris, jonas)",
+        "person(jonas)", "person(joris)", "person(jonas)"));
+    Clause answer5 = buildClause("smokes(joris)",
+        Lists.newArrayList("friend(joris, angelika)", "person(angelika)", "person(joris)",
+            "friend(angelika, jonas)", "person(jonas)", "person(angelika)", "person(jonas)"));
+
+    Assert.assertTrue(
+        checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3, answer4, answer5)));
+    Assert.assertTrue(
+        checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4, answer5)));
 
     // Verify BDD answer
     // 0.42301296::smokes(joris).
@@ -83,7 +99,7 @@ public class SocialNetworkTest {
   private InMemoryKnowledgeBase kb() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = TestUtils.kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("person(angelika)."));

@@ -1,6 +1,8 @@
 package com.computablefacts.decima.problog;
 
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
+import static com.computablefacts.decima.problog.TestUtils.permute;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -9,14 +11,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.computablefacts.asterix.codecs.JsonCodec;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class ParserTest {
 
   @Test
   public void testParseComment() {
-    Assert.assertNull(Parser.parseClause("% My comment"));
+    Assert.assertNull(parseClause("% My comment"));
   }
 
   @Test(expected = IllegalStateException.class)
@@ -82,8 +83,8 @@ public class ParserTest {
     Literal nodeX = new Literal("~node", x);
     Literal nodeY = new Literal("node", y);
 
-    Clause rule0 = new Clause(edgeXY, nodeX, nodeY);
-    Clause rule1 = parseClause("not_edge(X, Y) :- ~node(X), node(Y).");
+    Clause rule0 = reorderBodyLiterals(new Clause(edgeXY, nodeX, nodeY));
+    Clause rule1 = parseClause("not_edge(X, Y) :- node(Y), ~node(X).");
 
     Assert.assertTrue(rule0.isRelevant(rule1));
   }
@@ -148,8 +149,8 @@ public class ParserTest {
   @Test
   public void testParseFnIsWithOneFunction() {
 
-    Clause rule1 = Parser.parseClause("is_valid(X) :- fn_is_true(fn_test(X)).");
-    Clause rule2 = Parser.parseClause("is_valid(X) :- fn_test(Y, X), fn_is_true(Y).");
+    Clause rule1 = parseClause("is_valid(X) :- fn_is_true(fn_test(X)).");
+    Clause rule2 = parseClause("is_valid(X) :- fn_test(Y, X), fn_is_true(Y).");
 
     Assert.assertTrue(rule1.isRelevant(rule2));
   }
@@ -157,8 +158,7 @@ public class ParserTest {
   @Test
   public void testParseFnIsWithMoreThanOneFunction() {
 
-    Clause rule =
-        Parser.parseClause("is_valid(X, Y) :- fn_is_true(fn_and(fn_test(X), fn_test(Y))).");
+    Clause rule = parseClause("is_valid(X, Y) :- fn_is_true(fn_and(fn_test(X), fn_test(Y))).");
 
     Assert.assertTrue(rule.head().isRelevant(new Literal("is_valid", new Var(), new Var())));
     Assert.assertEquals(2, rule.body().size());
@@ -170,8 +170,8 @@ public class ParserTest {
   @Test
   public void testParseIs() {
 
-    Clause rule1 = Parser.parseClause("is_even(X) :- fn_mod(U, X, 2), U is 0.");
-    Clause rule2 = Parser.parseClause("is_even(X) :- fn_mod(U, X, 2), fn_is(U, 0)");
+    Clause rule1 = parseClause("is_even(X) :- fn_mod(U, X, 2), U is 0.");
+    Clause rule2 = parseClause("is_even(X) :- fn_mod(U, X, 2), fn_is(U, 0)");
 
     Assert.assertTrue(rule1.isRelevant(rule2));
   }
@@ -207,8 +207,8 @@ public class ParserTest {
   @Test
   public void testParseFunction() {
 
-    Clause rule = Parser
-        .parseClause("under_and_above(X, Y) :- fn_if(O, fn_and(fn_lt(X, 0), fn_gt(Y, 0)), 1, 0).");
+    Clause rule =
+        parseClause("under_and_above(X, Y) :- fn_if(O, fn_and(fn_lt(X, 0), fn_gt(Y, 0)), 1, 0).");
 
     Assert.assertTrue(rule.isRule());
     Assert.assertFalse(rule.isFact());
@@ -217,7 +217,7 @@ public class ParserTest {
   @Test
   public void testParseClauseAsQuery() {
 
-    Clause query = Parser.parseClause("edge(X, Y)?");
+    Clause query = parseClause("edge(X, Y)?");
 
     Assert.assertEquals(new Literal("edge", new Var(), new Var()), query.head());
   }
@@ -244,7 +244,7 @@ public class ParserTest {
   @Test
   public void testParseJsonString() {
 
-    Clause clause = Parser.parseClause(
+    Clause clause = parseClause(
         "json_path(\"jhWTAETz\", \"data\", \"9\", \"rawOutput\", \"[{¤u0022Modified¤u0022:¤u00222020-07-07T12:24:00¤u0022¤u002c¤u0022Published¤u0022:1594088100000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:7.5¤u002c¤u0022cvss-time¤u0022:null¤u002c¤u0022cvss-vector¤u0022:null¤u002c¤u0022cwe¤u0022:¤u0022NVD-CWE-noinfo¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2020-15505¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022last-modified¤u0022:¤u00222020-09-18T16:15:00¤u0022¤u002c¤u0022references¤u0022:[¤u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available¤u0022]¤u002c¤u0022summary¤u0022:¤u0022A remote code execution vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier¤u002c 10.4.0.0¤u002c 10.4.0.1¤u002c 10.4.0.2¤u002c 10.4.0.3¤u002c 10.5.1.0¤u002c 10.5.2.0 and 10.6.0.0; and Sentry versions 9.7.2 and earlier¤u002c and 9.8.0; and Monitor and Reporting Database ¤u0028RDB¤u0029 version 2.0.0.1 and earlier that allows remote attackers to execute arbitrary code via unspecified vectors.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022]}¤u002c{¤u0022Modified¤u0022:¤u00222020-07-07T12:24:00¤u0022¤u002c¤u0022Published¤u0022:1594088100000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:7.5¤u002c¤u0022cvss-time¤u0022:null¤u002c¤u0022cvss-vector¤u0022:null¤u002c¤u0022cwe¤u0022:¤u0022CWE-287¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2020-15506¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022last-modified¤u0022:¤u00222020-09-18T17:15:00¤u0022¤u002c¤u0022references¤u0022:[¤u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available¤u0022]¤u002c¤u0022summary¤u0022:¤u0022An authentication bypass vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier¤u002c 10.4.0.0¤u002c 10.4.0.1¤u002c 10.4.0.2¤u002c 10.4.0.3¤u002c 10.5.1.0¤u002c 10.5.2.0 and 10.6.0.0 that allows remote attackers to bypass authentication mechanisms via unspecified vectors.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*¤u0022]}¤u002c{¤u0022Modified¤u0022:¤u00222020-02-21T15:13:00¤u0022¤u002c¤u0022Published¤u0022:1581635700000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:10.0¤u002c¤u0022cvss-time¤u0022:¤u00222020-02-21T15:13:00¤u0022¤u002c¤u0022cvss-vector¤u0022:¤u0022AV:N\\/AC:L\\/Au:N\\/C:C\\/I:C\\/A:C¤u0022¤u002c¤u0022cwe¤u0022:¤u0022CWE-326¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2013-7287¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022last-modified¤u0022:null¤u002c¤u0022references¤u0022:[¤u0022http:\\/\\/seclists.org\\/fulldisclosure\\/2014\\/Apr\\/21¤u0022¤u002c¤u0022https:\\/\\/www.securityfocus.com\\/archive\\/1\\/531713¤u0022]¤u002c¤u0022summary¤u0022:¤u0022MobileIron VSP < 5.9.1 and Sentry < 5.0 has an insecure encryption scheme.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*¤u0022]}]\").");
 
     Predicate predicate = clause.head().predicate();
@@ -275,7 +275,7 @@ public class ParserTest {
         new Literal("fn_to_text", output, tmp));
 
     Clause clause1 = new Clause(head, body);
-    Clause clause2 = Parser.parseClause(
+    Clause clause2 = parseClause(
         "match(V474, V475) :- fn_match_regex(V476, V474, \"¤u0028?m¤u003a^OPEN¤u005c¤u005cs+[a-zA-Z0-9]+¤u005c¤u005cs+BUCKET¤u003a¤u005c¤u005cs+.*$¤u0029\"), fn_to_text(V475, V476)");
 
     Assert.assertEquals(clause1, clause2);
@@ -295,7 +295,7 @@ public class ParserTest {
     Literal edgeXY = new Literal("edge", x, y);
 
     List<List<Literal>> permutations = new ArrayList<>();
-    permute(new Literal[] {fnIsTrue, fnLt, nodeX, nodeY}, 4, 4, permutations);
+    permute(new Literal[] {fnIsTrue, fnLt, nodeX, nodeY}, permutations);
 
     Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), fn_is_true(U).");
 
@@ -320,7 +320,7 @@ public class ParserTest {
     Literal edgeXY = new Literal("edge", x, y);
 
     List<List<Literal>> permutations = new ArrayList<>();
-    permute(new Literal[] {isFalse, fnLt, nodeX, nodeY}, 4, 4, permutations);
+    permute(new Literal[] {isFalse, fnLt, nodeX, nodeY}, permutations);
 
     Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), ~is_false(U).");
 
@@ -329,179 +329,5 @@ public class ParserTest {
       System.out.println(new Clause(edgeXY, body) + " -> " + actual);
       Assert.assertTrue(expected.isRelevant(actual));
     }
-  }
-
-  private void permute(Literal[] a, int size, int n, List<List<Literal>> output) {
-
-    // if size becomes 1 then prints the obtained permutation
-    if (size == 1) {
-      List<Literal> list = new ArrayList<>();
-      for (int i = 0; i < n; i++) {
-        list.add(a[i]);
-      }
-      output.add(list);
-    }
-    for (int i = 0; i < size; i++) {
-
-      permute(a, size - 1, n, output);
-
-      // if size is odd, swap 0th i.e (first) and (size-1)th i.e (last) element
-      if (size % 2 == 1) {
-        Literal temp = a[0];
-        a[0] = a[size - 1];
-        a[size - 1] = temp;
-      }
-
-      // If size is even, swap ith and (size-1)th i.e last element
-      else {
-        Literal temp = a[i];
-        a[i] = a[size - 1];
-        a[size - 1] = temp;
-      }
-    }
-  }
-
-  private Clause reorderBodyLiterals(Clause clause) {
-
-    List<Literal> body = new ArrayList<>(clause.body());
-
-    // Reorder the rule body literals to :
-    // - Ensure the output of one primitive is not used before it is computed
-    // - Ensure the parameter of one primitive is grounded before the primitive is executed
-    // - Ensure negated literals are grounded
-    body.sort((p1, p2) -> {
-      if (p1.predicate().isPrimitive() && p2.predicate().isPrimitive()) {
-
-        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
-            p1.predicate());
-        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
-            p2.predicate());
-
-        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false");
-        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false");
-
-        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
-        List<AbstractTerm> p1Parameters =
-            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
-
-        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
-        List<AbstractTerm> p2Parameters =
-            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
-
-        boolean p1DependsOnP2 = p1Parameters.contains(p2Output);
-        boolean p2DependsOnP1 = p2Parameters.contains(p1Output);
-
-        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-            "cyclic dependency between primitives %s and %s detected", p1.predicate(),
-            p2.predicate());
-
-        if (p1DependsOnP2) {
-          System.out.println(p2 + " < " + p1);
-        }
-        if (p2DependsOnP1) {
-          System.out.println(p1 + " < " + p2);
-        }
-        if (!p1DependsOnP2 && !p2DependsOnP1) {
-          System.out.println(p2 + " ~ " + p1);
-        }
-        return p1DependsOnP2 ? 1 : p2DependsOnP1 ? -1 : 0 /* the order does not matter */;
-      }
-      if (p1.predicate().isPrimitive()) {
-
-        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
-            p1.predicate());
-
-        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false");
-        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
-        List<AbstractTerm> p1Parameters =
-            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
-
-        boolean p1DependsOnP2 = p1Parameters.stream().anyMatch(p -> p2.terms().contains(p));
-        boolean p2DependsOnP1 = p2.terms().contains(p1Output);
-
-        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-            "cyclic dependency between primitive %s and rule %s detected", p1.predicate(),
-            p2.predicate());
-
-        if (p1DependsOnP2) {
-          System.out.println(p2 + " < " + p1);
-        }
-        if (p2DependsOnP1) {
-          System.out.println(p1 + " < " + p2);
-        }
-        if (!p1DependsOnP2 && !p2DependsOnP1) {
-          System.out.println(p2 + " < " + p1);
-        }
-        return p1DependsOnP2 ? 1
-            : p2DependsOnP1 ? -1 : 1 /* defer function execution, i.e. prioritize rules and fact */;
-      }
-      if (p2.predicate().isPrimitive()) {
-
-        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
-            p2.predicate());
-
-        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false");
-        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
-        List<AbstractTerm> p2Parameters =
-            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
-
-        boolean p2DependsOnP1 = p2Parameters.stream().anyMatch(p -> p1.terms().contains(p));
-        boolean p1DependsOnP2 = p1.terms().contains(p2Output);
-
-        Preconditions.checkState(!(p2DependsOnP1 && p1DependsOnP2),
-            "cyclic dependency between primitive %s and rule %s detected", p2.predicate(),
-            p1.predicate());
-
-        if (p2DependsOnP1) {
-          System.out.println(p1 + " < " + p2);
-        }
-        if (p1DependsOnP2) {
-          System.out.println(p2 + " < " + p1);
-        }
-        if (!p2DependsOnP1 && !p1DependsOnP2) {
-          System.out.println(p1 + " < " + p2);
-        }
-        return p2DependsOnP1 ? -1
-            : p1DependsOnP2 ? 1 : -1 /* defer function execution, i.e. prioritize rules and fact */;
-      }
-
-      boolean p1IsNegated = p1.predicate().isNegated();
-      boolean p2IsNegated = p2.predicate().isNegated();
-
-      if (!p1IsNegated && !p2IsNegated) {
-        System.out.println(p1 + " ~ " + p2);
-        return 0; // the order does not matter
-      }
-
-      boolean p1DependsOnP2 =
-          p1IsNegated && p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
-      boolean p2DependsOnP1 =
-          p2IsNegated && p2.terms().stream().anyMatch(p -> p1.terms().contains(p));
-
-      Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-          "cyclic dependency between rule %s and rule %s detected", p1.predicate(), p2.predicate());
-
-      if (p2DependsOnP1) {
-        System.out.println(p1 + " < " + p2);
-      }
-      if (p1DependsOnP2) {
-        System.out.println(p2 + " < " + p1);
-      }
-      if (!p2DependsOnP1 && !p1DependsOnP2) {
-        if (p1IsNegated) {
-          System.out.println(p1 + " < " + p2);
-        } else {
-          System.out.println(p2 + " < " + p1);
-        }
-      }
-      return p1DependsOnP2 ? 1
-          : p2DependsOnP1 ? -1
-              : p1IsNegated ? 1 /* defer negation, i.e. prioritize positive rules and fact */ : -1;
-    });
-    return new Clause(clause.head(), body);
   }
 }

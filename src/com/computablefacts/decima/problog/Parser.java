@@ -240,7 +240,7 @@ public final class Parser {
 
     Preconditions.checkNotNull(reader, "reader should not be null");
 
-    return parseClause(tokenizer(reader));
+    return reorderBodyLiterals(parseClause(tokenizer(reader)));
   }
 
   private static Clause parseClause(StreamTokenizer scan) throws IOException {
@@ -820,5 +820,109 @@ public final class Parser {
     list.add(lit2);
 
     return list;
+  }
+
+  static Clause reorderBodyLiterals(Clause clause) {
+
+    if (clause == null) {
+      return null;
+    }
+
+    List<Literal> body = new ArrayList<>(clause.body());
+
+    // Reorder the rule body literals to :
+    // - Ensure the output of one primitive is not used before it is computed
+    // - Ensure the parameter of one primitive is grounded before the primitive is executed
+    // - Ensure negated literals are grounded
+    body.sort((p1, p2) -> {
+      if (p1.predicate().isPrimitive() && p2.predicate().isPrimitive()) {
+
+        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
+            p1.predicate());
+        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
+            p2.predicate());
+
+        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false");
+        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false");
+
+        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
+        List<AbstractTerm> p1Parameters =
+            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
+
+        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
+        List<AbstractTerm> p2Parameters =
+            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
+
+        boolean p1DependsOnP2 = p1Parameters.contains(p2Output);
+        boolean p2DependsOnP1 = p2Parameters.contains(p1Output);
+
+        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
+            "cyclic dependency between primitives %s and %s detected", p1.predicate(),
+            p2.predicate());
+
+        return p1DependsOnP2 ? 1
+            : p2DependsOnP1 ? -1 : p1.predicate().id().compareTo(p2.predicate().id());
+      }
+      if (p1.predicate().isPrimitive()) {
+
+        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
+            p1.predicate());
+
+        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
+            || p1.predicate().baseName().equals("fn_is_false");
+        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
+        List<AbstractTerm> p1Parameters =
+            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
+
+        boolean p1DependsOnP2 = p1Parameters.stream().anyMatch(p -> p2.terms().contains(p));
+        boolean p2DependsOnP1 = p2.terms().contains(p1Output);
+
+        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
+            "cyclic dependency between primitive %s and rule %s detected", p1.predicate(),
+            p2.predicate());
+
+        return 1 /* prioritize functions over rules and fact */;
+      }
+      if (p2.predicate().isPrimitive()) {
+
+        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
+            p2.predicate());
+
+        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
+            || p2.predicate().baseName().equals("fn_is_false");
+        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
+        List<AbstractTerm> p2Parameters =
+            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
+
+        boolean p2DependsOnP1 = p2Parameters.stream().anyMatch(p -> p1.terms().contains(p));
+        boolean p1DependsOnP2 = p1.terms().contains(p2Output);
+
+        Preconditions.checkState(!(p2DependsOnP1 && p1DependsOnP2),
+            "cyclic dependency between primitive %s and rule %s detected", p2.predicate(),
+            p1.predicate());
+
+        return -1 /* prioritize functions over rules and fact */;
+      }
+
+      boolean p1IsNegated = p1.predicate().isNegated();
+      boolean p2IsNegated = p2.predicate().isNegated();
+
+      if (!p1IsNegated && !p2IsNegated) {
+        return p1.predicate().id().compareTo(p2.predicate().id());
+      }
+
+      boolean p1DependsOnP2 =
+          p1IsNegated && p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
+      boolean p2DependsOnP1 =
+          p2IsNegated && p2.terms().stream().anyMatch(p -> p1.terms().contains(p));
+
+      // Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
+      // "cyclic dependency between rule %s and rule %s detected", p1.predicate(), p2.predicate());
+
+      return p1DependsOnP2 ? 1 : p2DependsOnP1 ? -1 : p1IsNegated ? 1 : -1;
+    });
+    return new Clause(clause.head(), body);
   }
 }

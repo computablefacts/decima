@@ -1,76 +1,137 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.Parser.parseClause;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.computablefacts.asterix.trie.Trie;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
+import com.google.common.base.Stopwatch;
 
 final public class TestUtils {
 
   private TestUtils() {}
 
-  public static Solver solver(InMemoryKnowledgeBase kb) {
-    return new Solver(kb, true);
-  }
-
-  public static InMemoryKnowledgeBase kb() {
-    return new InMemoryKnowledgeBase();
-  }
-
-  public static Clause parseClause(String clause) {
-    return Parser.parseClause(clause);
-  }
-
-  public static boolean isValid(List<Clause> proofs, String head, List<String> body) {
-    return isValid(Sets.newHashSet(proofs), head, body);
-  }
-
-  public static boolean isValid(Set<Clause> proofs, String head, List<String> body) {
+  public static Clause buildClause(String head, List<String> body) {
 
     Literal newHead = parseClause(head + ".").head();
     List<Literal> newBody =
         body.stream().map(s -> parseClause(s + ".").head()).collect(Collectors.toList());
 
-    return proofs.stream().filter(c -> c.head().equals(newHead)).anyMatch(c -> {
-      for (int i = 0; i < newBody.size(); i++) {
-        if (!c.body().subList(i, c.body().size()).contains(newBody.get(i))) {
+    Clause clause = new Clause(newHead, newBody);
+    Preconditions.checkState(clause.isGrounded(), "invalid clause : %s", clause);
+    return clause;
+  }
+
+  public static boolean checkAnswers(Set<Clause> actual, Set<Clause> expected) {
+    for (Clause answer : expected) {
+
+      System.out.println("Checking answer : " + answer);
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      if (!isValidAnswer(actual, answer.head())) {
+        return false;
+      }
+      stopwatch.stop();
+      System.out.println(
+          "Answer checked in " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms : " + answer);
+    }
+    return true;
+  }
+
+  public static boolean checkProofs(Map<Literal, Trie<Literal>> actual, Set<Clause> expected) {
+    return checkProofs(actual, expected, false);
+  }
+
+  public static boolean checkProofs(Map<Literal, Trie<Literal>> actual, Set<Clause> expected,
+      boolean ignoreFunctions) {
+    for (Clause proof : expected) {
+
+      System.out.println("Checking proof : " + proof);
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      if (proof.isFact()) {
+        if (!actual.containsKey(proof.head())) {
+          return false;
+        }
+      } else {
+
+        List<List<Literal>> bodies = new ArrayList<>();
+        permute(proof.body().stream().filter(b -> !ignoreFunctions || !b.predicate().isPrimitive())
+            .collect(Collectors.toList()), bodies);
+
+        if (bodies.stream().noneMatch(body -> {
+          if (actual.containsKey(proof.head())) {
+
+            List<List<Literal>> proofs = actual.get(proof.head()).paths().stream()
+                .map(path -> path.stream()
+                    .filter(p -> !p.predicate().baseName()
+                        .startsWith("proba_") /* ignore synthetic facts */)
+                    .filter(p -> !ignoreFunctions || !p.predicate().isPrimitive())
+                    .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+            return proofs.contains(body);
+          }
+          return false;
+        })) {
           return false;
         }
       }
-      return true;
-    });
+      stopwatch.stop();
+      System.out.println(
+          "Proof checked in " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms : " + proof);
+    }
+    return true;
   }
 
-  public static boolean isValid(List<Clause> proofs, String proof) {
-    return isValid(Sets.newHashSet(proofs), proof);
+  private static boolean isValidAnswer(Set<Clause> answers, Literal fact) {
+
+    Preconditions.checkState(fact.isGrounded(), "invalid fact : %s", fact);
+
+    return answers.stream().anyMatch(c -> c.head().isRelevant(fact));
   }
 
-  /**
-   * Check if a set of proofs contains at least one occurrence of a given proof.
-   *
-   * @param proofs set of proofs.
-   * @param proof proof to find.
-   * @return true if the proof has been found.
-   */
-  public static boolean isValid(Set<Clause> proofs, String proof) {
+  public static void permute(List<Literal> a, List<List<Literal>> output) {
+    permute(a.toArray(new Literal[0]), a.size(), a.size(), output);
+  }
 
-    Clause clause = parseClause(proof);
+  public static void permute(Literal[] a, List<List<Literal>> output) {
+    permute(a, a.length, a.length, output);
+  }
 
-    Preconditions.checkState(clause != null && clause.isGrounded(), "Invalid proof to match : %s",
-        proof);
+  private static void permute(Literal[] a, int size, int n, List<List<Literal>> output) {
 
-    Literal head = clause.head();
-    List<Literal> body = clause.body();
-
-    return proofs.stream().filter(c -> c.head().isRelevant(head)).anyMatch(c -> {
-      for (int i = 0; i < body.size(); i++) {
-        if (!c.body().subList(i, c.body().size()).contains(body.get(i))) {
-          return false;
-        }
+    // if size becomes 1 then prints the obtained permutation
+    if (size == 1) {
+      List<Literal> list = new ArrayList<>();
+      for (int i = 0; i < n; i++) {
+        list.add(a[i]);
       }
-      return true;
-    });
+      output.add(list);
+    }
+    for (int i = 0; i < size; i++) {
+
+      permute(a, size - 1, n, output);
+
+      // if size is odd, swap 0th i.e (first) and (size-1)th i.e (last) element
+      if (size % 2 == 1) {
+        Literal temp = a[0];
+        a[0] = a[size - 1];
+        a[size - 1] = temp;
+      }
+
+      // If size is even, swap ith and (size-1)th i.e last element
+      else {
+        Literal temp = a[i];
+        a[i] = a[size - 1];
+        a[size - 1] = temp;
+      }
+    }
   }
 }

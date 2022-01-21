@@ -1,9 +1,9 @@
 package com.computablefacts.decima.problog;
 
-import static com.computablefacts.decima.problog.TestUtils.*;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.checkAnswers;
+import static com.computablefacts.decima.problog.TestUtils.checkProofs;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,7 +19,7 @@ public class SolverTest {
   public void testSimpleQuery() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("girl(alice)."));
@@ -31,7 +31,7 @@ public class SolverTest {
 
     // Query kb
     // child(Z)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("child", new Var());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -42,23 +42,18 @@ public class SolverTest {
     Assert.assertEquals(2, answers.size());
     Assert.assertEquals(2, tries.size());
 
-    Clause answer1 = Parser.parseClause("child(alice) :- girl(alice).");
-    Clause answer2 = Parser.parseClause("child(alex) :- boy(alex).");
+    Clause answer1 = parseClause("child(alice) :- girl(alice).");
+    Clause answer2 = parseClause("child(alex) :- boy(alex).");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)));
-
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2)));
   }
 
   @Test
   public void testComplexQuery() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("boy(bill)."));
@@ -71,7 +66,7 @@ public class SolverTest {
 
     // Query kb
     // son(Z, alice)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("son", new Var(), new Const("alice"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -82,20 +77,17 @@ public class SolverTest {
     Assert.assertEquals(1, answers.size());
     Assert.assertEquals(1, tries.size());
 
-    Clause answer = Parser.parseClause("son(bill, alice) :- mother(alice, bill), boy(bill).");
+    Clause answer = parseClause("son(bill, alice) :- mother(alice, bill), boy(bill).");
 
-    proofs.forEach(proof -> Assert.assertEquals(proof, answer));
-
-    answers.forEach(anzwer -> Assert.assertEquals(answer.head(), anzwer.head()));
-
-    Assert.assertTrue(tries.get(answer.head()).contains(answer.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer)));
   }
 
   @Test
   public void testNegation() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("girl(alice)."));
@@ -109,7 +101,7 @@ public class SolverTest {
 
     // Query kb
     // human(Z)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("human", new Var());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -120,23 +112,18 @@ public class SolverTest {
     Assert.assertEquals(2, answers.size());
     Assert.assertEquals(2, tries.size());
 
-    Clause answer1 = Parser.parseClause("human(alice) :- girl(alice), ~boy(alice).");
-    Clause answer2 = Parser.parseClause("human(alex) :- boy(alex), ~girl(alex).");
+    Clause answer1 = parseClause("human(alice) :- girl(alice), ~boy(alice).");
+    Clause answer2 = parseClause("human(alex) :- boy(alex), ~girl(alex).");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)));
-
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2)));
   }
 
   @Test
   public void testRecursion() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("edge(a,b)."));
@@ -149,7 +136,7 @@ public class SolverTest {
 
     // Query kb
     // path(a, V)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("path", new Const("a"), new Var());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -160,26 +147,19 @@ public class SolverTest {
     Assert.assertEquals(3, answers.size());
     Assert.assertEquals(3, tries.size());
 
-    Clause answer1 = Parser.parseClause("path(a, b) :- edge(a, b).");
-    Clause answer2 = Parser.parseClause("path(a, c) :- edge(a, b), edge(b, c).");
-    Clause answer3 = Parser.parseClause("path(a, d) :- edge(a, d).");
+    Clause answer1 = parseClause("path(a, b) :- edge(a, b).");
+    Clause answer2 = parseClause("path(a, c) :- edge(a, b), edge(b, c).");
+    Clause answer3 = parseClause("path(a, d) :- edge(a, d).");
 
-    proofs.forEach(proof -> Assert
-        .assertTrue(proof.equals(answer1) || proof.equals(answer2) || proof.equals(answer3)));
-
-    answers.forEach(answer -> Assert.assertTrue(answer.head().equals(answer1.head())
-        || answer.head().equals(answer2.head()) || answer.head().equals(answer3.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
-    Assert.assertTrue(tries.get(answer3.head()).contains(answer3.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3)));
   }
 
   @Test
   public void testSimplePrimitive() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("one(1)."));
@@ -191,7 +171,7 @@ public class SolverTest {
 
     // Query kb
     // three(Z)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query1 = new Literal("three", new Var());
     Set<Clause> proofs1 = solver.proofs(query1);
     Set<Clause> answers1 = Sets.newHashSet(solver.solve(query1));
@@ -202,14 +182,10 @@ public class SolverTest {
     Assert.assertEquals(1, answers1.size());
     Assert.assertEquals(1, tries1.size());
 
-    Clause answer1 =
-        Parser.parseClause("three(3) :- one(1), two(2), fn_add(3, 1, 2), fn_int(3, 3).");
+    Clause answer1 = parseClause("three(3) :- one(1), two(2), fn_add(3, 1, 2), fn_int(3, 3).");
 
-    proofs1.forEach(proof -> Assert.assertEquals(proof, answer1));
-
-    answers1.forEach(answer -> Assert.assertEquals(answer.head(), answer1.head()));
-
-    Assert.assertTrue(tries1.get(answer1.head()).contains(answer1.body()));
+    Assert.assertTrue(checkAnswers(answers1, Sets.newHashSet(answer1)));
+    Assert.assertTrue(checkProofs(tries1, Sets.newHashSet(answer1)));
 
     // Query kb
     // four(Z)?
@@ -223,21 +199,18 @@ public class SolverTest {
     Assert.assertEquals(1, answers2.size());
     Assert.assertEquals(1, tries1.size());
 
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "four(4) :- one(1), two(2), fn_add(3, 1, 2), fn_int(3, 3), fn_add(4, 3, 1), fn_int(4, 4).");
 
-    proofs2.forEach(proof -> Assert.assertEquals(proof, answer2));
-
-    answers2.forEach(answer -> Assert.assertEquals(answer.head(), answer2.head()));
-
-    Assert.assertTrue(tries2.get(answer2.head()).contains(answer2.body()));
+    Assert.assertTrue(checkAnswers(answers2, Sets.newHashSet(answer2)));
+    Assert.assertTrue(checkProofs(tries2, Sets.newHashSet(answer2)));
   }
 
   @Test
   public void testIsTrue() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -250,7 +223,7 @@ public class SolverTest {
 
     // Query kb
     // hasMoreItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasMoreItems", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -261,29 +234,22 @@ public class SolverTest {
     Assert.assertEquals(3, answers.size());
     Assert.assertEquals(3, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasMoreItems(green_bag, red_bag) :- bagItems(green_bag, 2), bagItems(red_bag, 1), fn_gt(true, 2, 1), fn_is_true(true).");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasMoreItems(blue_bag, red_bag) :- bagItems(blue_bag, 3), bagItems(red_bag, 1), fn_gt(true, 3, 1), fn_is_true(true).");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasMoreItems(blue_bag, green_bag) :- bagItems(blue_bag, 3), bagItems(green_bag, 2), fn_gt(true, 3, 2), fn_is_true(true).");
 
-    proofs.forEach(proof -> Assert
-        .assertTrue(proof.equals(answer1) || proof.equals(answer2) || proof.equals(answer3)));
-
-    answers.forEach(answer -> Assert.assertTrue(answer.head().equals(answer1.head())
-        || answer.head().equals(answer2.head()) || answer.head().equals(answer3.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
-    Assert.assertTrue(tries.get(answer3.head()).contains(answer3.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3)));
   }
 
   @Test
   public void testIsFalse() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -296,7 +262,7 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -307,33 +273,24 @@ public class SolverTest {
     Assert.assertEquals(4, answers.size());
     Assert.assertEquals(4, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(red_bag, green_bag) :- bagItems(red_bag, 1), bagItems(green_bag, 2), fn_eq(false, 1, 2), fn_is_false(false).");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(red_bag, blue_bag) :- bagItems(red_bag, 1),bagItems(blue_bag, 2), fn_eq(false, 1, 2), fn_is_false(false).");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(green_bag, red_bag) :- bagItems(green_bag, 2), bagItems(red_bag, 1), fn_eq(false, 2, 1), fn_is_false(false).");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(blue_bag, red_bag) :- bagItems(blue_bag, 2), bagItems(red_bag, 1), fn_eq(false, 2, 1), fn_is_false(false).");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)
-        || proof.equals(answer3) || proof.equals(answer4)));
-
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
-    Assert.assertTrue(tries.get(answer3.head()).contains(answer3.body()));
-    Assert.assertTrue(tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3, answer4)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4)));
   }
 
   @Test
   public void testSampleOfSizeMinus1() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -346,39 +303,35 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, -1));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify answers
     Assert.assertEquals(4, answers.size());
     Assert.assertEquals(4, tries.size());
+    Assert.assertEquals(4, proofs.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(\"green_bag\", \"red_bag\") :- bagItems(\"green_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"blue_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"green_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"green_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
-    Assert.assertTrue(tries.get(answer3.head()).contains(answer3.body()));
-    Assert.assertTrue(tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3, answer4)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4)));
   }
 
   @Test
   public void testSampleOfSize1() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -391,7 +344,7 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 1));
     Set<Clause> proofs = solver.proofs(query);
@@ -402,35 +355,29 @@ public class SolverTest {
     Assert.assertEquals(1, answers.size());
     Assert.assertEquals(1, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(\"green_bag\", \"red_bag\") :- bagItems(\"green_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"blue_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"green_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"green_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)
-        || proof.equals(answer3) || proof.equals(answer4)));
+    @com.google.errorprone.annotations.Var
+    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
 
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue((tries.containsKey(answer1.head())
-        && tries.get(answer1.head()).contains(answer1.body()))
-        || (tries.containsKey(answer2.head()) && tries.get(answer2.head()).contains(answer2.body()))
-        || (tries.containsKey(answer3.head()) && tries.get(answer3.head()).contains(answer3.body()))
-        || (tries.containsKey(answer4.head())
-            && tries.get(answer4.head()).contains(answer4.body())));
+    Assert.assertEquals(1, count);
   }
 
   @Test
   public void testSampleOfSize2() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -443,7 +390,7 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 2));
     Set<Clause> proofs = solver.proofs(query);
@@ -454,35 +401,29 @@ public class SolverTest {
     Assert.assertEquals(2, answers.size());
     Assert.assertEquals(2, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(\"green_bag\", \"red_bag\") :- bagItems(\"green_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"blue_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"green_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"green_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)
-        || proof.equals(answer3) || proof.equals(answer4)));
+    @com.google.errorprone.annotations.Var
+    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
 
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue((tries.containsKey(answer1.head())
-        && tries.get(answer1.head()).contains(answer1.body()))
-        || (tries.containsKey(answer2.head()) && tries.get(answer2.head()).contains(answer2.body()))
-        || (tries.containsKey(answer3.head()) && tries.get(answer3.head()).contains(answer3.body()))
-        || (tries.containsKey(answer4.head())
-            && tries.get(answer4.head()).contains(answer4.body())));
+    Assert.assertEquals(2, count);
   }
 
   @Test
   public void testSampleOfSize3() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -495,7 +436,7 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 3));
     Set<Clause> proofs = solver.proofs(query);
@@ -506,35 +447,29 @@ public class SolverTest {
     Assert.assertEquals(3, answers.size());
     Assert.assertEquals(3, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(\"green_bag\", \"red_bag\") :- bagItems(\"green_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"blue_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"green_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"green_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)
-        || proof.equals(answer3) || proof.equals(answer4)));
+    @com.google.errorprone.annotations.Var
+    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
 
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue((tries.containsKey(answer1.head())
-        && tries.get(answer1.head()).contains(answer1.body()))
-        || (tries.containsKey(answer2.head()) && tries.get(answer2.head()).contains(answer2.body()))
-        || (tries.containsKey(answer3.head()) && tries.get(answer3.head()).contains(answer3.body()))
-        || (tries.containsKey(answer4.head())
-            && tries.get(answer4.head()).contains(answer4.body())));
+    Assert.assertEquals(3, count);
   }
 
   @Test
   public void testSampleOfSize4() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -547,7 +482,7 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 4));
     Set<Clause> proofs = solver.proofs(query);
@@ -558,33 +493,30 @@ public class SolverTest {
     Assert.assertEquals(4, answers.size());
     Assert.assertEquals(4, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(\"green_bag\", \"red_bag\") :- bagItems(\"green_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"blue_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"green_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"green_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)
-        || proof.equals(answer3) || proof.equals(answer4)));
+    @com.google.errorprone.annotations.Var
+    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
 
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
-    Assert.assertTrue(tries.get(answer3.head()).contains(answer3.body()));
-    Assert.assertTrue(tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertEquals(4, count);
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4)));
   }
 
   @Test
   public void testSampleOfSize5() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("bagItems(\"red_bag\", 1)."));
@@ -597,7 +529,7 @@ public class SolverTest {
 
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 5));
     Set<Clause> proofs = solver.proofs(query);
@@ -608,33 +540,30 @@ public class SolverTest {
     Assert.assertEquals(4, answers.size());
     Assert.assertEquals(4, tries.size());
 
-    Clause answer1 = Parser.parseClause(
+    Clause answer1 = parseClause(
         "hasDifferentNumberOfItems(\"green_bag\", \"red_bag\") :- bagItems(\"green_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
-    Clause answer2 = Parser.parseClause(
+    Clause answer2 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"blue_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"blue_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer3 = Parser.parseClause(
+    Clause answer3 = parseClause(
         "hasDifferentNumberOfItems(\"red_bag\", \"green_bag\") :- bagItems(\"red_bag\", \"1\"), bagItems(\"green_bag\", \"2\"), fn_eq(\"false\", \"1\", \"2\"), fn_is_false(\"false\").");
-    Clause answer4 = Parser.parseClause(
+    Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    proofs.forEach(proof -> Assert.assertTrue(proof.equals(answer1) || proof.equals(answer2)
-        || proof.equals(answer3) || proof.equals(answer4)));
+    @com.google.errorprone.annotations.Var
+    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
+    count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
 
-    answers.forEach(answer -> Assert
-        .assertTrue(answer.head().equals(answer1.head()) || answer.head().equals(answer2.head())
-            || answer.head().equals(answer3.head()) || answer.head().equals(answer4.head())));
-
-    Assert.assertTrue(tries.get(answer1.head()).contains(answer1.body()));
-    Assert.assertTrue(tries.get(answer2.head()).contains(answer2.body()));
-    Assert.assertTrue(tries.get(answer3.head()).contains(answer3.body()));
-    Assert.assertTrue(tries.get(answer4.head()).contains(answer4.body()));
+    Assert.assertEquals(4, count);
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4)));
   }
 
   @Test
   public void testDoubleNegation() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("boy(a)."));
@@ -652,7 +581,7 @@ public class SolverTest {
 
     // Query kb
     // match(X, Y)?
-    Solver solver = solver(kb);
+    Solver solver = new Solver(kb, true);
     Literal query = new Literal("match", new Var(), new Var());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
@@ -663,14 +592,11 @@ public class SolverTest {
     Assert.assertEquals(1, answers.size());
     Assert.assertEquals(1, tries.size());
 
-    Clause answer = Parser.parseClause(
+    Clause answer = parseClause(
         "match(b, c) :- boy(b), ~girl(b), ~isGirl(b), ~isGirlNotBoy(b), girl(c), ~boy(c), ~isBoy(c), ~isBoyNotGirl(c).");
 
-    proofs.forEach(proof -> Assert.assertEquals(proof, answer));
-
-    answers.forEach(anzwer -> Assert.assertEquals(answer.head(), anzwer.head()));
-
-    Assert.assertTrue(tries.get(answer.head()).contains(answer.body()));
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer)));
   }
 
   /**
@@ -711,7 +637,7 @@ public class SolverTest {
   public void testVariableUnificationInQuery() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("a(2, 3)."));
@@ -726,11 +652,13 @@ public class SolverTest {
     Solver solver = new Solver(kb, true);
     Var x = new Var();
     Literal query1 = new Literal("a", x, x);
-    List<Clause> proofs1 = new ArrayList<>(solver.proofs(query1));
+    Set<Clause> answers1 = Sets.newHashSet(solver.solve(query1));
+    Set<Clause> proofs1 = solver.proofs(query1);
     Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
 
     Literal query2 = new Literal("p", x);
-    List<Clause> proofs2 = new ArrayList<>(solver.proofs(query2));
+    Set<Clause> answers2 = Sets.newHashSet(solver.solve(query2));
+    Set<Clause> proofs2 = solver.proofs(query2);
     Map<Literal, Trie<Literal>> tries2 = solver.tries(query2);
 
     // Verify answers
@@ -741,10 +669,13 @@ public class SolverTest {
     Assert.assertEquals(1, proofs2.size());
     Assert.assertEquals(1, tries2.size());
 
-    Clause fact = Parser.parseClause("a(\"1\", \"1\").");
-    Clause answer = Parser.parseClause("p(\"1\") :- a(\"1\", \"1\").");
+    Clause fact = parseClause("a(1, 1).");
+    Clause answer = parseClause("p(1) :- a(1, 1).");
 
-    Assert.assertEquals(fact, proofs1.get(0));
-    Assert.assertEquals(answer, proofs2.get(0));
+    Assert.assertTrue(checkAnswers(answers1, Sets.newHashSet(fact)));
+    Assert.assertTrue(checkProofs(tries1, Sets.newHashSet(fact)));
+
+    Assert.assertTrue(checkAnswers(answers2, Sets.newHashSet(answer)));
+    Assert.assertTrue(checkProofs(tries2, Sets.newHashSet(answer)));
   }
 }

@@ -1,22 +1,19 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.isValid;
-import static com.computablefacts.decima.problog.TestUtils.kb;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.ProbabilityEstimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Solver;
+import com.computablefacts.asterix.trie.Trie;
+import com.computablefacts.decima.problog.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class ToothacheTest {
 
@@ -24,7 +21,7 @@ public class ToothacheTest {
   public void testToothache() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("0.10::cavity(a)."));
@@ -41,21 +38,28 @@ public class ToothacheTest {
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("toothache", new Const("a"));
     Set<Clause> proofs = solver.proofs(query);
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
     Assert.assertEquals(8, solver.nbSubgoals());
 
     // Verify answers
     Assert.assertEquals(4, proofs.size());
+    Assert.assertEquals(1, answers.size());
+    Assert.assertEquals(1, tries.size());
 
-    Assert.assertTrue(isValid(proofs, "toothache(a)",
-        Lists.newArrayList("0.9::~cavity(a)", "0.95::~gum_disease(a)")));
-    Assert.assertTrue(isValid(proofs, "toothache(a)",
-        Lists.newArrayList("0.1::cavity(a)", "0.05::gum_disease(a)")));
-    Assert.assertTrue(isValid(proofs, "toothache(a)",
-        Lists.newArrayList("0.9::~cavity(a)", "0.05::gum_disease(a)")));
-    Assert.assertTrue(isValid(proofs, "toothache(a)",
-        Lists.newArrayList("0.1::cavity(a)", "0.95::~gum_disease(a)")));
+    Clause answer1 =
+        buildClause("toothache(a)", Lists.newArrayList("0.9::~cavity(a)", "0.95::~gum_disease(a)"));
+    Clause answer2 =
+        buildClause("toothache(a)", Lists.newArrayList("0.1::cavity(a)", "0.05::gum_disease(a)"));
+    Clause answer3 =
+        buildClause("toothache(a)", Lists.newArrayList("0.9::~cavity(a)", "0.05::gum_disease(a)"));
+    Clause answer4 =
+        buildClause("toothache(a)", Lists.newArrayList("0.1::cavity(a)", "0.95::~gum_disease(a)"));
+
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3, answer4)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4)));
 
     // Verify BDD answer
     // 0.11825::toothache(a).

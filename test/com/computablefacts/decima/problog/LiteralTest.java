@@ -1,6 +1,6 @@
 package com.computablefacts.decima.problog;
 
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseClause;
 
 import java.util.HashMap;
 import java.util.Map;

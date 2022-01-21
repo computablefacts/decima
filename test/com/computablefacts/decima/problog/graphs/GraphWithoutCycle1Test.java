@@ -1,22 +1,19 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.isValid;
-import static com.computablefacts.decima.problog.TestUtils.kb;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.computablefacts.decima.problog.Clause;
-import com.computablefacts.decima.problog.Const;
-import com.computablefacts.decima.problog.ProbabilityEstimator;
-import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
-import com.computablefacts.decima.problog.Literal;
-import com.computablefacts.decima.problog.Solver;
+import com.computablefacts.asterix.trie.Trie;
+import com.computablefacts.decima.problog.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Extracted from Theofrastos Mantadelis and Gerda Janssens (2010). "Nesting Probabilistic
@@ -28,7 +25,7 @@ public class GraphWithoutCycle1Test {
   public void testGraph() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("0.4::edge(a, b)."));
@@ -51,19 +48,24 @@ public class GraphWithoutCycle1Test {
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("path", new Const("b"), new Const("f"));
     Set<Clause> proofs = solver.proofs(query);
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
-    Assert.assertEquals(14, solver.nbSubgoals());
+    Assert.assertEquals(18, solver.nbSubgoals());
 
-    // Verify answers
-    // path(b, f) :- 0.2::edge(b, d), 0.5::edge(d, f).
-    // path(b, f) :- 0.8::edge(b, e), 0.3::edge(e, f).
+    // Verify proofs
     Assert.assertEquals(2, proofs.size());
+    Assert.assertEquals(1, answers.size());
+    Assert.assertEquals(1, tries.size());
 
-    Assert.assertTrue(
-        isValid(proofs, "path(b, f)", Lists.newArrayList("0.2::edge(b, d)", "0.5::edge(d, f)")));
-    Assert.assertTrue(
-        isValid(proofs, "path(b, f)", Lists.newArrayList("0.8::edge(b, e)", "0.3::edge(e, f)")));
+    Clause answer1 =
+        buildClause("path(b, f)", Lists.newArrayList("0.2::edge(b, d)", "0.5::edge(d, f)"));
+    Clause answer2 =
+        buildClause("path(b, f)", Lists.newArrayList("0.8::edge(b, e)", "0.3::edge(e, f)"));
+
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2)));
 
     // Verify BDD answer
     // 0.316::path(b, f).

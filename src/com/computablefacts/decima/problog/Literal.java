@@ -465,8 +465,8 @@ final public class Literal {
 
     Preconditions.checkState(
         result != null && (result.value() instanceof String || result.value() instanceof Number
-            || result.value() instanceof Boolean),
-        "The only return types allowed are String, Number and Boolean : %s", function);
+            || result.value() instanceof Boolean || result.value() instanceof Collection),
+        "The only return types allowed are String, Number, Boolean and Collection : %s", function);
 
     if (!isFirstTermVariable) { // => FN_IS()
 
@@ -502,8 +502,9 @@ final public class Literal {
 
       Object value = ((Const) term).value();
 
-      if (!(value instanceof String || value instanceof Number || value instanceof Boolean)) {
-        return false; // The only types allowed are String, Number and Boolean
+      if (!(value instanceof String || value instanceof Number || value instanceof Boolean
+          || value instanceof Collection)) {
+        return false; // The only types allowed are String, Number, Boolean and Collection
       }
     }
     return true;
@@ -614,7 +615,10 @@ final public class Literal {
   private Function compile() {
     if (functions_.size() <= 0) {
       String function = predicate_.name().toUpperCase() + "("
-          + terms_.stream().skip(1).map(term -> Function.wrap(((Const) term).value().toString()))
+          + terms_.stream().skip(1)
+              .map(term -> Function.wrap(((Const) term).value() instanceof Collection
+                  ? "[" + Joiner.on('¤').join((Collection) ((Const) term).value()) + "]"
+                  : ((Const) term).value().toString()))
               .collect(Collectors.joining(", "))
           + ")";
       return new Function(function);
@@ -626,7 +630,9 @@ final public class Literal {
     if (functions_.size() <= 0) {
       String function = predicate_.name().toUpperCase() + "(" + terms_.stream().map(term -> {
         if (term.isConst()) {
-          return Function.wrap(((Const) term).value().toString());
+          return Function.wrap(((Const) term).value() instanceof Collection
+              ? "[" + Joiner.on('¤').join((Collection) ((Const) term).value()) + "]"
+              : ((Const) term).value().toString());
         }
         return Function.wrap("_");
       }).collect(Collectors.joining(", ")) + ")";

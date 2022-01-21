@@ -400,8 +400,7 @@ final public class Clause {
   public Clause resolve(Literal literal) {
 
     Preconditions.checkNotNull(literal, "literal should not be null");
-    Preconditions.checkArgument(literal.isGrounded(), "literal should be grounded : %s",
-        literal);
+    Preconditions.checkArgument(literal.isGrounded(), "literal should be grounded : %s", literal);
 
     if (isFact()) {
       return null;

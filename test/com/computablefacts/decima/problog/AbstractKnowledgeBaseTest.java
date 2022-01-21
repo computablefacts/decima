@@ -1,6 +1,7 @@
 package com.computablefacts.decima.problog;
 
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseQuery;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -143,9 +144,9 @@ public class AbstractKnowledgeBaseTest {
   @Test
   public void testFnAssertJson() {
 
-    Clause clause = Parser.parseClause(
+    Clause clause = parseClause(
         "json_path(\"jhWTAETz\", \"data\", \"9\", \"rawOutput\", \"[{¤u0022Modified¤u0022:¤u00222020-07-07T12:24:00¤u0022¤u002c¤u0022Published¤u0022:1594088100000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:7.5¤u002c¤u0022cvss-time¤u0022:null¤u002c¤u0022cvss-vector¤u0022:null¤u002c¤u0022cwe¤u0022:¤u0022NVD-CWE-noinfo¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2020-15505¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022last-modified¤u0022:¤u00222020-09-18T16:15:00¤u0022¤u002c¤u0022references¤u0022:[¤u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available¤u0022]¤u002c¤u0022summary¤u0022:¤u0022A remote code execution vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier¤u002c 10.4.0.0¤u002c 10.4.0.1¤u002c 10.4.0.2¤u002c 10.4.0.3¤u002c 10.5.1.0¤u002c 10.5.2.0 and 10.6.0.0; and Sentry versions 9.7.2 and earlier¤u002c and 9.8.0; and Monitor and Reporting Database ¤u0028RDB¤u0029 version 2.0.0.1 and earlier that allows remote attackers to execute arbitrary code via unspecified vectors.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022]}¤u002c{¤u0022Modified¤u0022:¤u00222020-07-07T12:24:00¤u0022¤u002c¤u0022Published¤u0022:1594088100000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:7.5¤u002c¤u0022cvss-time¤u0022:null¤u002c¤u0022cvss-vector¤u0022:null¤u002c¤u0022cwe¤u0022:¤u0022CWE-287¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2020-15506¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022last-modified¤u0022:¤u00222020-09-18T17:15:00¤u0022¤u002c¤u0022references¤u0022:[¤u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available¤u0022]¤u002c¤u0022summary¤u0022:¤u0022An authentication bypass vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier¤u002c 10.4.0.0¤u002c 10.4.0.1¤u002c 10.4.0.2¤u002c 10.4.0.3¤u002c 10.5.1.0¤u002c 10.5.2.0 and 10.6.0.0 that allows remote attackers to bypass authentication mechanisms via unspecified vectors.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*¤u0022]}¤u002c{¤u0022Modified¤u0022:¤u00222020-02-21T15:13:00¤u0022¤u002c¤u0022Published¤u0022:1581635700000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:10.0¤u002c¤u0022cvss-time¤u0022:¤u00222020-02-21T15:13:00¤u0022¤u002c¤u0022cvss-vector¤u0022:¤u0022AV:N\\/AC:L\\/Au:N\\/C:C\\/I:C\\/A:C¤u0022¤u002c¤u0022cwe¤u0022:¤u0022CWE-326¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2013-7287¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022last-modified¤u0022:null¤u002c¤u0022references¤u0022:[¤u0022http:\\/\\/seclists.org\\/fulldisclosure\\/2014\\/Apr\\/21¤u0022¤u002c¤u0022https:\\/\\/www.securityfocus.com\\/archive\\/1\\/531713¤u0022]¤u002c¤u0022summary¤u0022:¤u0022MobileIron VSP < 5.9.1 and Sentry < 5.0 has an insecure encryption scheme.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*¤u0022]}]\").");
-    Clause rule = Parser.parseClause(
+    Clause rule = parseClause(
         "assert(X) :- json_path(X, _, _, _, RawOutput), fn_assert_json(IsOk, fn_concat(X, \"-cRz86jrY\"), fn_to_json(RawOutput)), fn_is_true(IsOk).");
 
     AbstractKnowledgeBase kb = kb();
@@ -154,7 +155,7 @@ public class AbstractKnowledgeBaseTest {
 
     Solver solver = new Solver(kb, false);
     @com.google.errorprone.annotations.Var
-    Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"jhWTAETz\")?")));
+    Set<Clause> clauses = Sets.newHashSet(solver.solve(parseQuery("assert(\"jhWTAETz\")?")));
 
     Assert.assertEquals(2, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
@@ -167,24 +168,24 @@ public class AbstractKnowledgeBaseTest {
         Lists.newArrayList(new Var(), new Var(), new Var(), new Var(), new Var()))));
 
     // Here, the KB has been augmented with the facts generated by the assert(X) rule
-    clauses = Sets.newHashSet(
-        solver.solve(Parser.parseQuery("json_path(\"jhWTAETz-cRz86jrY\", _, \"id\", _)?")));
+    clauses = Sets
+        .newHashSet(solver.solve(parseQuery("json_path(\"jhWTAETz-cRz86jrY\", _, \"id\", _)?")));
 
     Assert.assertEquals(3, clauses.size());
-    Assert.assertTrue(clauses.contains(Parser
-        .parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"0\", \"id\", \"CVE-2020-15505\").")));
-    Assert.assertTrue(clauses.contains(Parser
-        .parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"1\", \"id\", \"CVE-2020-15506\").")));
     Assert.assertTrue(clauses.contains(
-        Parser.parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"2\", \"id\", \"CVE-2013-7287\").")));
+        parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"0\", \"id\", \"CVE-2020-15505\").")));
+    Assert.assertTrue(clauses.contains(
+        parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"1\", \"id\", \"CVE-2020-15506\").")));
+    Assert.assertTrue(clauses.contains(
+        parseClause("json_path(\"jhWTAETz-cRz86jrY\", \"2\", \"id\", \"CVE-2013-7287\").")));
   }
 
   @Test
   public void testFnAssertCsv() {
 
-    Clause clause = Parser.parseClause(
+    Clause clause = parseClause(
         "json_path(\"aIMuk3ze\", \"data\", \"3\", \"rawOutput\", \"FUZZ¤u002curl¤u002credirectlocation¤u002cposition¤u002cstatus_code¤u002ccontent_length¤u002ccontent_words¤u002ccontent_lines¤u002cresultfile\\nadmin/¤u002chttps://www.example.com:443/admin/¤u002c¤u002c438¤u002c200¤u002c7266¤u002c2275¤u002c152¤u002c\\n\").");
-    Clause rule = Parser.parseClause(
+    Clause rule = parseClause(
         "assert(X) :- json_path(X, _, _, _, RawOutput), fn_assert_csv(IsOk, fn_concat(X, \"-cRz86jrY\"), fn_to_csv(RawOutput)), fn_is_true(IsOk).");
 
     AbstractKnowledgeBase kb = kb();
@@ -193,7 +194,7 @@ public class AbstractKnowledgeBaseTest {
 
     Solver solver = new Solver(kb, false);
     @com.google.errorprone.annotations.Var
-    Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"aIMuk3ze\")?")));
+    Set<Clause> clauses = Sets.newHashSet(solver.solve(parseQuery("assert(\"aIMuk3ze\")?")));
 
     Assert.assertEquals(2, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
@@ -206,22 +207,22 @@ public class AbstractKnowledgeBaseTest {
         Lists.newArrayList(new Var(), new Var(), new Var(), new Var(), new Var()))));
 
     // Here, the KB has been augmented with the facts generated by the assert(X) rule
-    clauses = Sets.newHashSet(
-        solver.solve(Parser.parseQuery("json_path(\"aIMuk3ze-cRz86jrY\", _, \"FUZZ\", _)?")));
+    clauses = Sets
+        .newHashSet(solver.solve(parseQuery("json_path(\"aIMuk3ze-cRz86jrY\", _, \"FUZZ\", _)?")));
 
     Assert.assertEquals(1, clauses.size());
-    Assert.assertTrue(clauses.contains(
-        Parser.parseClause("json_path(\"aIMuk3ze-cRz86jrY\", \"0\", \"FUZZ\", \"admin/\").")));
+    Assert.assertTrue(clauses
+        .contains(parseClause("json_path(\"aIMuk3ze-cRz86jrY\", \"0\", \"FUZZ\", \"admin/\").")));
   }
 
   @Test
   public void testExistInKb() {
 
-    Clause clause = Parser.parseClause(
+    Clause clause = parseClause(
         "json_path(\"jhWTAETz\", \"data\", \"9\", \"rawOutput\", \"[{¤u0022Modified¤u0022:¤u00222020-07-07T12:24:00¤u0022¤u002c¤u0022Published¤u0022:1594088100000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:7.5¤u002c¤u0022cvss-time¤u0022:null¤u002c¤u0022cvss-vector¤u0022:null¤u002c¤u0022cwe¤u0022:¤u0022NVD-CWE-noinfo¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2020-15505¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022last-modified¤u0022:¤u00222020-09-18T16:15:00¤u0022¤u002c¤u0022references¤u0022:[¤u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available¤u0022]¤u002c¤u0022summary¤u0022:¤u0022A remote code execution vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier¤u002c 10.4.0.0¤u002c 10.4.0.1¤u002c 10.4.0.2¤u002c 10.4.0.3¤u002c 10.5.1.0¤u002c 10.5.2.0 and 10.6.0.0; and Sentry versions 9.7.2 and earlier¤u002c and 9.8.0; and Monitor and Reporting Database \\u0028RDB\\u0029 version 2.0.0.1 and earlier that allows remote attackers to execute arbitrary code via unspecified vectors.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022]}¤u002c{¤u0022Modified¤u0022:¤u00222020-07-07T12:24:00¤u0022¤u002c¤u0022Published¤u0022:1594088100000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:7.5¤u002c¤u0022cvss-time¤u0022:null¤u002c¤u0022cvss-vector¤u0022:null¤u002c¤u0022cwe¤u0022:¤u0022CWE-287¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2020-15506¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022PARTIAL¤u0022¤u002c¤u0022last-modified¤u0022:¤u00222020-09-18T17:15:00¤u0022¤u002c¤u0022references¤u0022:[¤u0022https:\\/\\/www.mobileiron.com\\/en\\/blog\\/mobileiron-security-updates-available¤u0022]¤u002c¤u0022summary¤u0022:¤u0022An authentication bypass vulnerability in MobileIron Core & Connector versions 10.3.0.3 and earlier¤u002c 10.4.0.0¤u002c 10.4.0.1¤u002c 10.4.0.2¤u002c 10.4.0.3¤u002c 10.5.1.0¤u002c 10.5.2.0 and 10.6.0.0 that allows remote attackers to bypass authentication mechanisms via unspecified vectors.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:cloud:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:cloud:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:core:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:enterprise_connector:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:reporting_database:10.6:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:-:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:9.8:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:sentry:10.6:*:*:*:*:*:*:*¤u0022]}¤u002c{¤u0022Modified¤u0022:¤u00222020-02-21T15:13:00¤u0022¤u002c¤u0022Published¤u0022:1581635700000¤u002c¤u0022access.authentication¤u0022:¤u0022NONE¤u0022¤u002c¤u0022access.complexity¤u0022:¤u0022LOW¤u0022¤u002c¤u0022access.vector¤u0022:¤u0022NETWORK¤u0022¤u002c¤u0022assigner¤u0022:¤u0022cve@mitre.org¤u0022¤u002c¤u0022cvss¤u0022:10.0¤u002c¤u0022cvss-time¤u0022:¤u00222020-02-21T15:13:00¤u0022¤u002c¤u0022cvss-vector¤u0022:¤u0022AV:N\\/AC:L\\/Au:N\\/C:C\\/I:C\\/A:C¤u0022¤u002c¤u0022cwe¤u0022:¤u0022CWE-326¤u0022¤u002c¤u0022id¤u0022:¤u0022CVE-2013-7287¤u0022¤u002c¤u0022impact.availability¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022impact.confidentiality¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022impact.integrity¤u0022:¤u0022COMPLETE¤u0022¤u002c¤u0022last-modified¤u0022:null¤u002c¤u0022references¤u0022:[¤u0022http:\\/\\/seclists.org\\/fulldisclosure\\/2014\\/Apr\\/21¤u0022¤u002c¤u0022https:\\/\\/www.securityfocus.com\\/archive\\/1\\/531713¤u0022]¤u002c¤u0022summary¤u0022:¤u0022MobileIron VSP < 5.9.1 and Sentry < 5.0 has an insecure encryption scheme.¤u0022¤u002c¤u0022vulnerable_configuration¤u0022:[¤u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*¤u0022]¤u002c¤u0022vulnerable_configuration_cpe_2_2¤u0022:[]¤u002c¤u0022vulnerable_product¤u0022:[¤u0022cpe:2.3:a:mobileiron:sentry:*:*:*:*:*:*:*:*¤u0022¤u002c¤u0022cpe:2.3:a:mobileiron:virtual_smartphone_platform:*:*:*:*:*:*:*:*¤u0022]}]\").");
-    Clause rule1 = Parser.parseClause(
+    Clause rule1 = parseClause(
         "assert(X) :- json_path(X, _, _, _, RawOutput), fn_assert_json(IsOk, fn_concat(X, \"-cRz86jrY\"), fn_to_json(RawOutput)), fn_is_true(IsOk).");
-    Clause rule2 = Parser.parseClause(
+    Clause rule2 = parseClause(
         "exist_in_kb(X) :- fn_exist_in_kb(IsOk, \"json_path\", \"_\", \"_\", \"id\", X), fn_is_true(IsOk).");
 
     AbstractKnowledgeBase kb = kb();
@@ -229,9 +230,9 @@ public class AbstractKnowledgeBaseTest {
     kb.azzert(rule1);
     kb.azzert(rule2);
 
-    Literal query1 = Parser.parseQuery("exist_in_kb(\"CVE-2020-15505\")?");
-    Literal query2 = Parser.parseQuery("exist_in_kb(\"CVE-2020-15506\")?");
-    Literal query3 = Parser.parseQuery("exist_in_kb(\"CVE-2013-7287\")?");
+    Literal query1 = parseQuery("exist_in_kb(\"CVE-2020-15505\")?");
+    Literal query2 = parseQuery("exist_in_kb(\"CVE-2020-15506\")?");
+    Literal query3 = parseQuery("exist_in_kb(\"CVE-2013-7287\")?");
 
     // First test : queries must fail while assert(X) has not been called
     @com.google.errorprone.annotations.Var
@@ -242,7 +243,7 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertEquals(0, Sets.newHashSet(solver.solve(query3)).size());
 
     @com.google.errorprone.annotations.Var
-    Set<Clause> clauses = Sets.newHashSet(solver.solve(Parser.parseQuery("assert(\"jhWTAETz\")?")));
+    Set<Clause> clauses = Sets.newHashSet(solver.solve(parseQuery("assert(\"jhWTAETz\")?")));
 
     Assert.assertEquals(5, solver.nbSubgoals());
     Assert.assertEquals(1, clauses.size());
@@ -272,25 +273,25 @@ public class AbstractKnowledgeBaseTest {
         "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition1(kb());
-    kb.azzert(Parser.parseClause(rule1));
-    kb.azzert(Parser.parseClause(rule2));
+    kb.azzert(parseClause(rule1));
+    kb.azzert(parseClause(rule2));
 
     Solver solver = new Solver(kb, false);
     Set<Clause> clauses =
-        Sets.newHashSet(solver.solve(Parser.parseQuery("clients(FirstName, LastName, Email)?")));
+        Sets.newHashSet(solver.solve(parseQuery("clients(FirstName, LastName, Email)?")));
 
     Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(5, clauses.size());
-    Assert.assertTrue(clauses.contains(
-        Parser.parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
     Assert.assertTrue(clauses
-        .contains(Parser.parseClause("clients(\"Lucy\", \"Ballmer\", \"lucyb56@gmail.com\").")));
-    Assert.assertTrue(clauses.contains(
-        Parser.parseClause("clients(\"Roger\", \"Bacon\", \"rogerbacon12@yahoo.com\").")));
+        .contains(parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
+    Assert.assertTrue(
+        clauses.contains(parseClause("clients(\"Lucy\", \"Ballmer\", \"lucyb56@gmail.com\").")));
     Assert.assertTrue(clauses
-        .contains(Parser.parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
-    Assert.assertTrue(clauses
-        .contains(Parser.parseClause("clients(\"Anna\", \"Smith\", \"annasmith23@gmail.com\").")));
+        .contains(parseClause("clients(\"Roger\", \"Bacon\", \"rogerbacon12@yahoo.com\").")));
+    Assert.assertTrue(
+        clauses.contains(parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
+    Assert.assertTrue(
+        clauses.contains(parseClause("clients(\"Anna\", \"Smith\", \"annasmith23@gmail.com\").")));
   }
 
   @Test
@@ -305,19 +306,19 @@ public class AbstractKnowledgeBaseTest {
         "clients(FirstName, LastName, Email) :- fn_mock_materialize_facts(\"http://localhost:3000/crm2\", \"first_name\", FirstName, \"last_name\", LastName, \"email\", Email).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition1(kb());
-    kb.azzert(Parser.parseClause(rule1));
-    kb.azzert(Parser.parseClause(rule2));
+    kb.azzert(parseClause(rule1));
+    kb.azzert(parseClause(rule2));
 
     Solver solver = new Solver(kb, false);
     Set<Clause> clauses =
-        Sets.newHashSet(solver.solve(Parser.parseQuery("clients(\"Robert\", LastName, Email)?")));
+        Sets.newHashSet(solver.solve(parseQuery("clients(\"Robert\", LastName, Email)?")));
 
     Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(2, clauses.size());
-    Assert.assertTrue(clauses.contains(
-        Parser.parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
     Assert.assertTrue(clauses
-        .contains(Parser.parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
+        .contains(parseClause("clients(\"Robert\", \"Brown\", \"bobbrown432@yahoo.com\").")));
+    Assert.assertTrue(
+        clauses.contains(parseClause("clients(\"Robert\", \"Schwartz\", \"rob23@gmail.com\").")));
   }
 
   @Test
@@ -327,21 +328,21 @@ public class AbstractKnowledgeBaseTest {
         "mes_fichiers_favoris(PATH, MD5) :- fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"metadata.md5_after\", \"824a*\", MD5).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition2(kb());
-    kb.azzert(Parser.parseClause(rule));
+    kb.azzert(parseClause(rule));
 
     Solver solver = new Solver(kb, false);
-    Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, MD5)?");
+    Literal query = parseQuery("mes_fichiers_favoris(PATH, MD5)?");
     Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 
     Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(4, clauses.size());
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file1.pdf\", \"824a6d489b13f87d9006fe6842dd424b\").")));
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file2.pdf\", \"824afe9a2309abcf033bc74b7fe42a84\").")));
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file2.pdf\", \"824a6d489b13f87d9006fe6842dd424b\").")));
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file3.pdf\", \"824a6d489b13f87d9006fe6842dd424b\").")));
   }
 
@@ -356,12 +357,12 @@ public class AbstractKnowledgeBaseTest {
         "fichier_duplique(PATH, TEXT) :- fichier_dab(PATH, TEXT), fichier_vam(PATH, TEXT).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition3(kb());
-    kb.azzert(Parser.parseClause(rule1));
-    kb.azzert(Parser.parseClause(rule2));
-    kb.azzert(Parser.parseClause(rule3));
+    kb.azzert(parseClause(rule1));
+    kb.azzert(parseClause(rule2));
+    kb.azzert(parseClause(rule3));
 
     Solver solver = new Solver(kb, false);
-    Literal query = Parser.parseQuery("fichier_duplique(PATH, TEXT)?");
+    Literal query = parseQuery("fichier_duplique(PATH, TEXT)?");
     Iterator<Clause> iterator = solver.solve(query);
     List<Clause> clauses = Lists.newArrayList(iterator);
 
@@ -382,21 +383,21 @@ public class AbstractKnowledgeBaseTest {
         "mes_fichiers_favoris(PATH, CONTENT) :- fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", _, PATH, \"content.text\", _, CONTENT).";
 
     AbstractKnowledgeBase kb = addMockMaterializeFactsQueryDefinition4(kb());
-    kb.azzert(Parser.parseClause(rule));
+    kb.azzert(parseClause(rule));
 
     Solver solver = new Solver(kb, false);
-    Literal query = Parser.parseQuery("mes_fichiers_favoris(PATH, CONTENT)?");
+    Literal query = parseQuery("mes_fichiers_favoris(PATH, CONTENT)?");
     Set<Clause> clauses = Sets.newHashSet(solver.solve(query));
 
     Assert.assertEquals(1, solver.nbSubgoals());
     Assert.assertEquals(4, clauses.size());
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file1.pdf\", \"lhs := rhs — function etc. definition\").")));
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file2.pdf\", \"x == val — test equality or represent a symbolic equation (!= for unequal)\").")));
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file2.pdf\", \"lhs := rhs — function etc. definition\").")));
-    Assert.assertTrue(clauses.contains(Parser.parseClause(
+    Assert.assertTrue(clauses.contains(parseClause(
         "mes_fichiers_favoris(\"/var/sftp/file3.pdf\", \"lhs := rhs — function etc. definition\").")));
   }
 
@@ -491,18 +492,18 @@ public class AbstractKnowledgeBaseTest {
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
         List<Literal> literals = new ArrayList<>();
-        literals.add(Parser.parseClause(
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
-            .head());
-        literals.add(Parser.parseClause(
+                .head());
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824afe9a2309abcf033bc74b7fe42a84\").")
-            .head());
-        literals.add(Parser.parseClause(
+                .head());
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
-            .head());
-        literals.add(Parser.parseClause(
+                .head());
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"metadata.md5_after\", \"824a*\", \"824a6d489b13f87d9006fe6842dd424b\").")
-            .head());
+                .head());
 
         return BoxedType.create(literals);
       }
@@ -581,18 +582,18 @@ public class AbstractKnowledgeBaseTest {
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
         List<Literal> literals = new ArrayList<>();
-        literals.add(Parser.parseClause(
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file1.pdf\", \"content.text\", \"*\", \"lhs ¤u003a¤u003d rhs — function etc. definition\").")
-            .head());
-        literals.add(Parser.parseClause(
+                .head());
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"x ¤u003d¤u003d val — test equality or represent a symbolic equation (!¤u003d for unequal)\").")
-            .head());
-        literals.add(Parser.parseClause(
+                .head());
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file2.pdf\", \"content.text\", \"*\", \"lhs ¤u003a¤u003d rhs — function etc. definition\").")
-            .head());
-        literals.add(Parser.parseClause(
+                .head());
+        literals.add(parseClause(
             "fn_mock_materialize_facts(\"https://localhost/facts/dab/fichier\", \"metadata.path\", \"*\", \"/var/sftp/file3.pdf\", \"content.text\", \"*\", \"lhs ¤u003a¤u003d rhs — function etc. definition\").")
-            .head());
+                .head());
 
         return BoxedType.create(literals);
       }

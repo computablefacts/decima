@@ -3,7 +3,6 @@ package com.computablefacts.decima.problog;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.computablefacts.asterix.BloomFilter;
 import com.computablefacts.asterix.Generated;
 import com.computablefacts.asterix.trie.Trie;
-import com.computablefacts.logfmt.LogFormatter;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -264,22 +262,10 @@ final public class Solver {
       }
     } else {
 
-      if (logger_.isDebugEnabled()) {
-        logger_.debug(LogFormatter.create(true).message("loading clauses")
-            .add("is_primitive", false).add("literal", literal).formatDebug());
-      }
-
       @Var
       Stopwatch stopwatch = Stopwatch.createStarted();
       Iterator<Clause> facts = kb_.facts(literal);
       stopwatch.stop();
-
-      if (logger_.isDebugEnabled()) {
-        logger_.debug(LogFormatter.create(true)
-            .message(
-                String.format("facts loaded in %d ms", stopwatch.elapsed(TimeUnit.MILLISECONDS)))
-            .add("is_primitive", false).add("literal", literal).formatDebug());
-      }
 
       @Var
       boolean match = false;
@@ -304,13 +290,6 @@ final public class Solver {
       stopwatch = Stopwatch.createStarted();
       Iterator<Clause> rules = kb_.rules(literal);
       stopwatch.stop();
-
-      if (logger_.isDebugEnabled()) {
-        logger_.debug(LogFormatter.create(true)
-            .message(
-                String.format("rules loaded in %d ms", stopwatch.elapsed(TimeUnit.MILLISECONDS)))
-            .add("is_primitive", false).add("literal", literal).formatDebug());
-      }
 
       while (rules.hasNext()) {
 
@@ -387,23 +366,9 @@ final public class Solver {
 
     if (first.predicate().isPrimitive()) {
 
-      if (logger_.isDebugEnabled()) {
-        logger_.debug(
-            LogFormatter.create(true).message("evaluating function").add("is_primitive", true)
-                .add("first_body_literal", first).add("rule", rule).formatDebug());
-      }
-
       Stopwatch stopwatch = Stopwatch.createStarted();
       Iterator<Literal> literals = first.execute(kb_.definitions());
       stopwatch.stop();
-
-      if (logger_.isDebugEnabled()) {
-        logger_.debug(LogFormatter.create(true)
-            .message(String.format("function evaluated in %d ms",
-                stopwatch.elapsed(TimeUnit.MILLISECONDS)))
-            .add("is_primitive", true).add("first_body_literal", first).add("rule", rule)
-            .formatDebug());
-      }
 
       if (literals != null) {
         while (literals.hasNext()) {
@@ -423,7 +388,9 @@ final public class Solver {
     @Var
     Subgoal sub = subgoals_.get(first.tag());
 
-    if (sub == null) {
+    if (sub != null) {
+      sub.addWaiter(subgoal, rule);
+    } else {
 
       sub = newSubgoal_.apply(first);
       sub.addWaiter(subgoal, rule);
@@ -431,22 +398,19 @@ final public class Solver {
       subgoals_.put(sub.literal().tag(), sub);
 
       search(sub);
+    }
+
+    Iterator<Clause> facts = sub.facts();
+
+    if (!facts.hasNext()) {
+      subgoal.pop(rule);
     } else {
+      while (facts.hasNext()) {
 
-      sub.addWaiter(subgoal, rule);
+        ground(subgoal, rule, facts.next());
 
-      Iterator<Clause> facts = sub.facts();
-
-      if (!facts.hasNext()) {
-        subgoal.pop(rule);
-      } else {
-        while (facts.hasNext()) {
-
-          ground(subgoal, rule, facts.next());
-
-          if (maxSampleSizeReached()) {
-            return;
-          }
+        if (maxSampleSizeReached()) {
+          return;
         }
       }
     }

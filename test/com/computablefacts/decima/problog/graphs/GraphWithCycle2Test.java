@@ -1,15 +1,19 @@
 package com.computablefacts.decima.problog.graphs;
 
-import static com.computablefacts.decima.problog.TestUtils.kb;
-import static com.computablefacts.decima.problog.TestUtils.parseClause;
+import static com.computablefacts.decima.problog.Parser.parseClause;
+import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.computablefacts.asterix.trie.Trie;
 import com.computablefacts.decima.problog.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Extracted from Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a
@@ -22,7 +26,7 @@ public class GraphWithCycle2Test {
   public void testGraph() {
 
     // Create kb
-    InMemoryKnowledgeBase kb = kb();
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
 
     // Init kb with facts
     kb.azzert(parseClause("0.1::edge(1, 2)."));
@@ -41,9 +45,30 @@ public class GraphWithCycle2Test {
     Solver solver = new Solver(kb, true);
     Literal query = new Literal("path", new Const("1"), new Const("4"));
     Set<Clause> proofs = solver.proofs(query);
+    Set<Clause> answers = Sets.newHashSet(solver.solve(query));
+    Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
-    Assert.assertEquals(10, solver.nbSubgoals());
+    Assert.assertEquals(12, solver.nbSubgoals());
+
+    // Verify proofs
+    Assert.assertEquals(3, proofs.size());
+    Assert.assertEquals(1, answers.size());
+    Assert.assertEquals(1, tries.size());
+
+    Clause answer1 = buildClause("path(1, 4)",
+        Lists.newArrayList("0.6::edge(2, 4)", "0.2::edge(3, 2)", "0.5::edge(1, 3)",
+            "fn_eq(false, 1, 3)", "fn_is_false(false)", "fn_eq(false, 1, 2)",
+            "fn_is_false(false)"));
+    Clause answer2 = buildClause("path(1, 4)", Lists.newArrayList("0.6::edge(2, 4)",
+        "0.1::edge(1, 2)", "fn_eq(false, 1, 2)", "fn_is_false(false)"));
+    Clause answer3 = buildClause("path(1, 4)",
+        Lists.newArrayList("0.6::edge(2, 4)", "0.2::edge(3, 2)", "0.3::edge(2, 3)",
+            "0.1::edge(1, 2)", "fn_eq(false, 1, 2)", "fn_is_false(false)", "fn_eq(false, 1, 3)",
+            "fn_is_false(false)", "fn_eq(false, 1, 2)", "fn_is_false(false)"));
+
+    Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3)));
+    Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3)));
 
     // Verify BDD answer
     // 0.114::path(1, 4).

@@ -47,10 +47,10 @@ final public class ProofAssistant {
   }
 
   public Set<Clause> proofs(Literal curLiteral) {
-    return proofs(curLiteral, 0);
+    return proofs(curLiteral, 0, new HashSet<>());
   }
 
-  private Set<Clause> proofs(Literal curLiteral, int depth) {
+  private Set<Clause> proofs(Literal curLiteral, int depth, Set<Clause> visited) {
 
     Preconditions.checkNotNull(curLiteral, "curLiteral should not be null");
     Preconditions.checkArgument(depth >= 0, "depth should be >= 0");
@@ -60,8 +60,9 @@ final public class ProofAssistant {
           .collect(Collectors.toSet());
     }
 
-    Set<Clause> rulesWithSubRules = rulesWithSubRules_.stream()
-        .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
+    Set<Clause> rulesWithSubRules =
+        rulesWithSubRules_.stream().filter(clause -> !visited.contains(clause))
+            .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
 
     Set<Clause> rulesWithoutSubRules = rulesWithoutSubRules_.stream()
         .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
@@ -113,7 +114,9 @@ final public class ProofAssistant {
                   .collect(Collectors.toSet());
 
           if (proofz.isEmpty()) {
-            proofz = proofs(literal, depth + 1);
+            Set<Clause> newVisited = new HashSet<>(visited);
+            newVisited.add(rule);
+            proofz = proofs(literal, depth + 1, newVisited);
           }
 
           Preconditions.checkState(!proofz.isEmpty(), "goal cannot be proven : %s", rule);
