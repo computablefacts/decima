@@ -282,7 +282,7 @@ public class ParserTest {
   }
 
   @Test
-  public void testProofOfConceptReorderBodyLiterals1() {
+  public void testFunctionOutputComputedBeforeUsageInFunction() {
 
     Var x = new Var();
     Var y = new Var();
@@ -303,11 +303,15 @@ public class ParserTest {
       Clause actual = reorderBodyLiterals(new Clause(edgeXY, body));
       System.out.println(new Clause(edgeXY, body) + " -> " + actual);
       Assert.assertTrue(expected.isRelevant(actual));
+      Assert.assertEquals("node/1", actual.body().get(0).predicate().id());
+      Assert.assertEquals("node/1", actual.body().get(1).predicate().id());
+      Assert.assertEquals("fn_lt/3", actual.body().get(2).predicate().id());
+      Assert.assertEquals("fn_is_true/1", actual.body().get(3).predicate().id());
     }
   }
 
   @Test
-  public void testProofOfConceptReorderBodyLiterals2() {
+  public void testFunctionOutputComputedBeforeUsageInNegatedRule() {
 
     Var x = new Var();
     Var y = new Var();
@@ -328,6 +332,10 @@ public class ParserTest {
       Clause actual = reorderBodyLiterals(new Clause(edgeXY, body));
       System.out.println(new Clause(edgeXY, body) + " -> " + actual);
       Assert.assertTrue(expected.isRelevant(actual));
+      Assert.assertEquals("node/1", actual.body().get(0).predicate().id());
+      Assert.assertEquals("node/1", actual.body().get(1).predicate().id());
+      Assert.assertEquals("fn_lt/3", actual.body().get(2).predicate().id());
+      Assert.assertEquals("~is_false/1", actual.body().get(3).predicate().id());
     }
   }
 }

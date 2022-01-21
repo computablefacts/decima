@@ -835,12 +835,17 @@ public final class Parser {
     // - Ensure the parameter of one primitive is grounded before the primitive is executed
     // - Ensure negated literals are grounded
     body.sort((p1, p2) -> {
-      if (p1.predicate().isPrimitive() && p2.predicate().isPrimitive()) {
 
-        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
-            p1.predicate());
-        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
-            p2.predicate());
+      boolean p1IsNegated = p1.predicate().isNegated();
+      boolean p2IsNegated = p2.predicate().isNegated();
+
+      boolean p1IsPrimitive = p1.predicate().isPrimitive();
+      boolean p2IsPrimitive = p2.predicate().isPrimitive();
+
+      if (p1IsPrimitive && p2IsPrimitive) {
+
+        Preconditions.checkState(!p1IsNegated, "primitive cannot be negated : %s", p1.predicate());
+        Preconditions.checkState(!p2IsNegated, "primitive cannot be negated : %s", p2.predicate());
 
         boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
             || p1.predicate().baseName().equals("fn_is_false");
@@ -859,16 +864,15 @@ public final class Parser {
         boolean p2DependsOnP1 = p2Parameters.contains(p1Output);
 
         Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-            "cyclic dependency between primitives %s and %s detected", p1.predicate(),
+            "cyclic dependency between primitives '%s' and '%s' detected", p1.predicate(),
             p2.predicate());
 
         return p1DependsOnP2 ? 1
             : p2DependsOnP1 ? -1 : p1.predicate().id().compareTo(p2.predicate().id());
       }
-      if (p1.predicate().isPrimitive()) {
+      if (p1IsPrimitive) {
 
-        Preconditions.checkState(!p1.predicate().isNegated(), "primitive cannot be negated : %s",
-            p1.predicate());
+        Preconditions.checkState(!p1IsNegated, "primitive cannot be negated : %s", p1.predicate());
 
         boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
             || p1.predicate().baseName().equals("fn_is_false");
@@ -880,15 +884,16 @@ public final class Parser {
         boolean p2DependsOnP1 = p2.terms().contains(p1Output);
 
         Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-            "cyclic dependency between primitive %s and rule %s detected", p1.predicate(),
+            "cyclic dependency between primitive '%s' and rule '%s' detected", p1.predicate(),
             p2.predicate());
 
-        return 1 /* prioritize functions over rules and fact */;
+        // -1 -> prioritize function when its output is used by a negated rule
+        // +1 -> otherwise, prioritize rules and facts over functions
+        return p2DependsOnP1 && p2IsNegated ? -1 : 1;
       }
-      if (p2.predicate().isPrimitive()) {
+      if (p2IsPrimitive) {
 
-        Preconditions.checkState(!p2.predicate().isNegated(), "primitive cannot be negated : %s",
-            p2.predicate());
+        Preconditions.checkState(!p2IsNegated, "primitive cannot be negated : %s", p2.predicate());
 
         boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
             || p2.predicate().baseName().equals("fn_is_false");
@@ -900,28 +905,22 @@ public final class Parser {
         boolean p1DependsOnP2 = p1.terms().contains(p2Output);
 
         Preconditions.checkState(!(p2DependsOnP1 && p1DependsOnP2),
-            "cyclic dependency between primitive %s and rule %s detected", p2.predicate(),
+            "cyclic dependency between primitive '%s' and rule '%s' detected", p2.predicate(),
             p1.predicate());
 
-        return -1 /* prioritize functions over rules and fact */;
+        // +1 -> prioritize function when its output is used by a negated rule
+        // -1 -> otherwise, prioritize rules and facts over functions
+        return p1DependsOnP2 && p1IsNegated ? 1 : -1;
       }
-
-      boolean p1IsNegated = p1.predicate().isNegated();
-      boolean p2IsNegated = p2.predicate().isNegated();
-
       if (!p1IsNegated && !p2IsNegated) {
         return p1.predicate().id().compareTo(p2.predicate().id());
       }
 
-      boolean p1DependsOnP2 =
-          p1IsNegated && p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
-      boolean p2DependsOnP1 =
-          p2IsNegated && p2.terms().stream().anyMatch(p -> p1.terms().contains(p));
+      boolean p1DependsOnP2 = p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
+      boolean p2DependsOnP1 = p2.terms().stream().anyMatch(p -> p1.terms().contains(p));
 
-      // Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-      // "cyclic dependency between rule %s and rule %s detected", p1.predicate(), p2.predicate());
-
-      return p1DependsOnP2 ? 1 : p2DependsOnP1 ? -1 : p1IsNegated ? 1 : -1;
+      return p1DependsOnP2 && p1IsNegated ? 1
+          : p2DependsOnP1 && p2IsNegated ? -1 : p1IsNegated ? 1 : -1;
     });
     return new Clause(clause.head(), body);
   }
