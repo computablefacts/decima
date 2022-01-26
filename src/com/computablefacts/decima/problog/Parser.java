@@ -884,6 +884,12 @@ public final class Parser {
       boolean p1IsPrimitive = p1.predicate().isPrimitive();
       boolean p2IsPrimitive = p2.predicate().isPrimitive();
 
+      boolean p1IsShadow = p1.predicate().baseName().startsWith("fn_shadow_");
+      boolean p2IsShadow = p2.predicate().baseName().startsWith("fn_shadow_");
+
+      boolean p1IsMaterialization = p1.predicate().baseName().endsWith("_materialize_facts");
+      boolean p2IsMaterialization = p2.predicate().baseName().endsWith("_materialize_facts");
+
       if (p1IsPrimitive && p2IsPrimitive) {
 
         Preconditions.checkState(!p1IsNegated, "primitive cannot be negated : %s", p1.predicate());
@@ -909,7 +915,19 @@ public final class Parser {
             "cyclic dependency between primitives '%s' and '%s' detected", p1.predicate(),
             p2.predicate());
 
-        return p1DependsOnP2 ? 1 : p2DependsOnP1 ? -1 : 0;
+        if (p1DependsOnP2) { // p2 produces an output used as a parameter by p1
+          return 1;
+        }
+        if (p2DependsOnP1) { // p1 produces an output used as a parameter by p2
+          return -1;
+        }
+        if (p1IsShadow && p2IsMaterialization) { // *_materialize_facts before fn_shadow_*
+          return 1;
+        }
+        if (p2IsShadow && p1IsMaterialization) { // *_materialize_facts before fn_shadow_*
+          return -1;
+        }
+        return 0 /* order doesn't matter */;
       }
       if (p1IsPrimitive) {
 

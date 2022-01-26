@@ -361,4 +361,37 @@ public class ParserTest {
       Assert.assertEquals("fn_is", actual.body().get(2).predicate().baseName());
     }
   }
+
+  @Test
+  public void testComparatorWithMaterialization() {
+
+    List<String> literals = Lists.newArrayList(
+        "fn_shadow_azfpcdc(V5805, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804)",
+        "fn_shadow_u0cjyyy(V5806, V5807, V5807, V5807)",
+        "fn_accumulo_materialize_facts(\"https¤u003a//localhost/facts/bauexp/bauexp\", \"content.text.C0\", _, V5809, \"content.text.C1\", _, _, \"content.text.C2\", _, V5807, \"content.text.C3\", _, _, \"content.text.C4\", _, V5804, \"content.text.C5\", _, _)",
+        "fn_concat(V5818, V5806, V5805)", "fn_is(V5819, V5818)");
+
+    List<List<String>> permutations = new ArrayList<>();
+    permute(literals, permutations);
+
+    for (List<String> body : permutations) {
+
+      String rule =
+          String.format("convertir_identifiant_adresse_en_uex(V5809, V5819) :- %s, %s, %s, %s, %s.",
+              body.get(0), body.get(1), body.get(2), body.get(3), body.get(4));
+
+      Clause actual = parseClause(rule);
+
+      System.out.println(actual);
+
+      Assert.assertEquals("fn_accumulo_materialize_facts",
+          actual.body().get(0).predicate().baseName());
+      Assert.assertEquals("fn_shadow_",
+          actual.body().get(1).predicate().baseName().substring(0, "fn_shadow_".length()));
+      Assert.assertEquals("fn_shadow_",
+          actual.body().get(2).predicate().baseName().substring(0, "fn_shadow_".length()));
+      Assert.assertEquals("fn_concat", actual.body().get(3).predicate().baseName());
+      Assert.assertEquals("fn_is", actual.body().get(4).predicate().baseName());
+    }
+  }
 }
