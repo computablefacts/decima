@@ -52,7 +52,7 @@ public class GraphWithoutCycle1Test {
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
-    Assert.assertEquals(18, solver.nbSubgoals());
+    Assert.assertEquals(14, solver.nbSubgoals());
 
     // Verify proofs
     Assert.assertEquals(2, proofs.size());

@@ -834,7 +834,49 @@ public final class Parser {
     // - Ensure the output of one primitive is not used before it is computed
     // - Ensure the parameter of one primitive is grounded before the primitive is executed
     // - Ensure negated literals are grounded
-    body.sort((p1, p2) -> {
+    Comparator<Literal> comparator = comparator();
+    List<List<Integer>> constraints = new ArrayList<>();
+
+    for (int i = 0; i < body.size(); i++) {
+      constraints.add(new ArrayList<>());
+    }
+    for (int i = 0; i < body.size(); i++) {
+
+      Literal literal = body.get(i);
+
+      for (int j = i + 1; j < body.size(); j++) {
+
+        int cmp = comparator.compare(literal, body.get(j));
+        if (cmp > 0) {
+          constraints.get(j).add(i);
+        } else if (cmp < 0) {
+          constraints.get(i).add(j);
+        }
+      }
+    }
+
+    // constraints contains for each body literal the set of clauses it must be positioned after
+    boolean[][] adjacency = new boolean[body.size()][body.size()];
+
+    for (int i = 0; i < constraints.size(); i++) {
+      for (int j = 0; j < constraints.get(i).size(); j++) {
+        adjacency[constraints.get(i).get(j)][i] = true;
+      }
+    }
+
+    Graph<Literal> graph = new Graph<>(body, adjacency);
+    List<Literal> list = graph.topoSort();
+
+    Preconditions.checkState(list != null, "rule has cycles : %s", clause);
+
+    return new Clause(clause.head(), list);
+  }
+
+  /**
+   * This comparator IS NOT transitive.
+   */
+  static Comparator<Literal> comparator() {
+    return (p1, p2) -> {
 
       boolean p1IsNegated = p1.predicate().isNegated();
       boolean p2IsNegated = p2.predicate().isNegated();
@@ -867,8 +909,7 @@ public final class Parser {
             "cyclic dependency between primitives '%s' and '%s' detected", p1.predicate(),
             p2.predicate());
 
-        return p1DependsOnP2 ? 1
-            : p2DependsOnP1 ? -1 : p1.predicate().id().compareTo(p2.predicate().id());
+        return p1DependsOnP2 ? 1 : p2DependsOnP1 ? -1 : 0;
       }
       if (p1IsPrimitive) {
 
@@ -913,7 +954,7 @@ public final class Parser {
         return p1DependsOnP2 && p1IsNegated ? 1 : -1;
       }
       if (!p1IsNegated && !p2IsNegated) {
-        return p1.predicate().id().compareTo(p2.predicate().id());
+        return 0;
       }
 
       boolean p1DependsOnP2 = p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
@@ -921,7 +962,55 @@ public final class Parser {
 
       return p1DependsOnP2 && p1IsNegated ? 1
           : p2DependsOnP1 && p2IsNegated ? -1 : p1IsNegated ? 1 : -1;
-    });
-    return new Clause(clause.head(), body);
+    };
+  }
+
+  private static class Graph<T> {
+
+    List<T> vertices_;
+    boolean[][] adjacency_;
+    int numVertices_;
+
+    public Graph(List<T> s, boolean[][] adjacency) {
+      vertices_ = new ArrayList<>(s);
+      numVertices_ = vertices_.size();
+      adjacency_ = adjacency;
+    }
+
+    public List<T> topoSort() {
+
+      List<T> result = new ArrayList<>();
+      List<Integer> todo = new LinkedList<>();
+
+      for (int i = 0; i < numVertices_; i++) {
+        todo.add(i);
+      }
+      try {
+        outer: while (!todo.isEmpty()) {
+          for (Integer r : todo) {
+            if (!hasDependency(r, todo)) {
+              todo.remove(r);
+              result.add(vertices_.get(r));
+              // no need to worry about concurrent modification
+              continue outer;
+            }
+          }
+          throw new Exception("Graph has cycles");
+        }
+      } catch (Exception e) {
+        System.out.println(e);
+        return null;
+      }
+      return result;
+    }
+
+    private boolean hasDependency(Integer r, List<Integer> todo) {
+      for (Integer c : todo) {
+        if (adjacency_[r][c]) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 }

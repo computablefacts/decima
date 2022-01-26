@@ -338,4 +338,27 @@ public class ParserTest {
       Assert.assertEquals("~is_false/1", actual.body().get(3).predicate().id());
     }
   }
+
+  @Test
+  public void testComparatorTransitivity() {
+
+    List<String> literals = Lists.newArrayList("fn_is(V6031, V6032)",
+        "fn_concat(V6032, V6033, V6019)", "fn_shadow_rwufvo2(V6019, V6021)");
+
+    List<List<String>> permutations = new ArrayList<>();
+    permute(literals, permutations);
+
+    for (List<String> body : permutations) {
+
+      String rule =
+          String.format("convertir_identifiant_adresse_en_uex(V6021, V6031) :- %s, %s, %s.",
+              body.get(0), body.get(1), body.get(2));
+
+      Clause actual = parseClause(rule);
+
+      Assert.assertEquals("fn_shadow_rwufvo2", actual.body().get(0).predicate().baseName());
+      Assert.assertEquals("fn_concat", actual.body().get(1).predicate().baseName());
+      Assert.assertEquals("fn_is", actual.body().get(2).predicate().baseName());
+    }
+  }
 }

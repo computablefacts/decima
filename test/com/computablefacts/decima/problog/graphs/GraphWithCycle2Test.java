@@ -49,7 +49,7 @@ public class GraphWithCycle2Test {
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
 
     // Verify subgoals
-    Assert.assertEquals(12, solver.nbSubgoals());
+    Assert.assertEquals(10, solver.nbSubgoals());
 
     // Verify proofs
     Assert.assertEquals(3, proofs.size());

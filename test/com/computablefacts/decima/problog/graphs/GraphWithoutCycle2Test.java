@@ -48,7 +48,7 @@ public class GraphWithoutCycle2Test {
     Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
 
     // Verify subgoals
-    Assert.assertEquals(15, solver.nbSubgoals());
+    Assert.assertEquals(12, solver.nbSubgoals());
 
     // Verify answers
     Assert.assertEquals(4, proofs1.size());

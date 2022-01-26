@@ -2,6 +2,7 @@ package com.computablefacts.decima.problog;
 
 import static com.computablefacts.decima.problog.Parser.parseClause;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -97,19 +98,19 @@ final public class TestUtils {
     return answers.stream().anyMatch(c -> c.head().isRelevant(fact));
   }
 
-  public static void permute(List<Literal> a, List<List<Literal>> output) {
-    permute(a.toArray(new Literal[0]), a.size(), a.size(), output);
+  public static <T> void permute(List<T> a, List<List<T>> output) {
+    permute(a.toArray((T[]) Array.newInstance(a.get(0).getClass(), 0)), a.size(), a.size(), output);
   }
 
-  public static void permute(Literal[] a, List<List<Literal>> output) {
+  public static <T> void permute(T[] a, List<List<T>> output) {
     permute(a, a.length, a.length, output);
   }
 
-  private static void permute(Literal[] a, int size, int n, List<List<Literal>> output) {
+  private static <T> void permute(T[] a, int size, int n, List<List<T>> output) {
 
     // if size becomes 1 then prints the obtained permutation
     if (size == 1) {
-      List<Literal> list = new ArrayList<>();
+      List<T> list = new ArrayList<>();
       for (int i = 0; i < n; i++) {
         list.add(a[i]);
       }
@@ -121,14 +122,14 @@ final public class TestUtils {
 
       // if size is odd, swap 0th i.e (first) and (size-1)th i.e (last) element
       if (size % 2 == 1) {
-        Literal temp = a[0];
+        T temp = a[0];
         a[0] = a[size - 1];
         a[size - 1] = temp;
       }
 
       // If size is even, swap ith and (size-1)th i.e last element
       else {
-        Literal temp = a[i];
+        T temp = a[i];
         a[i] = a[size - 1];
         a[size - 1] = temp;
       }

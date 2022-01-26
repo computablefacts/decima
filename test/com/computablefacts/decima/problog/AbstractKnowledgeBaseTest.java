@@ -439,7 +439,7 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertTrue(
         rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("second(X) :- sixth(X)."))));
     Assert.assertTrue(rules.stream()
-        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fifth(X), second(X)."))));
+        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- second(X), fifth(X)."))));
   }
 
   @Test
@@ -461,7 +461,7 @@ public class AbstractKnowledgeBaseTest {
     Assert.assertTrue(
         rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("third(X) :- sixth(X)."))));
     Assert.assertTrue(rules.stream()
-        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fifth(X), fourth(X)."))));
+        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fourth(X), fifth(X)."))));
     Assert.assertTrue(rules.stream()
         .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fourth(X), sixth(X)."))));
   }
