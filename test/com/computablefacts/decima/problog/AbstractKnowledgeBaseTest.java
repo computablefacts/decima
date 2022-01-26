@@ -402,7 +402,7 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testCompactSimple() {
+  public void testCompactSimpleRule() {
 
     AbstractKnowledgeBase kb = kb();
     kb.azzert(parseClause("first(X) :- second(X), third(X)."));
@@ -421,7 +421,7 @@ public class AbstractKnowledgeBaseTest {
   }
 
   @Test
-  public void testCompactComplex() {
+  public void testCompactComplexRule() {
 
     AbstractKnowledgeBase kb = kb();
     kb.azzert(parseClause("first(X) :- second(X), third(X)."));
@@ -440,6 +440,30 @@ public class AbstractKnowledgeBaseTest {
         rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("second(X) :- sixth(X)."))));
     Assert.assertTrue(rules.stream()
         .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fifth(X), second(X)."))));
+  }
+
+  @Test
+  public void testCompactSimpleRuleWithTwoBodies() {
+
+    AbstractKnowledgeBase kb = kb();
+    kb.azzert(parseClause("first(X) :- second(X), third(X)."));
+    kb.azzert(parseClause("second(X) :- fourth(X)."));
+    kb.azzert(parseClause("third(X) :- fifth(X)."));
+    kb.azzert(parseClause("third(X) :- sixth(X)."));
+
+    List<Clause> rules = kb.compact();
+
+    Assert.assertEquals(5, rules.size());
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("second(X) :- fourth(X)."))));
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("third(X) :- fifth(X)."))));
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("third(X) :- sixth(X)."))));
+    Assert.assertTrue(rules.stream()
+        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fifth(X), fourth(X)."))));
+    Assert.assertTrue(rules.stream()
+        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fourth(X), sixth(X)."))));
   }
 
   private InMemoryKnowledgeBase kb() {
