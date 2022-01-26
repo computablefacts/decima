@@ -884,9 +884,6 @@ public final class Parser {
       boolean p1IsPrimitive = p1.predicate().isPrimitive();
       boolean p2IsPrimitive = p2.predicate().isPrimitive();
 
-      boolean p1IsShadow = p1.predicate().baseName().startsWith("fn_shadow_");
-      boolean p2IsShadow = p2.predicate().baseName().startsWith("fn_shadow_");
-
       boolean p1IsMaterialization = p1.predicate().baseName().endsWith("_materialize_facts");
       boolean p2IsMaterialization = p2.predicate().baseName().endsWith("_materialize_facts");
 
@@ -894,6 +891,21 @@ public final class Parser {
 
         Preconditions.checkState(!p1IsNegated, "primitive cannot be negated : %s", p1.predicate());
         Preconditions.checkState(!p2IsNegated, "primitive cannot be negated : %s", p2.predicate());
+
+        // If both p1 and p2 are materializations, the order does not matter
+        if (p1IsMaterialization && p2IsMaterialization) {
+          return 0;
+        }
+
+        // If p1 is a materialization (but not p2) prioritize it
+        if (p1IsMaterialization) {
+          return -1;
+        }
+
+        // If p2 is a materialization (but not p2) prioritize it
+        if (p2IsMaterialization) {
+          return 1;
+        }
 
         boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
             || p1.predicate().baseName().equals("fn_is_false");
@@ -915,16 +927,13 @@ public final class Parser {
             "cyclic dependency between primitives '%s' and '%s' detected", p1.predicate(),
             p2.predicate());
 
-        if (p1DependsOnP2) { // p2 produces an output used as a parameter by p1
+        // Prioritize p2 when it produces an output used as a parameter of p1
+        if (p1DependsOnP2) {
           return 1;
         }
-        if (p2DependsOnP1) { // p1 produces an output used as a parameter by p2
-          return -1;
-        }
-        if (p1IsShadow && p2IsMaterialization) { // *_materialize_facts before fn_shadow_*
-          return 1;
-        }
-        if (p2IsShadow && p1IsMaterialization) { // *_materialize_facts before fn_shadow_*
+
+        // Prioritize p1 when it produces an output used as a parameter of p2
+        if (p2DependsOnP1) {
           return -1;
         }
         return 0 /* order doesn't matter */;
@@ -946,9 +955,18 @@ public final class Parser {
             "cyclic dependency between primitive '%s' and rule '%s' detected", p1.predicate(),
             p2.predicate());
 
-        // -1 -> prioritize function when its output is used by a negated rule
-        // +1 -> otherwise, prioritize rules and facts over functions
-        return p2DependsOnP1 && p2IsNegated ? -1 : 1;
+        // Prioritize function when its output is used by a negated rule
+        if (p2DependsOnP1 && p2IsNegated) {
+          return -1;
+        }
+
+        // Prioritize function when it is a materialization
+        if (p1IsMaterialization) {
+          return -1;
+        }
+
+        // Otherwise, prioritize rules and facts over functions
+        return 1;
       }
       if (p2IsPrimitive) {
 
@@ -967,9 +985,18 @@ public final class Parser {
             "cyclic dependency between primitive '%s' and rule '%s' detected", p2.predicate(),
             p1.predicate());
 
-        // +1 -> prioritize function when its output is used by a negated rule
-        // -1 -> otherwise, prioritize rules and facts over functions
-        return p1DependsOnP2 && p1IsNegated ? 1 : -1;
+        // Prioritize function when its output is used by a negated rule
+        if (p1DependsOnP2 && p1IsNegated) {
+          return 1;
+        }
+
+        // Prioritize function when it is a materialization
+        if (p2IsMaterialization) {
+          return 1;
+        }
+
+        // Otherwise, prioritize rules and facts over functions
+        return -1;
       }
       if (!p1IsNegated && !p2IsNegated) {
         return 0;

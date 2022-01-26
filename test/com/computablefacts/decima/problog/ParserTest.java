@@ -394,4 +394,35 @@ public class ParserTest {
       Assert.assertEquals("fn_is", actual.body().get(4).predicate().baseName());
     }
   }
+
+  @Test
+  public void testComparatorWithMaterialization2() {
+
+    List<String> literals = Lists.newArrayList("convertir_identifiant_adresse_en_uex(V5752, V5753)",
+        "fn_shadow_ob9ahdy(V5754, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753)",
+        "fn_shadow_4jf0yxn(V5758, V5753)", "fn_is_true(V5758)",
+        "fn_shadow_pgo8nt3(V5759, V5756, V5755, V5756, V5755)",
+        "fn_clickhouse_materialize_facts(\"https¤u003a//localhost/facts/bncltp/convertir_uex_en_identifiant_client\", \"xxx\", \"yyy\", \"TMP_UEX\", V5754, \"NOM_OU_RAISON_SOCIALE\", V5755, \"COMPLEMENT_RAISON_SOCIALE\", V5756, \"IDENTIFIANT_CLIENT\", V5757, \"SELECT¤u000d  tmp_bnuexp.CODUEX AS TMP_UEX¤u002c¤u000d  tmp_bnuexp.CODCLI AS IDENTIFIANT_CLIENT¤u002c¤u000d  tmp_bncltp.OCLIEN AS NOM_OU_RAISON_SOCIALE¤u002c¤u000d  tmp_bncltp.OCLICP AS COMPLEMENT_RAISON_SOCIALE¤u000dFROM¤u000d  tmp_bnuexp¤u000d  INNER JOIN tmp_bncltp ON tmp_bncltp.CODCLI ¤u003d tmp_bnuexp.CODCLI¤u000dWHERE 1 ¤u003d 1¤u000d  {TMP_UEX} AND tmp_bnuexp.CODUEX ¤u003d '¤u003aTMP_UEX'¤u000d  {NOM_OU_RAISON_SOCIALE} AND tmp_bncltp.OCLIEN ¤u003d '¤u003aNOM_OU_RAISON_SOCIALE'¤u000d  {COMPLEMENT_RAISON_SOCIALE} AND tmp_bncltp.OCLICP ¤u003d '¤u003aCOMPLEMENT_RAISON_SOCIALE'¤u000d  {IDENTIFIANT_CLIENT} AND tmp_bncltp.CODCLI ¤u003d '¤u003aIDENTIFIANT_CLIENT'\")");
+
+    List<List<String>> permutations = new ArrayList<>();
+    permute(literals, permutations);
+
+    for (List<String> body : permutations) {
+
+      String rule = String.format(
+          "convertir_identifiant_adresse_en_uex_et_client_rapide(V5752, V5753, V5757, V5755) :- %s, %s, %s, %s, %s, %s.",
+          body.get(0), body.get(1), body.get(2), body.get(3), body.get(4), body.get(5));
+
+      Clause actual = parseClause(rule);
+
+      System.out.println(actual);
+
+      Assert.assertEquals("fn_clickhouse_materialize_facts",
+          actual.body().get(0).predicate().baseName());
+      Assert.assertEquals("convertir_identifiant_adresse_en_uex",
+          actual.body().get(1).predicate().baseName());
+      Assert.assertEquals("fn_shadow_",
+          actual.body().get(2).predicate().baseName().substring(0, "fn_shadow_".length()));
+    }
+  }
 }
