@@ -401,6 +401,47 @@ public class AbstractKnowledgeBaseTest {
         "mes_fichiers_favoris(\"/var/sftp/file3.pdf\", \"lhs := rhs — function etc. definition\").")));
   }
 
+  @Test
+  public void testCompactSimple() {
+
+    AbstractKnowledgeBase kb = kb();
+    kb.azzert(parseClause("first(X) :- second(X), third(X)."));
+    kb.azzert(parseClause("second(X) :- fourth(X)."));
+    kb.azzert(parseClause("third(X) :- fifth(X)."));
+
+    List<Clause> rules = kb.compact();
+
+    Assert.assertEquals(3, rules.size());
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("second(X) :- fourth(X)."))));
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("third(X) :- fifth(X)."))));
+    Assert.assertTrue(rules.stream()
+        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fourth(X), fifth(X)."))));
+  }
+
+  @Test
+  public void testCompactComplex() {
+
+    AbstractKnowledgeBase kb = kb();
+    kb.azzert(parseClause("first(X) :- second(X), third(X)."));
+    kb.azzert(parseClause("second(X) :- fourth(X)."));
+    kb.azzert(parseClause("third(X) :- fifth(X)."));
+    kb.azzert(parseClause("fourth(X) :- sixth(X)."));
+
+    List<Clause> rules = kb.compact();
+
+    Assert.assertEquals(4, rules.size());
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("fourth(X) :- sixth(X)."))));
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("third(X) :- fifth(X)."))));
+    Assert.assertTrue(
+        rules.stream().anyMatch(rule -> rule.isRelevant(parseClause("second(X) :- sixth(X)."))));
+    Assert.assertTrue(rules.stream()
+        .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fifth(X), second(X)."))));
+  }
+
   private InMemoryKnowledgeBase kb() {
     return new InMemoryKnowledgeBase();
   }

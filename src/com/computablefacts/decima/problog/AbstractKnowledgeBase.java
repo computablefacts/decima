@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.computablefacts.asterix.RandomString;
+import com.computablefacts.asterix.View;
 import com.computablefacts.asterix.codecs.Base64Codec;
 import com.computablefacts.asterix.codecs.JsonCodec;
 import com.computablefacts.decima.Builder;
@@ -32,9 +35,11 @@ import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
 import com.computablefacts.nona.types.BoxedType;
 import com.computablefacts.nona.types.Csv;
 import com.computablefacts.nona.types.Json;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
@@ -169,6 +174,60 @@ public abstract class AbstractKnowledgeBase {
 
   public long nbRules() {
     return Iterators.size(rules());
+  }
+
+  @Beta
+  public List<Clause> compact() {
+
+    // Find all rules that do not reference another rule (if any)
+    Map.Entry<List<Clause>, List<Clause>> rules =
+        View.of(rules()).divide(rule -> rule.body().stream().noneMatch(literal -> View.of(rules())
+            .map(Clause::head).anyMatch(head -> head.isRelevant(literal))));
+    List<Clause> dontReferenceOtherRules = rules.getKey();
+    List<Clause> referenceOtherRules = rules.getValue();
+
+    // Inline all rules that are not referenced by another rule
+    List<Clause> newRules = referenceOtherRules.stream().flatMap(rule -> {
+
+      @Var
+      List<Clause> list = Lists.newArrayList(rule);
+
+      while (true) {
+
+        List<Clause> newList = new ArrayList<>();
+
+        for (int i = 0; newList.isEmpty() && i < list.size(); i++) {
+
+          Clause clause = list.get(i);
+
+          for (int j = 0; newList.isEmpty() && j < clause.body().size(); j++) {
+
+            int pos = j;
+            Literal literal = clause.body().get(pos);
+
+            newList.addAll(dontReferenceOtherRules.stream()
+                .filter(r -> r.head().isRelevant(literal)).map(or -> {
+
+                  Clause referencingRule = clause.rename();
+                  Clause referencedRule = or.rename();
+                  Clause newClause = mergeRules(referencingRule, referencedRule, pos);
+
+                  return reorderBodyLiterals(newClause);
+                }).collect(Collectors.toList()));
+          }
+        }
+        if (newList.isEmpty()) {
+          break;
+        }
+        list = newList;
+      }
+      return list.stream();
+    }).collect(Collectors.toList());
+
+    System.out.println(newRules);
+
+    newRules.addAll(dontReferenceOtherRules);
+    return newRules;
   }
 
   /**
@@ -509,5 +568,34 @@ public abstract class AbstractKnowledgeBase {
     Clause newRule = new Clause(newHead, newBody);
 
     return new Pair<>(newRule, newFact);
+  }
+
+  @Beta
+  protected Clause mergeRules(Clause referencingRule, Clause referencedRule, int pos) {
+
+    Preconditions.checkNotNull(referencingRule, "referencingRule should not be null");
+    Preconditions.checkNotNull(referencedRule, "referencedRule should not be null");
+    Preconditions.checkArgument(pos >= 0 && pos < referencingRule.body().size(),
+        "pos must be such as 0 <= pos < %d", referencingRule.body().size());
+
+    Map<com.computablefacts.decima.problog.Var, AbstractTerm> env =
+        referencedRule.head().unify(referencingRule.body().get(pos));
+
+    Preconditions.checkState(env != null, "env should not be null");
+
+    Clause newReferencedRule = referencedRule.subst(env);
+    Clause newReferencingRule = referencingRule.subst(env);
+
+    Literal newHead = newReferencingRule.head();
+    List<Literal> newBody = new ArrayList<>();
+
+    for (int k = 0; k < newReferencingRule.body().size(); k++) {
+      if (k != pos) {
+        newBody.add(newReferencingRule.body().get(k));
+      } else {
+        newBody.addAll(newReferencedRule.body());
+      }
+    }
+    return new Clause(newHead, newBody);
   }
 }
