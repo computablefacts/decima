@@ -417,12 +417,39 @@ public class ParserTest {
 
       System.out.println(actual);
 
-      Assert.assertEquals("fn_clickhouse_materialize_facts",
-          actual.body().get(0).predicate().baseName());
       Assert.assertEquals("convertir_identifiant_adresse_en_uex",
+          actual.body().get(0).predicate().baseName());
+      Assert.assertEquals("fn_clickhouse_materialize_facts",
           actual.body().get(1).predicate().baseName());
       Assert.assertEquals("fn_shadow_",
           actual.body().get(2).predicate().baseName().substring(0, "fn_shadow_".length()));
+    }
+  }
+
+  @Test
+  public void testComparatorWithMaterialization3() {
+
+    List<String> literals = Lists.newArrayList(
+        "fn_clickhouse_materialize_facts(\"https://localhost/facts/tlgt-tot/tlgt_tot\", \"{{ client }}\", \"{{ env }}\", \"TMP_UEX\", TMP_UEX, \"BATIMENT\", BATIMENT, \"ESCALIER\", ESCALIER, \"ETAGE\", ETAGE, \"POSITION\", POSITION, \"EMPLACEMENT\", EMPLACEMENT, \"NOM_OCCUPANT\", NOM_OCCUPANT, \"DATE_ENTREE_OCCUPANT\", DATE_ENTREE_OCCUPANT, \"NOM_PROPRIETAIRE\", NOM_PROPRIETAIRE, \"SELECT\\n  tmp_bnuexp.CODUEX AS TMP_UEX, \\n  tmp_tlgt_tot.NBATIM AS BATIMENT, \\n tmp_tlgt_tot.NESCAL AS ESCALIER, \\n tmp_tlgt_tot.NETAGE AS ETAGE, \\n  tmp_tlgt_tot.NPOSIT AS POSITION, \\n tmp_tlgt_tot.TEMPLG AS EMPLACEMENT,\\n tmp_tlgt_tot.OOCCUP AS NOM_OCCUPANT, \\n tmp_tlgt_tot.DENTOC AS DATE_ENTREE_OCCUPANT,\\n proprio_chauffage.OPRLGT AS NOM_PROPRIETAIRE\\nFROM tmp_bnuexp\\nINNER JOIN tmp_tlgt_tot\\n ON tmp_tlgt_tot.CAGEXP = tmp_bnuexp.CAGEXP\\n  AND tmp_tlgt_tot.NUEXPL = tmp_bnuexp.NUEXPL\\nLEFT JOIN proprio_chauffage\\n ON proprio_chauffage.CAGEXP = tmp_tlgt_tot.CAGEXP\\n AND proprio_chauffage.NIDLGT = tmp_tlgt_tot.NIDLGT\\n{NOM_PROPRIETAIRE} AND proprio_chauffage.OPRLGT = ':NOM_PROPRIETAIRE'\\nWHERE 1=1\\n{TMP_UEX} AND tmp_bnuexp.CODUEX = ':TMP_UEX'\\n{BATIMENT} AND tmp_tlgt_tot.NBATIM = ':BATIMENT'\\n{ESCALIER} AND tmp_tlgt_tot.NESCAL = ':ESCALIER'\\n{ETAGE} AND tmp_tlgt_tot.NETAGE = ':ETAGE'\\n{POSITION} AND tmp_tlgt_tot.NPOSIT = ':POSITION'\\n{EMPLACEMENT} AND tmp_tlgt_tot.TEMPLG = ':EMPLACEMENT'\")",
+        "denormaliser_uex(UEX, TMP_UEX)", "fn_is(ENV, \"HEAT\")");
+
+    List<List<String>> permutations = new ArrayList<>();
+    permute(literals, permutations);
+
+    for (List<String> body : permutations) {
+
+      String rule = String.format(
+          "convertir_uex_en_logement_rapide(UEX, BATIMENT, ESCALIER, ETAGE, POSITION, EMPLACEMENT, NOM_PROPRIETAIRE, NOM_OCCUPANT, DATE_ENTREE_OCCUPANT, ENV) :- %s, %s, %s.",
+          body.get(0), body.get(1), body.get(2));
+
+      Clause actual = parseClause(rule);
+
+      System.out.println(actual);
+
+      Assert.assertEquals("denormaliser_uex", actual.body().get(0).predicate().baseName());
+      Assert.assertEquals("fn_clickhouse_materialize_facts",
+          actual.body().get(1).predicate().baseName());
+      Assert.assertEquals("fn_is", actual.body().get(2).predicate().baseName());
     }
   }
 }

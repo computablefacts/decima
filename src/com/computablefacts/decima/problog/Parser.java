@@ -960,11 +960,6 @@ public final class Parser {
           return -1;
         }
 
-        // Prioritize function when it is a materialization
-        if (p1IsMaterialization) {
-          return -1;
-        }
-
         // Otherwise, prioritize rules and facts over functions
         return 1;
       }
@@ -987,11 +982,6 @@ public final class Parser {
 
         // Prioritize function when its output is used by a negated rule
         if (p1DependsOnP2 && p1IsNegated) {
-          return 1;
-        }
-
-        // Prioritize function when it is a materialization
-        if (p2IsMaterialization) {
           return 1;
         }
 
