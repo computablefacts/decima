@@ -224,8 +224,6 @@ public abstract class AbstractKnowledgeBase {
       return list.stream();
     }).collect(Collectors.toList());
 
-    System.out.println(newRules);
-
     newRules.addAll(dontReferenceOtherRules);
     return newRules;
   }
