@@ -1,7 +1,9 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
+
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,8 +13,6 @@ import com.computablefacts.nona.types.BoxedType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -24,13 +24,13 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Literal {
 
-  private final String id_;
-  private final String tag_;
   private final Predicate predicate_;
   private final List<AbstractTerm> terms_;
   private final List<Literal> functions_; // a sequence of functions to execute
   private final BigDecimal probability_;
 
+  private String id_ = null;
+  private String tag_ = null;
   private Boolean isGrounded_ = null;
   private Boolean isSemiGrounded_ = null;
 
@@ -101,21 +101,6 @@ final public class Literal {
     predicate_ = new Predicate(predicate, terms.size());
     functions_ = new ArrayList<>(functions);
     terms_ = new ArrayList<>(terms);
-
-    Hasher idHasher = Hashing.murmur3_128().newHasher();
-    Hasher tagHasher = Hashing.murmur3_128().newHasher();
-
-    idHasher.putString(probability().toString(), StandardCharsets.UTF_8);
-    idHasher.putString(predicate_.id(), StandardCharsets.UTF_8);
-    tagHasher.putString(predicate_.id(), StandardCharsets.UTF_8);
-
-    for (AbstractTerm term : terms_) {
-      idHasher.putString(term.id(), StandardCharsets.UTF_8);
-      tagHasher.putString(term.isConst() ? term.id() : "v", StandardCharsets.UTF_8);
-    }
-
-    id_ = idHasher.hash().toString();
-    tag_ = tagHasher.hash().toString();
   }
 
   @Override
@@ -127,12 +112,12 @@ final public class Literal {
       return false;
     }
     Literal literal = (Literal) obj;
-    return probability_.compareTo(literal.probability_) == 0 && tag_.equals(literal.tag_);
+    return probability_.compareTo(literal.probability_) == 0 && tag().equals(literal.tag());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(probability(), tag_);
+    return Objects.hash(probability(), tag());
   }
 
   @Override
@@ -204,6 +189,15 @@ final public class Literal {
    * @return an identifier.
    */
   public String id() {
+    if (id_ == null) {
+
+      List<String> list = new ArrayList<>(terms_.size() + 1 /* probability */ + 1 /* predicate */);
+      list.add(probability().toString());
+      list.add(predicate_.id());
+      list.addAll(terms_.stream().map(AbstractTerm::id).collect(Collectors.toList()));
+
+      id_ = Joiner.on(':').join(list);
+    }
     return id_;
   }
 
@@ -216,6 +210,14 @@ final public class Literal {
    * @return a tag.
    */
   public String tag() {
+    if (tag_ == null) {
+
+      List<String> list = new ArrayList<>(terms_.size() + 1 /* predicate */);
+      list.add(predicate_.id());
+      list.addAll(terms_.stream().map(AbstractTerm::tag).collect(Collectors.toList()));
+
+      tag_ = Joiner.on(':').join(list);
+    }
     return tag_;
   }
 
@@ -334,7 +336,7 @@ final public class Literal {
     for (AbstractTerm term : terms_) {
       if (!term.isConst()) {
         if (!e.containsKey(term)) {
-          e.put((Var) term, new Var(term.isWildcard()));
+          e.put((Var) term, newVar(term.isWildcard()));
         }
       }
     }
@@ -431,7 +433,7 @@ final public class Literal {
         String bool = ((Const) terms_.get(0)).value().toString();
 
         return Boolean.parseBoolean(bool)
-            ? Lists.newArrayList(new Literal(probability_, predicate_.name(), new Const(true)))
+            ? Lists.newArrayList(new Literal(probability_, predicate_.name(), newConst(true)))
                 .iterator()
             : null;
       }
@@ -443,7 +445,7 @@ final public class Literal {
         String bool = ((Const) terms_.get(0)).value().toString();
 
         return !Boolean.parseBoolean(bool) ? Lists
-            .newArrayList(new Literal(probability_, predicate_.name(), new Const(false))).iterator()
+            .newArrayList(new Literal(probability_, predicate_.name(), newConst(false))).iterator()
             : null;
       }
 
@@ -482,8 +484,10 @@ final public class Literal {
     List<Object> parameters = functionParameters();
     parameters.add(0, result.value());
 
-    return Lists.newArrayList(new Literal(probability_, predicate_.name(),
-        parameters.stream().map(Const::new).collect(Collectors.toList()))).iterator();
+    return Lists
+        .newArrayList(new Literal(probability_, predicate_.name(),
+            parameters.stream().map(AbstractTerm::newConst).collect(Collectors.toList())))
+        .iterator();
   }
 
   private boolean isValidPrimitive() {

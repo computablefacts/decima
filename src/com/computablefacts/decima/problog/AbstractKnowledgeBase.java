@@ -1,5 +1,6 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
 
 import java.io.BufferedReader;
@@ -502,14 +503,14 @@ public abstract class AbstractKnowledgeBase {
             facts.addAll(((List<Map<String, Object>>) json.get("facts")).stream().map(fact -> {
 
               List<AbstractTerm> terms = new ArrayList<>();
-              terms.add(new Const(parameters.get(0)));
+              terms.add(newConst(parameters.get(0)));
 
               for (int i = 1; i < parameters.size(); i = i + 3) {
                 String name = parameters.get(i).asString();
                 String filter = parameters.get(i + 1).asString();
-                terms.add(new Const(name));
-                terms.add(new Const(filter));
-                terms.add(new Const(fact.get(name)));
+                terms.add(newConst(name));
+                terms.add(newConst(filter));
+                terms.add(newConst(fact.get(name)));
               }
               return new Literal("fn_" + name().toLowerCase(), terms);
             }).collect(Collectors.toList()));
@@ -556,13 +557,13 @@ public abstract class AbstractKnowledgeBase {
 
     // Create fact
     String newPredicate = "proba_" + randomString_.nextString().toLowerCase();
-    Literal newLiteral = new Literal(probability, newPredicate, new Const(true));
+    Literal newLiteral = new Literal(probability, newPredicate, newConst(true));
     Clause newFact = new Clause(newLiteral);
 
     // Rewrite clause
     Literal newHead = new Literal(predicate, clause.head().terms());
     List<Literal> newBody = new ArrayList<>(clause.body());
-    newBody.add(new Literal(newPredicate, new Const(true)));
+    newBody.add(new Literal(newPredicate, newConst(true)));
     Clause newRule = new Clause(newHead, newBody);
 
     return new Pair<>(newRule, newFact);

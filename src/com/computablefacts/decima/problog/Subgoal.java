@@ -71,7 +71,7 @@ final public class Subgoal {
   }
 
   @Generated
-  Set<Clause> rules() {
+  public Set<Clause> rules() {
     return Sets.newHashSet(rules_);
   }
 

@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
 import static com.computablefacts.decima.problog.TestUtils.permute;
@@ -38,7 +40,7 @@ public class ParserTest {
   @Test
   public void testParseFact() {
 
-    Clause fact0 = new Clause(new Literal("edge", new Const("a"), new Const(0), new Const(1.1)));
+    Clause fact0 = new Clause(new Literal("edge", newConst("a"), newConst(0), newConst(1.1)));
     Clause fact1 = parseClause("edge(\"a\", 0, 1.1).");
     Clause fact2 = parseClause("edge(a, \"0\", \"1.1\").");
 
@@ -49,7 +51,7 @@ public class ParserTest {
   @Test
   public void testParseNegatedFact() {
 
-    Clause fact0 = new Clause(new Literal("~edge", new Const("a"), new Const("b")));
+    Clause fact0 = new Clause(new Literal("~edge", newConst("a"), newConst("b")));
     Clause fact1 = parseClause("~edge(a, b).");
     Clause fact2 = parseClause("\\+ edge(a, b).");
 
@@ -60,8 +62,8 @@ public class ParserTest {
   @Test
   public void testParseRule() {
 
-    Var x = new Var();
-    Var y = new Var();
+    Var x = newVar();
+    Var y = newVar();
 
     Literal edgeXY = new Literal("edge", x, y);
     Literal nodeX = new Literal("node", x);
@@ -76,8 +78,8 @@ public class ParserTest {
   @Test
   public void testParseRuleWithNegatedLiteralsInBody() {
 
-    Var x = new Var();
-    Var y = new Var();
+    Var x = newVar();
+    Var y = newVar();
 
     Literal edgeXY = new Literal("not_edge", x, y);
     Literal nodeX = new Literal("~node", x);
@@ -160,11 +162,11 @@ public class ParserTest {
 
     Clause rule = parseClause("is_valid(X, Y) :- fn_is_true(fn_and(fn_test(X), fn_test(Y))).");
 
-    Assert.assertTrue(rule.head().isRelevant(new Literal("is_valid", new Var(), new Var())));
+    Assert.assertTrue(rule.head().isRelevant(new Literal("is_valid", newVar(), newVar())));
     Assert.assertEquals(2, rule.body().size());
     Assert.assertTrue(rule.body().get(0).predicate().name().startsWith("fn_shadow_"));
     Assert.assertEquals(3, rule.body().get(0).predicate().arity());
-    Assert.assertTrue(rule.body().get(1).isRelevant(new Literal("fn_is_true", new Var())));
+    Assert.assertTrue(rule.body().get(1).isRelevant(new Literal("fn_is_true", newVar())));
   }
 
   @Test
@@ -219,7 +221,7 @@ public class ParserTest {
 
     Clause query = parseClause("edge(X, Y)?");
 
-    Assert.assertEquals(new Literal("edge", new Var(), new Var()), query.head());
+    Assert.assertEquals(new Literal("edge", newVar(), newVar()), query.head());
   }
 
   @Test
@@ -227,7 +229,7 @@ public class ParserTest {
 
     Literal query = Parser.parseQuery("edge(X, Y)?");
 
-    Assert.assertEquals(new Literal("edge", new Var(), new Var()), query);
+    Assert.assertEquals(new Literal("edge", newVar(), newVar()), query);
   }
 
   @Test
@@ -236,9 +238,9 @@ public class ParserTest {
     Set<Literal> queries = Parser.parseQueries("edge(X, Y)?\nedge(a, Y)?\nedge(X, b)?");
 
     Assert.assertEquals(3, queries.size());
-    Assert.assertTrue(queries.contains(new Literal("edge", new Var(), new Var())));
-    Assert.assertTrue(queries.contains(new Literal("edge", new Const("a"), new Var())));
-    Assert.assertTrue(queries.contains(new Literal("edge", new Var(), new Const("b"))));
+    Assert.assertTrue(queries.contains(new Literal("edge", newVar(), newVar())));
+    Assert.assertTrue(queries.contains(new Literal("edge", newConst("a"), newVar())));
+    Assert.assertTrue(queries.contains(new Literal("edge", newVar(), newConst("b"))));
   }
 
   @Test
@@ -264,14 +266,14 @@ public class ParserTest {
   @Test
   public void testParseRegExp() {
 
-    Var input = new Var();
-    Var output = new Var();
+    Var input = newVar();
+    Var output = newVar();
     Literal head = new Literal("match", input, output);
 
-    Var tmp = new Var();
+    Var tmp = newVar();
     List<Literal> body = Lists.newArrayList(
         new Literal("fn_match_regex", tmp, input,
-            new Const("(?m:^OPEN\\\\s+[a-zA-Z0-9]+\\\\s+BUCKET:\\\\s+.*$)")),
+            newConst("(?m:^OPEN\\\\s+[a-zA-Z0-9]+\\\\s+BUCKET:\\\\s+.*$)")),
         new Literal("fn_to_text", output, tmp));
 
     Clause clause1 = new Clause(head, body);
@@ -284,9 +286,9 @@ public class ParserTest {
   @Test
   public void testFunctionOutputComputedBeforeUsageInFunction() {
 
-    Var x = new Var();
-    Var y = new Var();
-    Var u = new Var();
+    Var x = newVar();
+    Var y = newVar();
+    Var u = newVar();
 
     Literal fnIsTrue = new Literal("fn_is_true", u);
     Literal fnLt = new Literal("fn_lt", u, x, y);
@@ -313,9 +315,9 @@ public class ParserTest {
   @Test
   public void testFunctionOutputComputedBeforeUsageInNegatedRule() {
 
-    Var x = new Var();
-    Var y = new Var();
-    Var u = new Var();
+    Var x = newVar();
+    Var y = newVar();
+    Var u = newVar();
 
     Literal isFalse = new Literal("~is_false", u);
     Literal fnLt = new Literal("fn_lt", u, x, y);

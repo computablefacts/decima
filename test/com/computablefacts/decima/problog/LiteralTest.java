@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 
 import java.util.HashMap;
@@ -15,34 +17,34 @@ public class LiteralTest {
   public void testLiteral() {
 
     Predicate predicate = new Predicate("edge", 2);
-    Literal literal = new Literal("edge", new Const("a"), new Const("b"));
+    Literal literal = new Literal("edge", newConst("a"), newConst("b"));
 
     Assert.assertTrue(literal.isGrounded());
     Assert.assertEquals(predicate, literal.predicate());
 
     Assert.assertEquals(2, literal.terms().size());
-    Assert.assertTrue(literal.hasTerm(new Const("a")));
-    Assert.assertTrue(literal.hasTerm(new Const("b")));
+    Assert.assertTrue(literal.hasTerm(newConst("a")));
+    Assert.assertTrue(literal.hasTerm(newConst("b")));
   }
 
   @Test
   public void testNegatedLiteral() {
 
     Predicate predicate = new Predicate("~edge", 2);
-    Literal literal = new Literal("~edge", new Const("a"), new Const("b"));
+    Literal literal = new Literal("~edge", newConst("a"), newConst("b"));
 
     Assert.assertTrue(literal.isGrounded());
     Assert.assertEquals(predicate, literal.predicate());
 
     Assert.assertEquals(2, literal.terms().size());
-    Assert.assertTrue(literal.hasTerm(new Const("a")));
-    Assert.assertTrue(literal.hasTerm(new Const("b")));
+    Assert.assertTrue(literal.hasTerm(newConst("a")));
+    Assert.assertTrue(literal.hasTerm(newConst("b")));
   }
 
   @Test
   public void testIsSemiGroundedWithConstAndWildcard() {
 
-    Literal literal = new Literal("edge", new Const("a"), new Var(true));
+    Literal literal = new Literal("edge", newConst("a"), newVar(true));
 
     Assert.assertFalse(literal.isGrounded());
     Assert.assertTrue(literal.isSemiGrounded());
@@ -51,7 +53,7 @@ public class LiteralTest {
   @Test
   public void testIsSemiGroundedWithConstOnly() {
 
-    Literal literal = new Literal("edge", new Const("a"), new Const("b"));
+    Literal literal = new Literal("edge", newConst("a"), newConst("b"));
 
     Assert.assertTrue(literal.isGrounded());
     Assert.assertTrue(literal.isSemiGrounded());
@@ -60,7 +62,7 @@ public class LiteralTest {
   @Test
   public void testIsSemiGroundedWithWildcardOnly() {
 
-    Literal literal = new Literal("edge", new Var(true), new Var(true));
+    Literal literal = new Literal("edge", newVar(true), newVar(true));
 
     Assert.assertFalse(literal.isGrounded());
     Assert.assertTrue(literal.isSemiGrounded());
@@ -69,7 +71,7 @@ public class LiteralTest {
   @Test
   public void testIsNotSemiGrounded() {
 
-    Literal literal = new Literal("edge", new Const("a"), new Var());
+    Literal literal = new Literal("edge", newConst("a"), newVar());
 
     Assert.assertFalse(literal.isGrounded());
     Assert.assertFalse(literal.isSemiGrounded());
@@ -79,7 +81,7 @@ public class LiteralTest {
   public void testBuiltinLiteral() {
 
     Predicate predicate = new Predicate("fn_isOk", 2);
-    Literal literal = new Literal("fn_isOk", new Var(), new Var());
+    Literal literal = new Literal("fn_isOk", newVar(), newVar());
 
     Assert.assertFalse(literal.isGrounded());
     Assert.assertEquals(predicate, literal.predicate());
@@ -91,45 +93,44 @@ public class LiteralTest {
 
   @Test(expected = IllegalStateException.class)
   public void testNegatedBuiltinLiteral() {
-    Literal literal = new Literal("~fn_isOk", new Var(), new Var());
+    Literal literal = new Literal("~fn_isOk", newVar(), newVar());
   }
 
   @Test
   public void testFnEqBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_eq", new Var(), new Const(2), new Const(2));
+    Literal literal = new Literal("fn_eq", newVar(), newConst(2), newConst(2));
     Literal newLiteral = literal.execute(kb.definitions()).next();
 
-    Assert.assertEquals(new Literal("fn_eq", new Const(true), new Const(2), new Const(2)),
-        newLiteral);
+    Assert.assertEquals(new Literal("fn_eq", newConst(true), newConst(2), newConst(2)), newLiteral);
   }
 
   @Test
   public void testGroundedFnIsBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is", new Const(2), new Const(2));
+    Literal literal = new Literal("fn_is", newConst(2), newConst(2));
     Literal newLiteral = literal.execute(kb.definitions()).next();
 
-    Assert.assertEquals(new Literal("fn_is", new Const(2), new Const(2)), newLiteral);
+    Assert.assertEquals(new Literal("fn_is", newConst(2), newConst(2)), newLiteral);
   }
 
   @Test
   public void testNotGroundedFnIsBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is", new Var(), new Const(2));
+    Literal literal = new Literal("fn_is", newVar(), newConst(2));
     Literal newLiteral = literal.execute(kb.definitions()).next();
 
-    Assert.assertEquals(new Literal("fn_is", new Const(2), new Const(2)), newLiteral);
+    Assert.assertEquals(new Literal("fn_is", newConst(2), newConst(2)), newLiteral);
   }
 
   @Test
   public void testInvalidFnIsBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is", new Const(3), new Const(2));
+    Literal literal = new Literal("fn_is", newConst(3), newConst(2));
 
     Assert.assertNull(literal.execute(kb.definitions()));
   }
@@ -138,17 +139,17 @@ public class LiteralTest {
   public void testFnIsTrueOfTrueBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is_true", new Const(true));
+    Literal literal = new Literal("fn_is_true", newConst(true));
     Literal newLiteral = literal.execute(kb.definitions()).next();
 
-    Assert.assertEquals(new Literal("fn_is_true", new Const(true)), newLiteral);
+    Assert.assertEquals(new Literal("fn_is_true", newConst(true)), newLiteral);
   }
 
   @Test
   public void testFnIsTrueOfFalseBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is_true", new Const(false));
+    Literal literal = new Literal("fn_is_true", newConst(false));
 
     Assert.assertNull(literal.execute(kb.definitions()));
   }
@@ -157,17 +158,17 @@ public class LiteralTest {
   public void testFnIsFalseOfFalseBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is_false", new Const(false));
+    Literal literal = new Literal("fn_is_false", newConst(false));
     Literal newLiteral = literal.execute(kb.definitions()).next();
 
-    Assert.assertEquals(new Literal("fn_is_false", new Const(false)), newLiteral);
+    Assert.assertEquals(new Literal("fn_is_false", newConst(false)), newLiteral);
   }
 
   @Test
   public void testFnIsFalseOfTrueBuiltin() {
 
     InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
-    Literal literal = new Literal("fn_is_false", new Const(true));
+    Literal literal = new Literal("fn_is_false", newConst(true));
 
     Assert.assertNull(literal.execute(kb.definitions()));
   }
@@ -181,7 +182,7 @@ public class LiteralTest {
     Literal newLiteral = literal.execute(kb.definitions()).next();
 
     Assert.assertEquals(1, newLiteral.terms().size());
-    Assert.assertEquals(new Const(true), newLiteral.terms().get(0));
+    Assert.assertEquals(newConst(true), newLiteral.terms().get(0));
   }
 
   @Test
@@ -192,21 +193,21 @@ public class LiteralTest {
     Literal literal = clause.body().get(0);
 
     Map<Var, AbstractTerm> subst = new HashMap<>(); // substitute Y with 1
-    subst.put((Var) clause.head().terms().get(1), new Const("1"));
+    subst.put((Var) clause.head().terms().get(1), newConst("1"));
 
     Literal newLiteral = literal.subst(subst).execute(kb.definitions()).next();
 
     Assert.assertEquals(2, newLiteral.terms().size());
-    Assert.assertEquals(new Const(true), newLiteral.terms().get(0));
+    Assert.assertEquals(newConst(true), newLiteral.terms().get(0));
   }
 
   @Test
   public void testRelevantLiterals() {
 
-    Literal literal0 = new Literal("~edge", new Const("a"), new Const("b"));
-    Literal literal1 = new Literal("edge", new Const("a"), new Const("b"));
-    Literal literal2 = new Literal("edge", new Const("a"), new Var());
-    Literal literal3 = new Literal("edge", new Var(), new Const("c"));
+    Literal literal0 = new Literal("~edge", newConst("a"), newConst("b"));
+    Literal literal1 = new Literal("edge", newConst("a"), newConst("b"));
+    Literal literal2 = new Literal("edge", newConst("a"), newVar());
+    Literal literal3 = new Literal("edge", newVar(), newConst("c"));
 
     Assert.assertFalse(literal0.isRelevant(literal1));
     Assert.assertFalse(literal1.isRelevant(literal0));
@@ -236,14 +237,14 @@ public class LiteralTest {
   @Test
   public void testId() {
 
-    Literal literal0 = new Literal("~edge", new Const("a"), new Const("b"));
-    Literal literal1 = new Literal("edge", new Const("a"), new Const("b"));
-    Literal literal2 = new Literal("edge", new Const("a"), new Var());
-    Literal literal3 = new Literal("edge", new Var(), new Const("c"));
-    Literal literal4 = new Literal("edge", new Var(), new Const("b"));
+    Literal literal0 = new Literal("~edge", newConst("a"), newConst("b"));
+    Literal literal1 = new Literal("edge", newConst("a"), newConst("b"));
+    Literal literal2 = new Literal("edge", newConst("a"), newVar());
+    Literal literal3 = new Literal("edge", newVar(), newConst("c"));
+    Literal literal4 = new Literal("edge", newVar(), newConst("b"));
 
-    Assert.assertEquals("8e512fa8d8eb9b20e6a87168bac22044", literal0.id());
-    Assert.assertEquals("840d328d783bf98cb83d5afc7d812e04", literal1.id());
+    Assert.assertEquals("1:~edge/2:ca:cb", literal0.id());
+    Assert.assertEquals("1:edge/2:ca:cb", literal1.id());
 
     Assert.assertNotEquals(literal0.id(), literal1.id());
     Assert.assertNotEquals(literal0.id(), literal2.id());
@@ -263,17 +264,17 @@ public class LiteralTest {
   @Test
   public void testTag() {
 
-    Literal literal0 = new Literal("~edge", new Const("a"), new Const("b"));
-    Literal literal1 = new Literal("edge", new Const("a"), new Const("b"));
-    Literal literal2 = new Literal("edge", new Const("a"), new Var());
-    Literal literal3 = new Literal("edge", new Var(), new Const("c"));
-    Literal literal4 = new Literal("edge", new Var(), new Const("b"));
+    Literal literal0 = new Literal("~edge", newConst("a"), newConst("b"));
+    Literal literal1 = new Literal("edge", newConst("a"), newConst("b"));
+    Literal literal2 = new Literal("edge", newConst("a"), newVar());
+    Literal literal3 = new Literal("edge", newVar(), newConst("c"));
+    Literal literal4 = new Literal("edge", newVar(), newConst("b"));
 
-    Assert.assertEquals("1781a23e222e35bb3317615267af99f5", literal0.tag());
-    Assert.assertEquals("61be2f4a14e842aa51410ff5375ac6f5", literal1.tag());
-    Assert.assertEquals("96e942fc8936d55b8126f005977afeb5", literal2.tag());
-    Assert.assertEquals("1d57132c5b2a97831e0ac2a64ce487d3", literal3.tag());
-    Assert.assertEquals("8d9e87d442b8bfe108f266bd0086a601", literal4.tag());
+    Assert.assertEquals("~edge/2:ca:cb", literal0.tag());
+    Assert.assertEquals("edge/2:ca:cb", literal1.tag());
+    Assert.assertEquals("edge/2:ca:v", literal2.tag());
+    Assert.assertEquals("edge/2:v:cc", literal3.tag());
+    Assert.assertEquals("edge/2:v:cb", literal4.tag());
 
     Assert.assertNotEquals(literal0.tag(), literal1.tag());
     Assert.assertNotEquals(literal0.tag(), literal2.tag());
@@ -293,7 +294,7 @@ public class LiteralTest {
   @Test
   public void testToStringEncodesLf() {
 
-    Literal literal = new Literal("edge", new Const("a\nb"));
+    Literal literal = new Literal("edge", newConst("a\nb"));
 
     Assert.assertEquals("edge(\"a¤u000db\")", literal.toString());
   }
@@ -301,7 +302,7 @@ public class LiteralTest {
   @Test
   public void testToStringEncodesCrLf() {
 
-    Literal literal = new Literal("edge", new Const("a\r\nb"));
+    Literal literal = new Literal("edge", newConst("a\r\nb"));
 
     Assert.assertEquals("edge(\"a¤u000a¤u000db\")", literal.toString());
   }

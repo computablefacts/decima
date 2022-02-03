@@ -1,5 +1,6 @@
 package com.computablefacts.decima.problog.graphs;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.*;
 
@@ -26,7 +27,7 @@ public class SocialNetworkTest {
     // Query kb
     // smokes(angelika)?
     Solver solver = new Solver(kb(), true);
-    Literal query = new Literal("smokes", new Const("angelika"));
+    Literal query = new Literal("smokes", newConst("angelika"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -59,7 +60,7 @@ public class SocialNetworkTest {
     // Query kb
     // smokes(joris)?
     Solver solver = new Solver(kb(), true);
-    Literal query = new Literal("smokes", new Const("joris"));
+    Literal query = new Literal("smokes", newConst("joris"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);

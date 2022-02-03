@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.checkAnswers;
 import static com.computablefacts.decima.problog.TestUtils.checkProofs;
@@ -32,7 +34,7 @@ public class SolverTest {
     // Query kb
     // child(Z)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("child", new Var());
+    Literal query = new Literal("child", newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -67,7 +69,7 @@ public class SolverTest {
     // Query kb
     // son(Z, alice)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("son", new Var(), new Const("alice"));
+    Literal query = new Literal("son", newVar(), newConst("alice"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -102,7 +104,7 @@ public class SolverTest {
     // Query kb
     // human(Z)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("human", new Var());
+    Literal query = new Literal("human", newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -137,7 +139,7 @@ public class SolverTest {
     // Query kb
     // path(a, V)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("path", new Const("a"), new Var());
+    Literal query = new Literal("path", newConst("a"), newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -172,7 +174,7 @@ public class SolverTest {
     // Query kb
     // three(Z)?
     Solver solver = new Solver(kb, true);
-    Literal query1 = new Literal("three", new Var());
+    Literal query1 = new Literal("three", newVar());
     Set<Clause> proofs1 = solver.proofs(query1);
     Set<Clause> answers1 = Sets.newHashSet(solver.solve(query1));
     Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
@@ -189,7 +191,7 @@ public class SolverTest {
 
     // Query kb
     // four(Z)?
-    Literal query2 = new Literal("four", new Var());
+    Literal query2 = new Literal("four", newVar());
     Set<Clause> proofs2 = solver.proofs(query2);
     Set<Clause> answers2 = Sets.newHashSet(solver.solve(query2));
     Map<Literal, Trie<Literal>> tries2 = solver.tries(query2);
@@ -224,7 +226,7 @@ public class SolverTest {
     // Query kb
     // hasMoreItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasMoreItems", new Var(), new Var());
+    Literal query = new Literal("hasMoreItems", newVar(), newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -263,7 +265,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -304,7 +306,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, -1));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -345,7 +347,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 1));
     Set<Clause> proofs = solver.proofs(query);
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -391,7 +393,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 2));
     Set<Clause> proofs = solver.proofs(query);
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -437,7 +439,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 3));
     Set<Clause> proofs = solver.proofs(query);
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -483,7 +485,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 4));
     Set<Clause> proofs = solver.proofs(query);
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -530,7 +532,7 @@ public class SolverTest {
     // Query kb
     // hasDifferentNumberOfItems(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("hasDifferentNumberOfItems", new Var(), new Var());
+    Literal query = new Literal("hasDifferentNumberOfItems", newVar(), newVar());
     Set<Clause> answers = Sets.newHashSet(solver.solve(query, 5));
     Set<Clause> proofs = solver.proofs(query);
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -582,7 +584,7 @@ public class SolverTest {
     // Query kb
     // match(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("match", new Var(), new Var());
+    Literal query = new Literal("match", newVar(), newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -624,7 +626,7 @@ public class SolverTest {
     // Query kb
     // a(X, Y)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("a", new Var(), new Var());
+    Literal query = new Literal("a", newVar(), newVar());
     Set<Clause> proofs = solver.proofs(query);
   }
 
@@ -650,7 +652,7 @@ public class SolverTest {
     // a(X, X)?
     // p(X)?
     Solver solver = new Solver(kb, true);
-    Var x = new Var();
+    Var x = newVar();
     Literal query1 = new Literal("a", x, x);
     Set<Clause> answers1 = Sets.newHashSet(solver.solve(query1));
     Set<Clause> proofs1 = solver.proofs(query1);

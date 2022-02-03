@@ -1,7 +1,5 @@
 package com.computablefacts.decima.problog;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -10,28 +8,16 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Var extends AbstractTerm {
 
-  private final static AtomicInteger ID = new AtomicInteger(0);
-
   private final boolean isWildcard_;
-  private final int id_;
 
-  public Var() {
-    this(false);
-  }
-
-  public Var(boolean isWildcard) {
-    id_ = ID.getAndIncrement();
+  Var(String id, boolean isWildcard) {
+    super(id);
     isWildcard_ = isWildcard;
   }
 
   @Override
   public String toString() {
-    return isWildcard_ ? "_" : "V" + id_;
-  }
-
-  @Override
-  public String id() {
-    return "v" + id_;
+    return isWildcard_ ? "_" : id();
   }
 
   @Override

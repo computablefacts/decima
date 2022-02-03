@@ -1,5 +1,6 @@
 package com.computablefacts.decima.problog.graphs;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.*;
 
@@ -36,7 +37,7 @@ public class ToothacheTest {
     // Query kb
     // path(1, 6)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("toothache", new Const("a"));
+    Literal query = new Literal("toothache", newConst("a"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);

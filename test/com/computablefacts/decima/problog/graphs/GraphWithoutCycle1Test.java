@@ -1,5 +1,6 @@
 package com.computablefacts.decima.problog.graphs;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.*;
 
@@ -46,7 +47,7 @@ public class GraphWithoutCycle1Test {
     // Query kb
     // path(b, f)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("path", new Const("b"), new Const("f"));
+    Literal query = new Literal("path", newConst("b"), newConst("f"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);

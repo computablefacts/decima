@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -194,7 +196,7 @@ final public class Solver {
 
       String newPredicate = literal.predicate().name();
       List<AbstractTerm> newTerms = literal.terms().stream()
-          .map(t -> t.isConst() ? t : new Const("_")).collect(Collectors.toList());
+          .map(t -> t.isConst() ? t : newConst("_")).collect(Collectors.toList());
       Iterator<Clause> facts = sub.facts();
 
       if (!facts.hasNext()) {

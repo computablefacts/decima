@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,8 +18,8 @@ public class VarTest {
   @Test
   public void testWildcardEquals() {
 
-    Var a = new Var(true);
-    Var b = new Var(true);
+    Var a = newVar(true);
+    Var b = newVar(true);
 
     Assert.assertEquals(a, a);
     Assert.assertEquals(b, b);
@@ -28,8 +30,8 @@ public class VarTest {
   @Test
   public void testWildcardHashcode() {
 
-    Var a = new Var(true);
-    Var b = new Var(true);
+    Var a = newVar(true);
+    Var b = newVar(true);
 
     Assert.assertEquals(a.hashCode(), a.hashCode());
     Assert.assertEquals(b.hashCode(), b.hashCode());

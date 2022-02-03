@@ -1,5 +1,8 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
@@ -468,7 +471,7 @@ public final class Parser {
         if (scan.nextToken() == StreamTokenizer.TT_WORD) {
           terms.add(stringToVarOrConst(map, numberOrString(scan)));
         } else if (scan.ttype == '"' || scan.ttype == '\'') {
-          terms.add(new Const(decode(scan.sval, '¤')));
+          terms.add(newConst(decode(scan.sval, '¤')));
         } else {
           Preconditions.checkState(false,
               "[line " + scan.lineno() + "] Expected term in expression");
@@ -526,7 +529,7 @@ public final class Parser {
               parseFunction((String) ((Const) term).value(), scan, map, literals);
           String name = (String) ((Const) term).value();
 
-          com.computablefacts.decima.problog.Var var = new com.computablefacts.decima.problog.Var();
+          com.computablefacts.decima.problog.Var var = newVar();
           tmp.add(0, var);
           Literal literal = new Literal(name, tmp);
           literals.add(literal);
@@ -535,7 +538,7 @@ public final class Parser {
           terms.add(term);
         }
       } else if (scan.ttype == '"' || scan.ttype == '\'') {
-        terms.add(new Const(decode(scan.sval, '¤')));
+        terms.add(newConst(decode(scan.sval, '¤')));
       } else {
         Preconditions.checkState(false, "[line " + scan.lineno() + "] Expected term in expression");
       }
@@ -647,7 +650,7 @@ public final class Parser {
       return list(lit);
     }
 
-    com.computablefacts.decima.problog.Var var = new com.computablefacts.decima.problog.Var();
+    com.computablefacts.decima.problog.Var var = newVar();
 
     Literal lit1 = new Literal(op, var, stringToVarOrConst(map, lhs), stringToVarOrConst(map, rhs));
     Literal lit2 = isNegative ? new Literal("fn_is_false", var) : new Literal("fn_is_true", var);
@@ -665,15 +668,15 @@ public final class Parser {
   private static AbstractTerm stringToVarOrConst(
       Map<String, com.computablefacts.decima.problog.Var> map, String name) {
     if (isWildcard(name)) {
-      return new com.computablefacts.decima.problog.Var(true);
+      return newVar(true);
     }
     if (isVar(name)) {
       if (!map.containsKey(name)) {
-        map.put(name, new com.computablefacts.decima.problog.Var());
+        map.put(name, newVar());
       }
       return map.get(name);
     }
-    return new Const(name);
+    return newConst(name);
   }
 
   /**
@@ -912,11 +915,11 @@ public final class Parser {
         boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
             || p2.predicate().baseName().equals("fn_is_false");
 
-        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
+        AbstractTerm p1Output = p1IsTrueOrIsFalse ? newConst(true) : p1.terms().get(0);
         List<AbstractTerm> p1Parameters =
             p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
 
-        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
+        AbstractTerm p2Output = p2IsTrueOrIsFalse ? newConst(true) : p2.terms().get(0);
         List<AbstractTerm> p2Parameters =
             p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
 
@@ -944,7 +947,7 @@ public final class Parser {
 
         boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
             || p1.predicate().baseName().equals("fn_is_false");
-        AbstractTerm p1Output = p1IsTrueOrIsFalse ? new Const(true) : p1.terms().get(0);
+        AbstractTerm p1Output = p1IsTrueOrIsFalse ? newConst(true) : p1.terms().get(0);
         List<AbstractTerm> p1Parameters =
             p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
 
@@ -969,7 +972,7 @@ public final class Parser {
 
         boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
             || p2.predicate().baseName().equals("fn_is_false");
-        AbstractTerm p2Output = p2IsTrueOrIsFalse ? new Const(true) : p2.terms().get(0);
+        AbstractTerm p2Output = p2IsTrueOrIsFalse ? newConst(true) : p2.terms().get(0);
         List<AbstractTerm> p2Parameters =
             p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
 

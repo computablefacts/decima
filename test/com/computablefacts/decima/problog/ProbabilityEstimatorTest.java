@@ -1,5 +1,7 @@
 package com.computablefacts.decima.problog;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.*;
 
@@ -21,7 +23,7 @@ public class ProbabilityEstimatorTest {
   @Test
   public void testComputeProbabilityWithoutProofs() {
     ProbabilityEstimator estimator = new ProbabilityEstimator(new HashSet<>());
-    Assert.assertEquals(BigDecimal.ZERO, estimator.probability(new Literal("fake", new Const(1))));
+    Assert.assertEquals(BigDecimal.ZERO, estimator.probability(new Literal("fake", newConst(1))));
   }
 
   /**
@@ -51,7 +53,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // s1(1)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("s1", new Const(1));
+    Literal query = new Literal("s1", newConst(1));
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
 
     // Verify BDD answer
@@ -89,7 +91,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // s2(1)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("s2", new Const(1));
+    Literal query = new Literal("s2", newConst(1));
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
 
     // Verify BDD answer
@@ -128,7 +130,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // a(X)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("a", new Var());
+    Literal query = new Literal("a", newVar());
     Set<Clause> proofs = solver.proofs(query);
 
     // Verify BDD answer
@@ -138,9 +140,9 @@ public class ProbabilityEstimatorTest {
     ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     Map<Clause, BigDecimal> probabilities = estimator.probabilities();
 
-    Clause a1 = new Clause(new Literal("a", new Const(1)));
-    Clause a2 = new Clause(new Literal("a", new Const(2)));
-    Clause a3 = new Clause(new Literal("a", new Const(3)));
+    Clause a1 = new Clause(new Literal("a", newConst(1)));
+    Clause a2 = new Clause(new Literal("a", newConst(2)));
+    Clause a3 = new Clause(new Literal("a", newConst(3)));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a1)));
     Assert.assertEquals(0, BigDecimal.valueOf(0.2).compareTo(probabilities.get(a2)));
@@ -170,7 +172,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // q(X)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("q", new Var());
+    Literal query = new Literal("q", newVar());
     Set<Clause> proofs = solver.proofs(query);
 
     // Verify BDD answer
@@ -178,7 +180,7 @@ public class ProbabilityEstimatorTest {
     ProbabilityEstimator estimator = new ProbabilityEstimator(proofs);
     Map<Clause, BigDecimal> probabilities = estimator.probabilities();
 
-    Clause answer = new Clause(new Literal("q", new Const("unk")));
+    Clause answer = new Clause(new Literal("q", newConst("unk")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.1).compareTo(probabilities.get(answer)));
   }
@@ -199,7 +201,7 @@ public class ProbabilityEstimatorTest {
 
     // Query kb
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("~p", new Const(1));
+    Literal query = new Literal("~p", newConst(1));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -248,7 +250,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // someHeads(X)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("someHeads", new Var());
+    Literal query = new Literal("someHeads", newVar());
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -267,7 +269,7 @@ public class ProbabilityEstimatorTest {
     // Verify BDD answer
     // 0.8::someHeads(a).
     ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
-    BigDecimal probability = estimator.probability(new Literal("someHeads", new Const("a")));
+    BigDecimal probability = estimator.probability(new Literal("someHeads", newConst("a")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.8).compareTo(probability));
   }
@@ -297,7 +299,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // twoHeads(X)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("twoHeads", new Var());
+    Literal query = new Literal("twoHeads", newVar());
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -316,7 +318,7 @@ public class ProbabilityEstimatorTest {
     // Verify BDD answer
     // 0.3::twoHeads(a).
     ProbabilityEstimator estimator = new ProbabilityEstimator(Sets.newHashSet(proofs));
-    BigDecimal probability = estimator.probability(new Literal("twoHeads", new Const("a")));
+    BigDecimal probability = estimator.probability(new Literal("twoHeads", newConst("a")));
 
     Assert.assertEquals(0, BigDecimal.valueOf(0.3).compareTo(probability));
   }
@@ -343,12 +345,12 @@ public class ProbabilityEstimatorTest {
     // p(1)?
     // p(2)?
     Solver solver = new Solver(kb, true);
-    Literal query1 = new Literal("p", new Const("1"));
+    Literal query1 = new Literal("p", newConst("1"));
     Set<Clause> proofs1 = solver.proofs(query1);
     Set<Clause> answers1 = Sets.newHashSet(solver.solve(query1));
     Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
 
-    Literal query2 = new Literal("p", new Const("2"));
+    Literal query2 = new Literal("p", newConst("2"));
     Set<Clause> proofs2 = solver.proofs(query2);
     Set<Clause> answers2 = Sets.newHashSet(solver.solve(query2));
     Map<Literal, Trie<Literal>> tries2 = solver.tries(query2);
@@ -405,7 +407,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // ~p(1)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("~p", new Const("1"));
+    Literal query = new Literal("~p", newConst("1"));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -452,7 +454,7 @@ public class ProbabilityEstimatorTest {
     // Query kb
     // p(1)?
     Solver solver = new Solver(kb, true);
-    Literal query = new Literal("p", new Const(1));
+    Literal query = new Literal("p", newConst(1));
     Set<Clause> proofs = solver.proofs(query);
     Set<Clause> answers = Sets.newHashSet(solver.solve(query));
     Map<Literal, Trie<Literal>> tries = solver.tries(query);
@@ -501,17 +503,17 @@ public class ProbabilityEstimatorTest {
     // stressed(3)?
     Solver solver = new Solver(kb, true);
 
-    Literal query1 = new Literal("stressed", new Const(1));
+    Literal query1 = new Literal("stressed", newConst(1));
     Set<Clause> proofs1 = solver.proofs(query1);
     Set<Clause> answers1 = Sets.newHashSet(solver.solve(query1));
     Map<Literal, Trie<Literal>> tries1 = solver.tries(query1);
 
-    Literal query2 = new Literal("stressed", new Const(2));
+    Literal query2 = new Literal("stressed", newConst(2));
     Set<Clause> proofs2 = solver.proofs(query2);
     Set<Clause> answers2 = Sets.newHashSet(solver.solve(query2));
     Map<Literal, Trie<Literal>> tries2 = solver.tries(query2);
 
-    Literal query3 = new Literal("stressed", new Const(3));
+    Literal query3 = new Literal("stressed", newConst(3));
     Set<Clause> proofs3 = solver.proofs(query3);
     Set<Clause> answers3 = Sets.newHashSet(solver.solve(query3));
     Map<Literal, Trie<Literal>> tries3 = solver.tries(query3);

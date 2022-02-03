@@ -1,5 +1,7 @@
 package com.computablefacts.decima;
 
+import static com.computablefacts.decima.problog.AbstractTerm.newConst;
+
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -8,7 +10,10 @@ import com.computablefacts.asterix.IO;
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.asterix.View;
 import com.computablefacts.asterix.console.ConsoleApp;
-import com.computablefacts.decima.problog.*;
+import com.computablefacts.decima.problog.AbstractTerm;
+import com.computablefacts.decima.problog.Clause;
+import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
+import com.computablefacts.decima.problog.Literal;
 import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -29,7 +34,7 @@ final public class Builder extends ConsoleApp {
     Preconditions.checkNotNull(json, "json should not be null");
 
     return new Clause(new Literal("json",
-        Lists.newArrayList(new Const(namespace), new Const(uuid), new Const(json))));
+        Lists.newArrayList(newConst(namespace), newConst(uuid), newConst(json))));
   }
 
   public static Set<Clause> jsonPaths(String namespace, String uuid, String json) {
@@ -43,8 +48,8 @@ final public class Builder extends ConsoleApp {
     new JsonFlattener(json).withSeparator(SEPARATOR).flattenAsMap().forEach((k, v) -> {
 
       List<AbstractTerm> terms = new ArrayList<>();
-      terms.add(new Const(namespace));
-      terms.add(new Const(uuid));
+      terms.add(newConst(namespace));
+      terms.add(newConst(uuid));
       Splitter.on(SEPARATOR).trimResults().split(k).forEach(term -> {
 
         int indexBegin = term.lastIndexOf('[');
@@ -52,13 +57,13 @@ final public class Builder extends ConsoleApp {
 
         if (indexBegin < 0 || indexEnd < 0 || indexBegin >= indexEnd
             || indexEnd != term.length() - 1) {
-          terms.add(new Const(term));
+          terms.add(newConst(term));
         } else { // Here, we are dealing with an array
-          terms.add(new Const(term.substring(0, indexBegin)));
-          terms.add(new Const(Integer.parseInt(term.substring(indexBegin + 1, indexEnd), 10)));
+          terms.add(newConst(term.substring(0, indexBegin)));
+          terms.add(newConst(Integer.parseInt(term.substring(indexBegin + 1, indexEnd), 10)));
         }
       });
-      terms.add(new Const(v == null ? "null" : v.toString()));
+      terms.add(newConst(v == null ? "null" : v.toString()));
 
       clauses.add(new Clause(new Literal("json_path", terms)));
     });

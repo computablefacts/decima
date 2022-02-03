@@ -1,8 +1,13 @@
 package com.computablefacts.decima.problog;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.MapMaker;
+import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -11,10 +16,52 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 public abstract class AbstractTerm {
 
-  protected AbstractTerm() {}
+  /**
+   * Internalize objects based on an identifier.
+   *
+   * To make comparisons between terms of the same type efficient, each term is internalized so
+   * there is at most one of them associated with an identifier. An identifier is always a string.
+   *
+   * For example, after internalization, there is one constant for each string used to name a
+   * constant.
+   *
+   * Idea extracted from https://github.com/catwell/datalog.lua/blob/master/datalog/datalog.lua
+   */
+  private final static ConcurrentMap<String, Object> idToObj_ = new MapMaker().weakKeys().makeMap();
+  private final static AtomicInteger idGenerator_ = new AtomicInteger(0);
+
+  private final String id_;
+
+  protected AbstractTerm(String id) {
+    id_ = Preconditions.checkNotNull(id, "id should not be null");
+  }
+
+  public static Const newConst(Object value) {
+
+    String id;
+    String newValue = String.valueOf(value);
+
+    if (newValue.length() <= 32 /* murmur3_128 hash length */) {
+      id = newValue;
+    } else {
+      id = Hashing.murmur3_128().newHasher().putString(newValue, StandardCharsets.UTF_8).hash()
+          .toString();
+    }
+
+    idToObj_.putIfAbsent(id, value);
+    return new Const(id);
+  }
+
+  public static Var newVar() {
+    return newVar(false);
+  }
+
+  public static Var newVar(boolean isWildcard) {
+    return new Var(Integer.toString(idGenerator_.getAndIncrement(), 10), isWildcard);
+  }
 
   @Override
-  public boolean equals(Object obj) {
+  final public boolean equals(Object obj) {
     if (obj == this) {
       return true;
     }
@@ -26,8 +73,37 @@ public abstract class AbstractTerm {
   }
 
   @Override
-  public int hashCode() {
+  final public int hashCode() {
     return id().hashCode();
+  }
+
+  /**
+   * Term tag.
+   *
+   * @return an identifier that maps all variables to the character "v".
+   */
+  final public String tag() {
+    return isConst() ? id() : "v";
+  }
+
+  /**
+   * Term unique identifier.
+   *
+   * @return a unique identifier for the current term. The identifier will start with a 'v'
+   *         character if the current term is a variable (or wildcard) and a 'c' character
+   *         otherwise.
+   */
+  final public String id() {
+    return (isConst() ? "c" : "v") + id_;
+  }
+
+  /**
+   * Returns the object (if any) associated with the current term identifier.
+   *
+   * @return an {@code Object}.
+   */
+  final protected Object objectOrNull() {
+    return isConst() ? idToObj_.get(id_) : null;
   }
 
   /**
@@ -130,23 +206,6 @@ public abstract class AbstractTerm {
     env.put(variable, this);
     return env;
   }
-
-  /**
-   * Term tag.
-   *
-   * @return an identifier that maps all variables to the character "v".
-   */
-  @Deprecated
-  public String tag() {
-    return isConst() ? id() : "v";
-  }
-
-  /**
-   * Term unique identifier.
-   *
-   * @return an unique identifier for the current term.
-   */
-  public abstract String id();
 
   /**
    * Check if the current term is a constant.
