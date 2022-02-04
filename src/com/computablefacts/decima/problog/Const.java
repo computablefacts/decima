@@ -1,6 +1,5 @@
 package com.computablefacts.decima.problog;
 
-import com.computablefacts.nona.types.BoxedType;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
@@ -9,16 +8,16 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Const extends AbstractTerm {
 
-  private final BoxedType<?> value_;
+  private final String value_;
 
-  Const(String id, Object value) {
+  Const(String id, String value) {
     super(id);
-    value_ = value instanceof BoxedType ? (BoxedType<?>) value : BoxedType.create(value);
+    value_ = value;
   }
 
   @Override
   public String toString() {
-    return value_.asString();
+    return value_;
   }
 
   @Override
@@ -32,6 +31,6 @@ final public class Const extends AbstractTerm {
   }
 
   public Object value() {
-    return value_.value();
+    return value_;
   }
 }

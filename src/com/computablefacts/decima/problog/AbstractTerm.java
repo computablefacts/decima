@@ -60,7 +60,7 @@ public abstract class AbstractTerm {
             .toString();
       }
 
-      conzt = new Const(id, value);
+      conzt = new Const(id, newValue);
 
       idToConst_.putIfAbsent(newValue, conzt);
       misses_.incrementAndGet();
