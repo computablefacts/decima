@@ -17,7 +17,7 @@ final public class Var extends AbstractTerm {
 
   @Override
   public String toString() {
-    return isWildcard_ ? "_" : id();
+    return isWildcard_ ? "_" : id().toUpperCase();
   }
 
   @Override

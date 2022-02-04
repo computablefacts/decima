@@ -38,4 +38,24 @@ public class VarTest {
 
     Assert.assertNotEquals(a.hashCode(), b.hashCode());
   }
+
+  @Test
+  public void testId() {
+
+    Var a = newVar(true);
+    Assert.assertTrue(a.id().startsWith("v"));
+
+    Var b = newVar();
+    Assert.assertTrue(b.id().startsWith("v"));
+  }
+
+  @Test
+  public void testToString() {
+
+    Var a = newVar(true);
+    Assert.assertEquals("_", a.toString());
+
+    Var b = newVar();
+    Assert.assertTrue(b.toString().startsWith("V"));
+  }
 }
