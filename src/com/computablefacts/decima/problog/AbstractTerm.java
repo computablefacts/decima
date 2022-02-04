@@ -43,24 +43,26 @@ public abstract class AbstractTerm {
 
   public static Const newConst(Object value) {
 
-    String id;
     String newValue = String.valueOf(value);
-
-    if (newValue.length() <= 32 /* murmur3_128 hash length */) {
-      id = newValue;
-    } else {
-      id = Hashing.murmur3_128().newHasher().putString(newValue, StandardCharsets.UTF_8).hash()
-          .toString();
-    }
-
     @com.google.errorprone.annotations.Var
-    Const conzt = idToConst_.get(id);
+    Const conzt = idToConst_.get(newValue);
 
     if (conzt != null) {
       hits_.incrementAndGet();
     } else {
+
+      String id;
+
+      if (newValue.length() <= 32 /* murmur3_128 hash length */) {
+        id = newValue;
+      } else {
+        id = Hashing.murmur3_128().newHasher().putString(newValue, StandardCharsets.UTF_8).hash()
+            .toString();
+      }
+
       conzt = new Const(id, value);
-      idToConst_.putIfAbsent(id, conzt);
+
+      idToConst_.putIfAbsent(newValue, conzt);
       misses_.incrementAndGet();
     }
     return conzt;
