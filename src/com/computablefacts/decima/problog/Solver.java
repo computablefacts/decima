@@ -158,6 +158,22 @@ final public class Solver {
   }
 
   /**
+   * Dump the subgoals rules. This method will yield no result if {@code computeProofs} is set to
+   * {@code false}.
+   *
+   * @return the generated rules.
+   */
+  @Generated
+  public String dumpSubgoals() {
+    return subgoals_.values().stream()
+        .map(subgoal -> subgoal.literal().toString() + " : " + subgoal.nbFacts() + "\n"
+            + (subgoal.rules().isEmpty() ? "  -> nil"
+                : subgoal.rules().stream().map(rule -> "  -> " + rule.toString())
+                    .collect(Collectors.joining("\n"))))
+        .collect(Collectors.joining("\n"));
+  }
+
+  /**
    * Check if the number of samples asked by the caller has been reached.
    *
    * @return true iif the number of samples has been reached, false otherwise.
