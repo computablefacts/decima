@@ -4,7 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
+import com.computablefacts.asterix.Generated;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import com.google.common.hash.Hashing;
@@ -27,7 +29,10 @@ public abstract class AbstractTerm {
    *
    * Idea extracted from https://github.com/catwell/datalog.lua/blob/master/datalog/datalog.lua
    */
-  private final static ConcurrentMap<String, Object> idToObj_ = new MapMaker().weakKeys().makeMap();
+  private final static ConcurrentMap<String, Const> idToConst_ =
+      new MapMaker().weakValues().makeMap();
+  private final static AtomicLong hits_ = new AtomicLong(0);
+  private final static AtomicLong misses_ = new AtomicLong(0);
   private final static AtomicInteger idGenerator_ = new AtomicInteger(0);
 
   private final String id_;
@@ -48,8 +53,17 @@ public abstract class AbstractTerm {
           .toString();
     }
 
-    idToObj_.putIfAbsent(id, value);
-    return new Const(id);
+    @com.google.errorprone.annotations.Var
+    Const conzt = idToConst_.get(id);
+
+    if (conzt != null) {
+      hits_.incrementAndGet();
+    } else {
+      conzt = new Const(id, value);
+      idToConst_.putIfAbsent(id, conzt);
+      misses_.incrementAndGet();
+    }
+    return conzt;
   }
 
   public static Var newVar() {
@@ -58,6 +72,14 @@ public abstract class AbstractTerm {
 
   public static Var newVar(boolean isWildcard) {
     return new Var(Integer.toString(idGenerator_.getAndIncrement(), 10), isWildcard);
+  }
+
+  @Generated
+  public static String stats() {
+    double hits = hits_.get();
+    double misses = misses_.get();
+    return String.format("hit_rate=%f, miss_rate=%f", hits / (hits + misses),
+        misses / (hits + misses));
   }
 
   @Override
@@ -95,15 +117,6 @@ public abstract class AbstractTerm {
    */
   final public String id() {
     return (isConst() ? "c" : "v") + id_;
-  }
-
-  /**
-   * Returns the object (if any) associated with the current term identifier.
-   *
-   * @return an {@code Object}.
-   */
-  final protected Object objectOrNull() {
-    return isConst() ? idToObj_.get(id_) : null;
   }
 
   /**

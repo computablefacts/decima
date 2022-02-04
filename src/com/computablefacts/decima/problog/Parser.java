@@ -521,13 +521,12 @@ public final class Parser {
 
         AbstractTerm term = stringToVarOrConst(map, numberOrString(scan));
 
-        if (term.isConst() && ((String) ((Const) term).value()).startsWith("fn_")) {
+        if (term.isConst() && term.toString().startsWith("fn_")) {
 
           Preconditions.checkState(scan.nextToken() == '(', "invalid function usage : %s", term);
 
-          List<AbstractTerm> tmp =
-              parseFunction((String) ((Const) term).value(), scan, map, literals);
-          String name = (String) ((Const) term).value();
+          List<AbstractTerm> tmp = parseFunction(term.toString(), scan, map, literals);
+          String name = term.toString();
 
           com.computablefacts.decima.problog.Var var = newVar();
           tmp.add(0, var);

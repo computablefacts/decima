@@ -8,6 +8,7 @@ public class ConstTest {
 
   @Test
   public void testHashcodeAndEquals() {
-    EqualsVerifier.forClass(Const.class).withNonnullFields("id_").verify();
+    EqualsVerifier.forClass(Const.class).withIgnoredFields("value_").withNonnullFields("id_")
+        .verify();
   }
 }
