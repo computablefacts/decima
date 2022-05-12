@@ -257,7 +257,7 @@ public abstract class AbstractKnowledgeBase {
     definitions_.put("FN_INT", new ToInteger());
     definitions_.put("FN_LENGTH", new StrLength());
 
-    // Special operator. Allow KB modification at runtime.
+    // [DEPRECATED] Special operator. Allow KB modification at runtime.
     definitions_.put("FN_ASSERT_JSON", new Function("ASSERT_JSON") {
 
       @Override
@@ -291,7 +291,7 @@ public abstract class AbstractKnowledgeBase {
       }
     });
 
-    // Special operator. Allow KB modification at runtime.
+    // [DEPRECATED] Special operator. Allow KB modification at runtime.
     definitions_.put("FN_ASSERT_CSV", new Function("ASSERT_CSV") {
 
       @Override
@@ -325,7 +325,7 @@ public abstract class AbstractKnowledgeBase {
       }
     });
 
-    // Special operator. See {@link Literal#execute} for details.
+    // [DEPRECATED] Special operator. See {@link Literal#execute} for details.
     definitions_.put("FN_EXIST_IN_KB", new Function("EXIST_IN_KB") {
 
       @Override
@@ -366,7 +366,8 @@ public abstract class AbstractKnowledgeBase {
     });
 
     /**
-     * Special operator. Execute a GET HTTP query and use the returned data as new facts.
+     * [DEPRECATED] Special operator. Execute a GET HTTP query and use the returned data as new
+     * facts.
      *
      * Example :
      *
