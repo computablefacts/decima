@@ -15,7 +15,6 @@ import com.computablefacts.asterix.BloomFilter;
 import com.computablefacts.asterix.Generated;
 import com.computablefacts.asterix.trie.Trie;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
@@ -281,12 +280,8 @@ final public class Solver {
     } else {
 
       @Var
-      Stopwatch stopwatch = Stopwatch.createStarted();
-      Iterator<Clause> facts = kb_.facts(literal);
-      stopwatch.stop();
-
-      @Var
       boolean match = false;
+      Iterator<Clause> facts = kb_.facts(literal);
 
       while (facts.hasNext()) {
 
@@ -305,9 +300,7 @@ final public class Solver {
         }
       }
 
-      stopwatch = Stopwatch.createStarted();
       Iterator<Clause> rules = kb_.rules(literal);
-      stopwatch.stop();
 
       while (rules.hasNext()) {
 
@@ -384,9 +377,7 @@ final public class Solver {
 
     if (first.predicate().isPrimitive()) {
 
-      Stopwatch stopwatch = Stopwatch.createStarted();
       Iterator<Literal> literals = first.execute(kb_.definitions());
-      stopwatch.stop();
 
       if (literals != null) {
         while (literals.hasNext()) {
