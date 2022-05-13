@@ -24,6 +24,8 @@ import com.google.errorprone.annotations.CheckReturnValue;
 @CheckReturnValue
 final public class Literal {
 
+  private static final char SEPARATOR_CURRENCY_SIGN = '¤';
+
   private final Predicate predicate_;
   private final List<AbstractTerm> terms_;
   private final List<Literal> functions_; // a sequence of functions to execute
@@ -144,7 +146,7 @@ final public class Literal {
         builder.append(term);
       } else {
         builder.append('"');
-        builder.append(Parser.encode(term.toString(), '¤'));
+        builder.append(Parser.encode(term.toString(), SEPARATOR_CURRENCY_SIGN));
         builder.append('"');
       }
     }
@@ -618,13 +620,15 @@ final public class Literal {
 
   private Function compile() {
     if (functions_.size() <= 0) {
-      String function = predicate_.name().toUpperCase() + "("
-          + terms_.stream().skip(1)
-              .map(term -> Function.wrap(((Const) term).value() instanceof Collection
-                  ? "[" + Joiner.on('¤').join((Collection) ((Const) term).value()) + "]"
-                  : ((Const) term).value().toString()))
-              .collect(Collectors.joining(", "))
-          + ")";
+      String function =
+          predicate_.name().toUpperCase() + "("
+              + terms_.stream().skip(1)
+                  .map(term -> Function.wrap(((Const) term).value() instanceof Collection
+                      ? "[" + Joiner.on(SEPARATOR_CURRENCY_SIGN)
+                          .join((Collection) ((Const) term).value()) + "]"
+                      : ((Const) term).value().toString()))
+                  .collect(Collectors.joining(", "))
+              + ")";
       return new Function(function);
     }
     return new Function(mergeFunctions());
@@ -634,8 +638,8 @@ final public class Literal {
     if (functions_.size() <= 0) {
       String function = predicate_.name().toUpperCase() + "(" + terms_.stream().map(term -> {
         if (term.isConst()) {
-          return Function.wrap(((Const) term).value() instanceof Collection
-              ? "[" + Joiner.on('¤').join((Collection) ((Const) term).value()) + "]"
+          return Function.wrap(((Const) term).value() instanceof Collection ? "["
+              + Joiner.on(SEPARATOR_CURRENCY_SIGN).join((Collection) ((Const) term).value()) + "]"
               : ((Const) term).value().toString());
         }
         return Function.wrap("_");
