@@ -474,6 +474,57 @@ public class AbstractKnowledgeBaseTest {
         .anyMatch(rule -> rule.isRelevant(parseClause("first(X) :- fourth(X), sixth(X)."))));
   }
 
+  @Test
+  public void testStreamAndMaterializeFacts1() {
+
+    AbstractKnowledgeBase kb = addMockCreateJsonDefinition(kb());
+    kb.azzert(parseClause(
+        "load_json(JsonObject) :- fn_mock_json_materialize_facts(dummy, JsonString), fn_to_json(JsonObject, JsonString)."));
+    kb.azzert(parseClause(
+        "stream_array_elements(Object) :- load_json(Json), fn_is(Object, \"b64_(eyJjb2xfMSI6MjEsImNvbF8yIjoyMiwiY29sXzMiOjIzfQ==)\"), fn_materialize_facts(Json, Object)."));
+
+    List<Clause> rules = kb.compact();
+
+    Assert.assertEquals(2, rules.size());
+
+    Solver solver = new Solver(kb, false);
+    Literal query = parseQuery("stream_array_elements(Object)?");
+    List<Clause> clauses = Lists.newArrayList(solver.solve(query));
+
+    Clause clause = parseClause(
+        "stream_array_elements(\"b64_(eyJjb2xfMSI6MjEsImNvbF8yIjoyMiwiY29sXzMiOjIzfQ==)\").");
+
+    Assert.assertEquals(1, clauses.size());
+    Assert.assertTrue(clauses.contains(clause));
+  }
+
+  @Test
+  public void testStreamAndMaterializeFacts2() {
+
+    AbstractKnowledgeBase kb = addMockCreateJsonDefinition(kb());
+    kb.azzert(parseClause(
+        "load_json(JsonObject) :- fn_mock_json_materialize_facts(dummy, JsonString), fn_to_json(JsonObject, JsonString)."));
+    kb.azzert(parseClause(
+        "stream_array_elements(Object) :- load_json(Json), fn_materialize_facts(Json, Object)."));
+
+    List<Clause> rules = kb.compact();
+
+    Assert.assertEquals(2, rules.size());
+
+    Solver solver = new Solver(kb, false);
+    Literal query = parseQuery("stream_array_elements(Object)?");
+    List<Clause> clauses = Lists.newArrayList(solver.solve(query));
+
+    Clause clause1 = parseClause(
+        "stream_array_elements(\"b64_(eyJjb2xfMSI6MjEsImNvbF8yIjoyMiwiY29sXzMiOjIzfQ==)\").");
+    Clause clause2 = parseClause(
+        "stream_array_elements(\"b64_(eyJjb2xfMSI6MTEsImNvbF8yIjoxMiwiY29sXzMiOjEzfQ==)\").");
+
+    Assert.assertEquals(2, clauses.size());
+    Assert.assertTrue((clauses.get(0).equals(clause1) && clauses.get(1).equals(clause2))
+        || (clauses.get(0).equals(clause2) && clauses.get(1).equals(clause1)));
+  }
+
   private InMemoryKnowledgeBase kb() {
     return new InMemoryKnowledgeBase();
   }
@@ -671,6 +722,33 @@ public class AbstractKnowledgeBaseTest {
         return BoxedType.create(literals);
       }
     });
+    return kb;
+  }
+
+  private AbstractKnowledgeBase addMockCreateJsonDefinition(AbstractKnowledgeBase kb) {
+
+    String json =
+        "[{\"col_1\": 11, \"col_2\": 12, \"col_3\": 13} , {\"col_1\": 21, \"col_2\": 22, \"col_3\": 23}]";
+
+    kb.definitions().put("FN_MOCK_JSON_MATERIALIZE_FACTS",
+        new Function("MOCK_JSON_MATERIALIZE_FACTS") {
+
+          @Override
+          protected boolean isCacheable() {
+            return false;
+          }
+
+          @Override
+          public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
+
+            List<AbstractTerm> terms = new ArrayList<>();
+            terms.add(newConst(parameters.get(0)));
+            terms.add(newConst(json));
+
+            return BoxedType
+                .create(Lists.newArrayList(new Literal("fn_" + name().toLowerCase(), terms)));
+          }
+        });
     return kb;
   }
 }

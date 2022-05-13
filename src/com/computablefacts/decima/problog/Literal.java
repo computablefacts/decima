@@ -483,7 +483,7 @@ final public class Literal {
       }
     }
 
-    List<Object> parameters = functionParameters();
+    List<Object> parameters = terms_.stream().skip(1).collect(Collectors.toList());
     parameters.add(0, result.value());
 
     return Lists
@@ -509,18 +509,11 @@ final public class Literal {
       Object value = ((Const) term).value();
 
       if (!(value instanceof String || value instanceof Number || value instanceof Boolean
-          || value instanceof Collection)) {
-        return false; // The only types allowed are String, Number, Boolean and Collection
+          || value instanceof Collection || value instanceof Map)) {
+        return false; // The only types allowed are String, Number, Boolean, Collection And Map
       }
     }
     return true;
-  }
-
-  private List<Object> functionParameters() {
-    return terms_.stream().skip(1).map(term -> {
-      String newTerm = Objects.toString(term);
-      return newTerm;
-    }).collect(Collectors.toList());
   }
 
   private List<AbstractTerm> functionVariables() {
@@ -623,15 +616,10 @@ final public class Literal {
 
   private Function compile() {
     if (functions_.size() <= 0) {
-      String function =
-          predicate_.name().toUpperCase() + "("
-              + terms_.stream().skip(1)
-                  .map(term -> Function.wrap(((Const) term).value() instanceof Collection
-                      ? "[" + Joiner.on(SEPARATOR_CURRENCY_SIGN)
-                          .join((Collection) ((Const) term).value()) + "]"
-                      : ((Const) term).value().toString()))
-                  .collect(Collectors.joining(", "))
-              + ")";
+      String function = predicate_.name().toUpperCase() + "("
+          + terms_.stream().skip(1).map(term -> Function.wrap(((Const) term).value().toString()))
+              .collect(Collectors.joining(", "))
+          + ")";
       return new Function(function);
     }
     return new Function(mergeFunctions());
@@ -641,9 +629,7 @@ final public class Literal {
     if (functions_.size() <= 0) {
       String function = predicate_.name().toUpperCase() + "(" + terms_.stream().map(term -> {
         if (term.isConst()) {
-          return Function.wrap(((Const) term).value() instanceof Collection ? "["
-              + Joiner.on(SEPARATOR_CURRENCY_SIGN).join((Collection) ((Const) term).value()) + "]"
-              : ((Const) term).value().toString());
+          return Function.wrap(((Const) term).value().toString());
         }
         return Function.wrap("_");
       }).collect(Collectors.joining(", ")) + ")";
