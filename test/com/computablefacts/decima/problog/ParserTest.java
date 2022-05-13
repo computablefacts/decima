@@ -454,4 +454,10 @@ public class ParserTest {
       Assert.assertEquals("fn_is", actual.body().get(2).predicate().baseName());
     }
   }
+
+  @Test
+  public void testWrapUnwrap() {
+    Assert.assertEquals("\n\r\t)(:=",
+        Parser.unwrap(Parser.wrap(Parser.wrap(Parser.wrap("\n\r\t)(:=")))));
+  }
 }

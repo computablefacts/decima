@@ -23,7 +23,13 @@ import com.google.errorprone.annotations.Var;
 public final class Parser {
 
   public static String wrap(String text) {
-    if (CharMatcher.anyOf(text).matchesAnyOf("\r\n\\=:,\")(")) {
+
+    String newText = text.trim();
+
+    if (newText.startsWith("b64_(") && newText.endsWith(")")) {
+      return text;
+    }
+    if (CharMatcher.anyOf(newText).matchesAnyOf("\r\n\\=:,\")(")) {
       return "b64" + Function.wrap(text);
     }
     return text;
