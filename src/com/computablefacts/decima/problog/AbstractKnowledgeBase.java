@@ -35,7 +35,6 @@ import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
 import com.computablefacts.nona.types.BoxedType;
 import com.computablefacts.nona.types.Csv;
-import com.computablefacts.nona.types.Json;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -274,15 +273,16 @@ public abstract class AbstractKnowledgeBase {
             "ASSERT_JSON takes exactly two parameters.");
         Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
             parameters.get(0));
-        Preconditions.checkArgument(parameters.get(1).value() instanceof Json,
-            "%s should be a json array", parameters.get(1));
+        Preconditions.checkArgument(parameters.get(1).isCollection() || parameters.get(1).isMap(),
+            "%s should be a json array or object", parameters.get(1));
 
         String uuid = parameters.get(0).asString();
-        Json jsons = (Json) parameters.get(1).value();
+        List<?> jsons = parameters.get(1).isMap() ? Lists.newArrayList(parameters.get(1).asMap())
+            : Lists.newArrayList(parameters.get(1).asCollection());
 
-        for (int i = 0; i < jsons.nbObjects(); i++) {
+        for (int i = 0; i < jsons.size(); i++) {
 
-          String json = JsonCodec.asString(jsons.object(i));
+          String json = JsonCodec.asString(jsons.get(i));
 
           azzert(Builder.json(uuid, Integer.toString(i, 10), json));
           azzert(Builder.jsonPaths(uuid, Integer.toString(i, 10), json));

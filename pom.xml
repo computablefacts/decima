@@ -138,6 +138,7 @@
                                     <exclusions>
                                         <exclusion>com.computablefacts.decima.problog.AbstractKnowledgeBase</exclusion>
                                         <exclusion>com.computablefacts.decima.problog.Literal</exclusion>
+                                        <exclusion>com.computablefacts.decima.problog.Parser</exclusion>
                                     </exclusions>
                                 </restrictImports>
                                 <restrictImports

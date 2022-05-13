@@ -11,7 +11,8 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import com.computablefacts.asterix.RandomString;
-import com.computablefacts.asterix.StringIterator;
+import com.computablefacts.nona.Function;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -21,129 +22,21 @@ import com.google.errorprone.annotations.Var;
 @CheckReturnValue
 public final class Parser {
 
-  /**
-   * Replace left and right parentheses by their unicode equivalent \u0028 and \u0029. Replace
-   * quotation marks with their unicode equivalent \u0022. Replace comma by its unicode equivalent
-   * \u002c. Replace carriage return by its unicode equivalent \u000d. Replace line feed by its
-   * unicode equivalent \u000a. Replace equal return by its unicode equivalent \u003d. Replace colon
-   * by its unicode equivalent \u003a. Replace backslash by its unicode equivalent \u005c.
-   *
-   * @param text Text to encode.
-   * @param escapeCharacter the escape character to use.
-   * @return Encoded text.
-   */
-  public static String encode(String text, char escapeCharacter) {
-
-    Preconditions.checkNotNull(text, "text should not be null");
-
-    StringBuilder builder = new StringBuilder(text.length());
-
-    for (int i = 0; i < text.length(); i++) {
-      char c = text.charAt(i);
-      switch (c) {
-        case '(':
-          builder.append(escapeCharacter).append("u0028");
-          break;
-        case ')':
-          builder.append(escapeCharacter).append("u0029");
-          break;
-        case '"':
-          builder.append(escapeCharacter).append("u0022");
-          break;
-        case ',':
-          builder.append(escapeCharacter).append("u002c");
-          break;
-        case ':':
-          builder.append(escapeCharacter).append("u003a");
-          break;
-        case '=':
-          builder.append(escapeCharacter).append("u003d");
-          break;
-        case '\\':
-          builder.append(escapeCharacter).append("u005c");
-          break;
-        case '\n':
-          builder.append(escapeCharacter).append("u000d");
-          break;
-        case '\r':
-          builder.append(escapeCharacter).append("u000a");
-          break;
-        default:
-          builder.append(c);
-          break;
-      }
+  public static String wrap(String text) {
+    if (CharMatcher.anyOf(text).matchesAnyOf("\r\n\\=:,\")(")) {
+      return "b64" + Function.wrap(text);
     }
-    return builder.toString();
+    return text;
   }
 
-  /**
-   * Replace unicode values \u0028 and \u0029 by the left and right parentheses characters. Replace
-   * unicode values \u0022 by quotation marks. Replace unicode value \u002c by the comma character.
-   * Replace unicode value \u000d by the carriage return character. Replace unicode value \u000a by
-   * the line feed character. Replace unicode value \u003d by the equal character. Replace unicode
-   * value \u003a by the colon character. Replace unicode value \u005c by the backslash character.
-   *
-   * @param text Text to decode.
-   * @param escapeCharacter the escape character to use.
-   * @return Decoded text.
-   */
-  public static String decode(String text, char escapeCharacter) {
+  public static String unwrap(String text) {
 
-    Preconditions.checkNotNull(text, "text should not be null");
+    String newText = text.trim();
 
-    StringBuilder builder = new StringBuilder(text.length());
-    StringIterator iterator = new StringIterator(text);
-
-    while (iterator.hasNext()) {
-      char c0 = iterator.next();
-      if (c0 != escapeCharacter || !iterator.hasNext()) {
-        builder.append(c0);
-      } else {
-        char c1 = iterator.next();
-        if (c1 != 'u' || !iterator.hasNext()) {
-          builder.append(c0).append(c1);
-        } else {
-          char c2 = iterator.next();
-          if (c2 != '0' || !iterator.hasNext()) {
-            builder.append(c0).append(c1).append(c2);
-          } else {
-            char c3 = iterator.next();
-            if (c3 != '0' || !iterator.hasNext()) {
-              builder.append(c0).append(c1).append(c2).append(c3);
-            } else {
-              char c4 = iterator.next();
-              if ((c4 != '0' && c4 != '2' && c4 != '3' && c4 != '5') || !iterator.hasNext()) {
-                builder.append(c0).append(c1).append(c2).append(c3).append(c4);
-              } else {
-                char c5 = iterator.next();
-                if (c4 == '0' && c5 == 'a') {
-                  builder.append('\r');
-                } else if (c4 == '0' && c5 == 'd') {
-                  builder.append('\n');
-                } else if (c4 == '2' && c5 == '2') {
-                  builder.append('"');
-                } else if (c4 == '2' && c5 == '8') {
-                  builder.append('(');
-                } else if (c4 == '2' && c5 == '9') {
-                  builder.append(')');
-                } else if (c4 == '2' && c5 == 'c') {
-                  builder.append(',');
-                } else if (c4 == '3' && c5 == 'a') {
-                  builder.append(':');
-                } else if (c4 == '3' && c5 == 'd') {
-                  builder.append('=');
-                } else if (c4 == '5' && c5 == 'c') {
-                  builder.append('\\');
-                } else {
-                  builder.append(c0).append(c1).append(c2).append(c3).append(c4).append(c5);
-                }
-              }
-            }
-          }
-        }
-      }
+    if (newText.startsWith("b64_(") && newText.endsWith(")")) {
+      return Function.unwrap(newText.substring(3));
     }
-    return builder.toString();
+    return text;
   }
 
   public static Set<Literal> parseQueries(String string) {
@@ -471,7 +364,7 @@ public final class Parser {
         if (scan.nextToken() == StreamTokenizer.TT_WORD) {
           terms.add(stringToVarOrConst(map, numberOrString(scan)));
         } else if (scan.ttype == '"' || scan.ttype == '\'') {
-          terms.add(newConst(decode(scan.sval, '¤')));
+          terms.add(newConst(unwrap(scan.sval)));
         } else {
           Preconditions.checkState(false,
               "[line " + scan.lineno() + "] Expected term in expression");
@@ -537,7 +430,7 @@ public final class Parser {
           terms.add(term);
         }
       } else if (scan.ttype == '"' || scan.ttype == '\'') {
-        terms.add(newConst(decode(scan.sval, '¤')));
+        terms.add(newConst(unwrap(scan.sval)));
       } else {
         Preconditions.checkState(false, "[line " + scan.lineno() + "] Expected term in expression");
       }

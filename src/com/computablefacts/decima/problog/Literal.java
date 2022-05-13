@@ -146,7 +146,7 @@ final public class Literal {
         builder.append(term);
       } else {
         builder.append('"');
-        builder.append(Parser.encode(term.toString(), SEPARATOR_CURRENCY_SIGN));
+        builder.append(Parser.wrap(term.toString()));
         builder.append('"');
       }
     }
@@ -517,7 +517,10 @@ final public class Literal {
   }
 
   private List<Object> functionParameters() {
-    return terms_.stream().skip(1).map(Object::toString).collect(Collectors.toList());
+    return terms_.stream().skip(1).map(term -> {
+      String newTerm = Objects.toString(term);
+      return newTerm;
+    }).collect(Collectors.toList());
   }
 
   private List<AbstractTerm> functionVariables() {
