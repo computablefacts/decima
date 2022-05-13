@@ -1,12 +1,15 @@
 package com.computablefacts.decima.problog;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.computablefacts.asterix.Generated;
+import com.computablefacts.asterix.codecs.JsonCodec;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import com.google.common.hash.Hashing;
@@ -43,7 +46,14 @@ public abstract class AbstractTerm {
 
   public static Const newConst(Object value) {
 
-    String newValue = String.valueOf(value);
+    String newValue;
+
+    if (value instanceof Collection || value instanceof Map) {
+      newValue = JsonCodec.asString(value);
+    } else {
+      newValue = Objects.toString(value);
+    }
+
     @com.google.errorprone.annotations.Var
     Const conzt = idToConst_.get(newValue);
 
