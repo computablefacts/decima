@@ -9,6 +9,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.nona.Function;
@@ -16,6 +17,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
 
@@ -788,116 +790,84 @@ public final class Parser {
       boolean p1IsMaterialization = p1.predicate().baseName().endsWith("_materialize_facts");
       boolean p2IsMaterialization = p2.predicate().baseName().endsWith("_materialize_facts");
 
-      if (p1IsPrimitive && p2IsPrimitive) {
+      boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
+          || p1.predicate().baseName().equals("fn_is_false");
+      boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
+          || p2.predicate().baseName().equals("fn_is_false");
 
-        Preconditions.checkState(!p1IsNegated, "primitive cannot be negated : %s", p1.predicate());
-        Preconditions.checkState(!p2IsNegated, "primitive cannot be negated : %s", p2.predicate());
+      Preconditions.checkState(!p1IsMaterialization || p1IsPrimitive,
+          "materializations must be primitives : %s", p1);
+      Preconditions.checkState(!p2IsMaterialization || p2IsPrimitive,
+          "materializations must be primitives : %s", p2);
+      Preconditions.checkState(!p1IsPrimitive || !p1IsNegated, "primitives cannot be negated : %s",
+          p1);
+      Preconditions.checkState(!p2IsPrimitive || !p2IsNegated, "primitives cannot be negated : %s",
+          p2);
 
-        // If both p1 and p2 are materializations, the order does not matter
-        if (p1IsMaterialization && p2IsMaterialization) {
-          return 0;
+      // For each literal, find variables that must be grounded before the resolution begins
+      Set<AbstractTerm> p1Provides = new HashSet<>();
+      Set<AbstractTerm> p2Provides = new HashSet<>();
+
+      Set<AbstractTerm> p1Needs = new HashSet<>();
+      Set<AbstractTerm> p2Needs = new HashSet<>();
+
+      if (p1IsMaterialization) {
+        AbstractTerm head = p1.terms().get(0);
+        if (!head.isConst()) {
+          p1Needs.add(head);
         }
-
-        // If p1 is a materialization (but not p2) prioritize it
-        if (p1IsMaterialization) {
-          return -1;
+        p1Provides.addAll(
+            p1.terms().stream().skip(1).filter(t -> !t.isConst()).collect(Collectors.toList()));
+      } else if (p1IsPrimitive) {
+        p1Needs.addAll(
+            p1.terms().stream().skip(p1IsTrueOrIsFalse ? 0 : 1 /* result stored in first term */)
+                .filter(t -> !t.isConst()).collect(Collectors.toList()));
+        if (!p1IsTrueOrIsFalse) {
+          p1Provides.add(p1.terms().get(0));
         }
-
-        // If p2 is a materialization (but not p2) prioritize it
-        if (p2IsMaterialization) {
-          return 1;
-        }
-
-        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false");
-        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false");
-
-        AbstractTerm p1Output = p1IsTrueOrIsFalse ? newConst(true) : p1.terms().get(0);
-        List<AbstractTerm> p1Parameters =
-            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
-
-        AbstractTerm p2Output = p2IsTrueOrIsFalse ? newConst(true) : p2.terms().get(0);
-        List<AbstractTerm> p2Parameters =
-            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
-
-        boolean p1DependsOnP2 = p1Parameters.contains(p2Output);
-        boolean p2DependsOnP1 = p2Parameters.contains(p1Output);
-
-        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-            "cyclic dependency between primitives '%s' and '%s' detected", p1.predicate(),
-            p2.predicate());
-
-        // Prioritize p2 when it produces an output used as a parameter of p1
-        if (p1DependsOnP2) {
-          return 1;
-        }
-
-        // Prioritize p1 when it produces an output used as a parameter of p2
-        if (p2DependsOnP1) {
-          return -1;
-        }
-        return 0 /* order doesn't matter */;
+      } else if (p1IsNegated) {
+        p1Needs.addAll(p1.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
+      } else {
+        p1Provides
+            .addAll(p1.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
       }
-      if (p1IsPrimitive) {
-
-        Preconditions.checkState(!p1IsNegated, "primitive cannot be negated : %s", p1.predicate());
-
-        boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
-            || p1.predicate().baseName().equals("fn_is_false");
-        AbstractTerm p1Output = p1IsTrueOrIsFalse ? newConst(true) : p1.terms().get(0);
-        List<AbstractTerm> p1Parameters =
-            p1IsTrueOrIsFalse ? p1.terms() : p1.terms().subList(1, p1.terms().size());
-
-        boolean p1DependsOnP2 = p1Parameters.stream().anyMatch(p -> p2.terms().contains(p));
-        boolean p2DependsOnP1 = p2.terms().contains(p1Output);
-
-        Preconditions.checkState(!(p1DependsOnP2 && p2DependsOnP1),
-            "cyclic dependency between primitive '%s' and rule '%s' detected", p1.predicate(),
-            p2.predicate());
-
-        // Prioritize function when its output is used by a negated rule
-        if (p2DependsOnP1 && p2IsNegated) {
-          return -1;
+      if (p2IsMaterialization) {
+        AbstractTerm head = p2.terms().get(0);
+        if (!head.isConst()) {
+          p2Needs.add(head);
         }
-
-        // Otherwise, prioritize rules and facts over functions
-        return 1;
-      }
-      if (p2IsPrimitive) {
-
-        Preconditions.checkState(!p2IsNegated, "primitive cannot be negated : %s", p2.predicate());
-
-        boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
-            || p2.predicate().baseName().equals("fn_is_false");
-        AbstractTerm p2Output = p2IsTrueOrIsFalse ? newConst(true) : p2.terms().get(0);
-        List<AbstractTerm> p2Parameters =
-            p2IsTrueOrIsFalse ? p2.terms() : p2.terms().subList(1, p2.terms().size());
-
-        boolean p2DependsOnP1 = p2Parameters.stream().anyMatch(p -> p1.terms().contains(p));
-        boolean p1DependsOnP2 = p1.terms().contains(p2Output);
-
-        Preconditions.checkState(!(p2DependsOnP1 && p1DependsOnP2),
-            "cyclic dependency between primitive '%s' and rule '%s' detected", p2.predicate(),
-            p1.predicate());
-
-        // Prioritize function when its output is used by a negated rule
-        if (p1DependsOnP2 && p1IsNegated) {
-          return 1;
+        p2Provides.addAll(
+            p2.terms().stream().skip(1).filter(t -> !t.isConst()).collect(Collectors.toList()));
+      } else if (p2IsPrimitive) {
+        p2Needs.addAll(
+            p2.terms().stream().skip(p2IsTrueOrIsFalse ? 0 : 1 /* result stored in first term */)
+                .filter(t -> !t.isConst()).collect(Collectors.toList()));
+        if (!p2IsTrueOrIsFalse) {
+          p2Provides.add(p2.terms().get(0));
         }
-
-        // Otherwise, prioritize rules and facts over functions
-        return -1;
-      }
-      if (!p1IsNegated && !p2IsNegated) {
-        return 0;
+      } else if (p2IsNegated) {
+        p2Needs.addAll(p2.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
+      } else {
+        p2Provides
+            .addAll(p2.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
       }
 
-      boolean p1DependsOnP2 = p1.terms().stream().anyMatch(p -> p2.terms().contains(p));
-      boolean p2DependsOnP1 = p2.terms().stream().anyMatch(p -> p1.terms().contains(p));
+      // If both literals do not share variables, the order of theses two body literals does not
+      // matter
+      Set<AbstractTerm> p1DependsOnP2 = Sets.intersection(p1Needs, p2Provides);
+      Set<AbstractTerm> p2DependsOnP1 = Sets.intersection(p2Needs, p1Provides);
 
-      return p1DependsOnP2 && p1IsNegated ? 1
-          : p2DependsOnP1 && p2IsNegated ? -1 : p1IsNegated ? 1 : -1;
+      if (p1DependsOnP2.isEmpty() && p2DependsOnP1.isEmpty()) {
+        return 0; // the order does not matter
+      }
+
+      Preconditions.checkState(p1DependsOnP2.isEmpty() || p2DependsOnP1.isEmpty(),
+          "cyclic dependency found : %s <-> %s", p1, p2);
+
+      if (p1DependsOnP2.isEmpty()) {
+        return -1; // p1 can provide a grounded term to p2
+      }
+      return 1; // p2 can provide a grounded term to p1
     };
   }
 

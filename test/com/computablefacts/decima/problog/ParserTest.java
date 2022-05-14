@@ -76,22 +76,6 @@ public class ParserTest {
   }
 
   @Test
-  public void testParseRuleWithNegatedLiteralsInBody() {
-
-    Var x = newVar();
-    Var y = newVar();
-
-    Literal edgeXY = new Literal("not_edge", x, y);
-    Literal nodeX = new Literal("~node", x);
-    Literal nodeY = new Literal("node", y);
-
-    Clause rule0 = reorderBodyLiterals(new Clause(edgeXY, nodeX, nodeY));
-    Clause rule1 = parseClause("not_edge(X, Y) :- node(Y), ~node(X).");
-
-    Assert.assertTrue(rule0.isRelevant(rule1));
-  }
-
-  @Test
   public void testParseEqBuiltin() {
 
     Clause rule1 = parseClause("edge(X, Y) :- node(X), node(Y), X=Y.");
@@ -345,7 +329,7 @@ public class ParserTest {
   public void testComparatorTransitivity() {
 
     List<String> literals = Lists.newArrayList("fn_is(V6031, V6032)",
-        "fn_concat(V6032, V6033, V6019)", "fn_shadow_rwufvo2(V6019, V6021)");
+        "fn_concat(V6032,  \"random\", V6019)", "fn_shadow_rwufvo2(V6019, V6021)");
 
     List<List<String>> permutations = new ArrayList<>();
     permute(literals, permutations);
@@ -365,99 +349,29 @@ public class ParserTest {
   }
 
   @Test
-  public void testComparatorWithMaterialization() {
-
-    List<String> literals = Lists.newArrayList(
-        "fn_shadow_azfpcdc(V5805, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804, V5804)",
-        "fn_shadow_u0cjyyy(V5806, V5807, V5807, V5807)",
-        "fn_accumulo_materialize_facts(\"https¤u003a//localhost/facts/bauexp/bauexp\", \"content.text.C0\", _, V5809, \"content.text.C1\", _, _, \"content.text.C2\", _, V5807, \"content.text.C3\", _, _, \"content.text.C4\", _, V5804, \"content.text.C5\", _, _)",
-        "fn_concat(V5818, V5806, V5805)", "fn_is(V5819, V5818)");
-
-    List<List<String>> permutations = new ArrayList<>();
-    permute(literals, permutations);
-
-    for (List<String> body : permutations) {
-
-      String rule =
-          String.format("convertir_identifiant_adresse_en_uex(V5809, V5819) :- %s, %s, %s, %s, %s.",
-              body.get(0), body.get(1), body.get(2), body.get(3), body.get(4));
-
-      Clause actual = parseClause(rule);
-
-      System.out.println(actual);
-
-      Assert.assertEquals("fn_accumulo_materialize_facts",
-          actual.body().get(0).predicate().baseName());
-      Assert.assertEquals("fn_shadow_",
-          actual.body().get(1).predicate().baseName().substring(0, "fn_shadow_".length()));
-      Assert.assertEquals("fn_shadow_",
-          actual.body().get(2).predicate().baseName().substring(0, "fn_shadow_".length()));
-      Assert.assertEquals("fn_concat", actual.body().get(3).predicate().baseName());
-      Assert.assertEquals("fn_is", actual.body().get(4).predicate().baseName());
-    }
-  }
-
-  @Test
-  public void testComparatorWithMaterialization2() {
-
-    List<String> literals = Lists.newArrayList("convertir_identifiant_adresse_en_uex(V5752, V5753)",
-        "fn_shadow_ob9ahdy(V5754, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753, V5753)",
-        "fn_shadow_4jf0yxn(V5758, V5753)", "fn_is_true(V5758)",
-        "fn_shadow_pgo8nt3(V5759, V5756, V5755, V5756, V5755)",
-        "fn_clickhouse_materialize_facts(\"https¤u003a//localhost/facts/bncltp/convertir_uex_en_identifiant_client\", \"xxx\", \"yyy\", \"TMP_UEX\", V5754, \"NOM_OU_RAISON_SOCIALE\", V5755, \"COMPLEMENT_RAISON_SOCIALE\", V5756, \"IDENTIFIANT_CLIENT\", V5757, \"SELECT¤u000d  tmp_bnuexp.CODUEX AS TMP_UEX¤u002c¤u000d  tmp_bnuexp.CODCLI AS IDENTIFIANT_CLIENT¤u002c¤u000d  tmp_bncltp.OCLIEN AS NOM_OU_RAISON_SOCIALE¤u002c¤u000d  tmp_bncltp.OCLICP AS COMPLEMENT_RAISON_SOCIALE¤u000dFROM¤u000d  tmp_bnuexp¤u000d  INNER JOIN tmp_bncltp ON tmp_bncltp.CODCLI ¤u003d tmp_bnuexp.CODCLI¤u000dWHERE 1 ¤u003d 1¤u000d  {TMP_UEX} AND tmp_bnuexp.CODUEX ¤u003d '¤u003aTMP_UEX'¤u000d  {NOM_OU_RAISON_SOCIALE} AND tmp_bncltp.OCLIEN ¤u003d '¤u003aNOM_OU_RAISON_SOCIALE'¤u000d  {COMPLEMENT_RAISON_SOCIALE} AND tmp_bncltp.OCLICP ¤u003d '¤u003aCOMPLEMENT_RAISON_SOCIALE'¤u000d  {IDENTIFIANT_CLIENT} AND tmp_bncltp.CODCLI ¤u003d '¤u003aIDENTIFIANT_CLIENT'\")");
-
-    List<List<String>> permutations = new ArrayList<>();
-    permute(literals, permutations);
-
-    for (List<String> body : permutations) {
-
-      String rule = String.format(
-          "convertir_identifiant_adresse_en_uex_et_client_rapide(V5752, V5753, V5757, V5755) :- %s, %s, %s, %s, %s, %s.",
-          body.get(0), body.get(1), body.get(2), body.get(3), body.get(4), body.get(5));
-
-      Clause actual = parseClause(rule);
-
-      System.out.println(actual);
-
-      Assert.assertEquals("convertir_identifiant_adresse_en_uex",
-          actual.body().get(0).predicate().baseName());
-      Assert.assertEquals("fn_clickhouse_materialize_facts",
-          actual.body().get(1).predicate().baseName());
-      Assert.assertEquals("fn_shadow_",
-          actual.body().get(2).predicate().baseName().substring(0, "fn_shadow_".length()));
-    }
-  }
-
-  @Test
-  public void testComparatorWithMaterialization3() {
-
-    List<String> literals = Lists.newArrayList(
-        "fn_clickhouse_materialize_facts(\"https://localhost/facts/tlgt-tot/tlgt_tot\", \"{{ client }}\", \"{{ env }}\", \"TMP_UEX\", TMP_UEX, \"BATIMENT\", BATIMENT, \"ESCALIER\", ESCALIER, \"ETAGE\", ETAGE, \"POSITION\", POSITION, \"EMPLACEMENT\", EMPLACEMENT, \"NOM_OCCUPANT\", NOM_OCCUPANT, \"DATE_ENTREE_OCCUPANT\", DATE_ENTREE_OCCUPANT, \"NOM_PROPRIETAIRE\", NOM_PROPRIETAIRE, \"SELECT\\n  tmp_bnuexp.CODUEX AS TMP_UEX, \\n  tmp_tlgt_tot.NBATIM AS BATIMENT, \\n tmp_tlgt_tot.NESCAL AS ESCALIER, \\n tmp_tlgt_tot.NETAGE AS ETAGE, \\n  tmp_tlgt_tot.NPOSIT AS POSITION, \\n tmp_tlgt_tot.TEMPLG AS EMPLACEMENT,\\n tmp_tlgt_tot.OOCCUP AS NOM_OCCUPANT, \\n tmp_tlgt_tot.DENTOC AS DATE_ENTREE_OCCUPANT,\\n proprio_chauffage.OPRLGT AS NOM_PROPRIETAIRE\\nFROM tmp_bnuexp\\nINNER JOIN tmp_tlgt_tot\\n ON tmp_tlgt_tot.CAGEXP = tmp_bnuexp.CAGEXP\\n  AND tmp_tlgt_tot.NUEXPL = tmp_bnuexp.NUEXPL\\nLEFT JOIN proprio_chauffage\\n ON proprio_chauffage.CAGEXP = tmp_tlgt_tot.CAGEXP\\n AND proprio_chauffage.NIDLGT = tmp_tlgt_tot.NIDLGT\\n{NOM_PROPRIETAIRE} AND proprio_chauffage.OPRLGT = ':NOM_PROPRIETAIRE'\\nWHERE 1=1\\n{TMP_UEX} AND tmp_bnuexp.CODUEX = ':TMP_UEX'\\n{BATIMENT} AND tmp_tlgt_tot.NBATIM = ':BATIMENT'\\n{ESCALIER} AND tmp_tlgt_tot.NESCAL = ':ESCALIER'\\n{ETAGE} AND tmp_tlgt_tot.NETAGE = ':ETAGE'\\n{POSITION} AND tmp_tlgt_tot.NPOSIT = ':POSITION'\\n{EMPLACEMENT} AND tmp_tlgt_tot.TEMPLG = ':EMPLACEMENT'\")",
-        "denormaliser_uex(UEX, TMP_UEX)", "fn_is(ENV, \"HEAT\")");
-
-    List<List<String>> permutations = new ArrayList<>();
-    permute(literals, permutations);
-
-    for (List<String> body : permutations) {
-
-      String rule = String.format(
-          "convertir_uex_en_logement_rapide(UEX, BATIMENT, ESCALIER, ETAGE, POSITION, EMPLACEMENT, NOM_PROPRIETAIRE, NOM_OCCUPANT, DATE_ENTREE_OCCUPANT, ENV) :- %s, %s, %s.",
-          body.get(0), body.get(1), body.get(2));
-
-      Clause actual = parseClause(rule);
-
-      System.out.println(actual);
-
-      Assert.assertEquals("denormaliser_uex", actual.body().get(0).predicate().baseName());
-      Assert.assertEquals("fn_clickhouse_materialize_facts",
-          actual.body().get(1).predicate().baseName());
-      Assert.assertEquals("fn_is", actual.body().get(2).predicate().baseName());
-    }
-  }
-
-  @Test
   public void testWrapUnwrap() {
     Assert.assertEquals("\n\r\t)(:=",
         Parser.unwrap(Parser.wrap(Parser.wrap(Parser.wrap("\n\r\t)(:=")))));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTopoSortDetectsSimpleCycles() {
+    Clause clause = parseClause("has_cycle(X, Y) :- fn_get_node(X, Z, Y), fn_get_node(Y, Z, X).");
+  }
+
+  @Test
+  public void testTopoSortWithMaterializationsAndShadowRules() {
+
+    Clause clause = parseClause(
+        "infos_geometry(PARCELLE_ID, COORDINATE_UNWRAPPED) :- load_parcelle(JSON), fn_get(PARCELLE_ID, JSON, parcelleId), fn_get(COORDINATES, fn_get(JSON, geometry), coordinates), fn_materialize_facts(COORDINATES, COORDINATE), fn_materialize_facts(COORDINATE, COORDINATE_UNWRAPPED).");
+
+    Assert.assertTrue(clause.body().get(0).isRelevant(new Literal("load_parcelle", newVar())));
+    Assert.assertTrue(clause.body().get(1)
+        .isRelevant(new Literal("fn_get", newVar(), newVar(), newConst("parcelleId"))));
+    Assert.assertTrue(clause.body().get(2).predicate().baseName().startsWith("fn_shadow_"));
+    Assert.assertTrue(
+        clause.body().get(3).isRelevant(new Literal("fn_materialize_facts", newVar(), newVar())));
+    Assert.assertTrue(
+        clause.body().get(4).isRelevant(new Literal("fn_materialize_facts", newVar(), newVar())));
   }
 }
