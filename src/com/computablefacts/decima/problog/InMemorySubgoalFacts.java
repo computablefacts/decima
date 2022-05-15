@@ -14,11 +14,6 @@ final public class InMemorySubgoalFacts extends AbstractSubgoalFacts {
   public InMemorySubgoalFacts() {}
 
   @Override
-  public boolean isEmpty() {
-    return facts_.isEmpty();
-  }
-
-  @Override
   public boolean contains(Clause clause) {
     return facts_.contains(clause);
   }
@@ -36,10 +31,5 @@ final public class InMemorySubgoalFacts extends AbstractSubgoalFacts {
   @Override
   public void add(Clause clause) {
     facts_.add(clause);
-  }
-
-  @Override
-  public void add(AbstractSubgoalFacts facts) {
-    facts.facts().forEachRemaining(facts_::add);
   }
 }
