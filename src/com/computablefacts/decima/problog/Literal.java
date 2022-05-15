@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.computablefacts.asterix.Generated;
 import com.computablefacts.nona.Function;
 import com.computablefacts.nona.types.BoxedType;
 import com.google.common.base.Joiner;
@@ -36,55 +35,18 @@ final public class Literal {
   private Boolean isGrounded_ = null;
   private Boolean isSemiGrounded_ = null;
 
-  @Generated
-  public Literal(String predicate, AbstractTerm term) {
-    this(BigDecimal.ONE, predicate, term);
+  public Literal(String predicate, AbstractTerm... terms) {
+    this(BigDecimal.ONE, predicate, Lists.newArrayList(terms));
   }
 
-  @Generated
-  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2) {
-    this(BigDecimal.ONE, predicate, term1, term2);
-  }
-
-  @Generated
-  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3) {
-    this(BigDecimal.ONE, predicate, term1, term2, term3);
-  }
-
-  @Generated
-  public Literal(String predicate, AbstractTerm term1, AbstractTerm term2, AbstractTerm term3,
-      AbstractTerm term4) {
-    this(BigDecimal.ONE, predicate, term1, term2, term3, term4);
-  }
-
-  @Generated
   public Literal(String predicate, List<AbstractTerm> terms) {
     this(BigDecimal.ONE, predicate, terms);
   }
 
-  @Generated
-  public Literal(BigDecimal probability, String predicate, AbstractTerm term) {
-    this(probability, predicate, Lists.newArrayList(term));
+  public Literal(BigDecimal probability, String predicate, AbstractTerm... terms) {
+    this(probability, predicate, Lists.newArrayList(terms));
   }
 
-  @Generated
-  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2) {
-    this(probability, predicate, Lists.newArrayList(term1, term2));
-  }
-
-  @Generated
-  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2,
-      AbstractTerm term3) {
-    this(probability, predicate, Lists.newArrayList(term1, term2, term3));
-  }
-
-  @Generated
-  public Literal(BigDecimal probability, String predicate, AbstractTerm term1, AbstractTerm term2,
-      AbstractTerm term3, AbstractTerm term4) {
-    this(probability, predicate, Lists.newArrayList(term1, term2, term3, term4));
-  }
-
-  @Generated
   public Literal(BigDecimal probability, String predicate, List<AbstractTerm> terms) {
     this(probability, predicate, terms, new ArrayList<>());
   }

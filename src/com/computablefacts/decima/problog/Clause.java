@@ -37,103 +37,10 @@ final public class Clause {
    * Initialize a rule.
    *
    * @param head literal.
-   * @param literal #1 body literal.
+   * @param body body literals.
    */
-  @Generated
-  public Clause(Literal head, Literal literal) {
-    this(head, Lists.newArrayList(literal));
-  }
-
-  /**
-   * Initialize a rule.
-   *
-   * @param head literal.
-   * @param literal1 #1 body literal.
-   * @param literal2 #2 body literal.
-   */
-  @Generated
-  public Clause(Literal head, Literal literal1, Literal literal2) {
-    this(head, Lists.newArrayList(literal1, literal2));
-  }
-
-  /**
-   * Initialize a rule.
-   *
-   * @param head literal.
-   * @param literal1 #1 body literal.
-   * @param literal2 #2 body literal.
-   * @param literal3 #3 body literal.
-   */
-  @Generated
-  public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3) {
-    this(head, Lists.newArrayList(literal1, literal2, literal3));
-  }
-
-  /**
-   * Initialize a rule.
-   *
-   * @param head literal.
-   * @param literal1 #1 body literal.
-   * @param literal2 #2 body literal.
-   * @param literal3 #3 body literal.
-   * @param literal4 #4 body literal.
-   */
-  @Generated
-  public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
-      Literal literal4) {
-    this(head, Lists.newArrayList(literal1, literal2, literal3, literal4));
-  }
-
-  /**
-   * Initialize a rule.
-   *
-   * @param head literal.
-   * @param literal1 #1 body literal.
-   * @param literal2 #2 body literal.
-   * @param literal3 #3 body literal.
-   * @param literal4 #4 body literal.
-   * @param literal5 #5 body literal.
-   */
-  @Generated
-  public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
-      Literal literal4, Literal literal5) {
-    this(head, Lists.newArrayList(literal1, literal2, literal3, literal4, literal5));
-  }
-
-  /**
-   * Initialize a rule.
-   *
-   * @param head literal.
-   * @param literal1 #1 body literal.
-   * @param literal2 #2 body literal.
-   * @param literal3 #3 body literal.
-   * @param literal4 #4 body literal.
-   * @param literal5 #5 body literal.
-   * @param literal6 #6 body literal.
-   */
-  @Generated
-  public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
-      Literal literal4, Literal literal5, Literal literal6) {
-    this(head, Lists.newArrayList(literal1, literal2, literal3, literal4, literal5, literal6));
-  }
-
-  /**
-   * Initialize a rule.
-   *
-   * @param head literal.
-   * @param literal1 #1 body literal.
-   * @param literal2 #2 body literal.
-   * @param literal3 #3 body literal.
-   * @param literal4 #4 body literal.
-   * @param literal5 #5 body literal.
-   * @param literal6 #6 body literal.
-   * @param literal7 #7 body literal.
-   */
-  @Generated
-  public Clause(Literal head, Literal literal1, Literal literal2, Literal literal3,
-      Literal literal4, Literal literal5, Literal literal6, Literal literal7) {
-    this(head,
-        Lists.newArrayList(literal1, literal2, literal3, literal4, literal5, literal6, literal7));
+  public Clause(Literal head, Literal... body) {
+    this(head, Lists.newArrayList(body));
   }
 
   /**
