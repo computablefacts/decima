@@ -428,14 +428,15 @@ final public class Literal {
 
     Function function = compile();
     BoxedType<?> result = function.evaluate(definitions);
+    boolean isValid = result != null && (result.isString() || result.isNumber()
+        || result.isBoolean() || result.isCollection() || result.isMap());
 
-    Preconditions.checkState(
-        result != null && (result.value() instanceof String || result.value() instanceof Number
-            || result.value() instanceof Boolean || result.value() instanceof Collection
-            || result.value() instanceof Map),
-        "The only return types allowed are String, Number, Boolean, Collection and Map : %s",
-        function);
-
+    if (!isValid) {
+      Preconditions.checkState(isValid,
+          "The only return types allowed are String, Number, Boolean, Collection and Map : %s(\n  %s\n)",
+          function.name(),
+          function.parameters().stream().map(Function::name).collect(Collectors.joining("\n  , ")));
+    }
     if (!isFirstTermVariable) { // => FN_IS()
 
       AbstractTerm first = terms_.get(0);
