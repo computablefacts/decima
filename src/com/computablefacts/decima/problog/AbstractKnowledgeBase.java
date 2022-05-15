@@ -35,8 +35,6 @@ import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
 import com.computablefacts.nona.types.BoxedType;
 import com.computablefacts.nona.types.Csv;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -536,8 +534,6 @@ public abstract class AbstractKnowledgeBase {
      */
     definitions_.put("FN_MATERIALIZE_FACTS", new Function("MATERIALIZE_FACTS") {
 
-      private final ObjectMapper mapper_ = new ObjectMapper();
-
       @Override
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
@@ -550,7 +546,7 @@ public abstract class AbstractKnowledgeBase {
 
         String predicate = "fn_" + name().toLowerCase();
         Collection<Literal> newCollection = new ArrayList<>();
-        Object[] oldCollection = asArray(parameters.get(0).asString());
+        Object[] oldCollection = JsonCodec.asArrayOfUnknownType(parameters.get(0).asString());
         String filter = parameters.get(1).asString();
 
         for (Object obj : oldCollection) {
@@ -566,18 +562,6 @@ public abstract class AbstractKnowledgeBase {
           }
         }
         return newCollection.isEmpty() ? BoxedType.empty() : BoxedType.create(newCollection);
-      }
-
-      // Move to asterix's JsonCodec class
-      private @NotNull Object[] asArray(String json) {
-        try {
-          return json == null ? new Map[0]
-              : mapper_.readValue(json,
-                  TypeFactory.defaultInstance().constructArrayType(TypeFactory.unknownType()));
-        } catch (IOException e) {
-          // FALL THROUGH
-        }
-        return new Map[0];
       }
     });
   }

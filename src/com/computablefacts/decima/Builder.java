@@ -9,12 +9,12 @@ import java.util.concurrent.TimeUnit;
 import com.computablefacts.asterix.IO;
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.asterix.View;
+import com.computablefacts.asterix.codecs.JsonCodec;
 import com.computablefacts.asterix.console.ConsoleApp;
 import com.computablefacts.decima.problog.AbstractTerm;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
 import com.computablefacts.decima.problog.Literal;
-import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
@@ -45,7 +45,7 @@ final public class Builder extends ConsoleApp {
 
     Set<Clause> clauses = new HashSet<>();
 
-    new JsonFlattener(json).withSeparator(SEPARATOR).flattenAsMap().forEach((k, v) -> {
+    JsonCodec.flatten(json, SEPARATOR).forEach((k, v) -> {
 
       List<AbstractTerm> terms = new ArrayList<>();
       terms.add(newConst(namespace));
