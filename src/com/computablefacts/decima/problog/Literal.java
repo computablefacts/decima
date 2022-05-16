@@ -429,11 +429,11 @@ final public class Literal {
     Function function = compile();
     BoxedType<?> result = function.evaluate(definitions);
     boolean isValid = result != null && (result.isString() || result.isNumber()
-        || result.isBoolean() || result.isCollection() || result.isMap());
+        || result.isBoolean() || result.isDate() || result.isCollection() || result.isMap());
 
     if (!isValid) {
       Preconditions.checkState(isValid,
-          "The only return types allowed are String, Number, Boolean, Collection and Map : %s(\n  %s\n)",
+          "The only return types allowed are String, Number, Boolean, Date, Collection and Map : %s(\n  %s\n)",
           function.name(),
           function.parameters().stream().map(Function::name).collect(Collectors.joining("\n  , ")));
     }
@@ -474,8 +474,9 @@ final public class Literal {
       Object value = ((Const) term).value();
 
       if (!(value instanceof String || value instanceof Number || value instanceof Boolean
-          || value instanceof Collection || value instanceof Map)) {
-        return false; // The only types allowed are String, Number, Boolean, Collection And Map
+          || value instanceof Date || value instanceof Collection || value instanceof Map)) {
+        return false; // The only types allowed are String, Number, Boolean, Date, Collection And
+                      // Map
       }
     }
     return true;
