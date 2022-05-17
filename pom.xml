@@ -42,7 +42,7 @@
 
     <properties>
         <junon.version>0.10</junon.version>
-        <nona.version>3.9</nona.version>
+        <nona.version>3.10</nona.version>
         <bplustree.version>0.1.3</bplustree.version>
         <jcip.version>1.0-1</jcip.version>
         <error-prone.version>2.3.1</error-prone.version>
