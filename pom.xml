@@ -7,7 +7,7 @@
 
     <groupId>com.computablefacts</groupId>
     <artifactId>decima</artifactId>
-    <version>1.33-SNAPSHOT</version>
+    <version>1.34-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>decima</name>
