@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.computablefacts.asterix.BloomFilter;
 import com.computablefacts.asterix.Generated;
 import com.computablefacts.asterix.trie.Trie;
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
@@ -100,6 +101,21 @@ final public class Solver {
 
     ProofAssistant assistant = new ProofAssistant(subgoals_.values());
     return assistant.proofs(root_.literal());
+  }
+
+  @Beta
+  public List<String> tableOfProofs(Literal query) {
+
+    Preconditions.checkNotNull(query, "query should not be null");
+
+    root_ = newSubgoal_.apply(query);
+    subgoals_.put(query.tag(), root_);
+
+    search(root_);
+
+    ProofAssistant assistant = new ProofAssistant(subgoals_.values());
+    Set<Clause> proofs = assistant.proofs(root_.literal());
+    return assistant.tableOfProofs();
   }
 
   /**

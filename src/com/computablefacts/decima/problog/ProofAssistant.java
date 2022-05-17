@@ -24,6 +24,8 @@ final public class ProofAssistant {
   private final Set<Clause> rulesWithSubRules_;
   private final Set<Clause> rulesWithoutSubRules_;
   private final Map<Clause, Trie<Literal>> proofs_ = new HashMap<>();
+  private final Set<Map.Entry<Integer, Set<Clause>>> factsInProofs_ = new HashSet<>();
+  private final Set<Map.Entry<Integer, Set<Clause>>> rulesInProofs_ = new HashSet<>();
 
   public ProofAssistant(Collection<Subgoal> subgoals) {
 
@@ -46,6 +48,24 @@ final public class ProofAssistant {
             .collect(Collectors.toSet());
   }
 
+  public List<String> tableOfProofs() {
+    return Sets.union(factsInProofs_, rulesInProofs_).stream().flatMap(e -> {
+
+      int depth = e.getKey();
+      Set<Clause> clauses = e.getValue();
+
+      return clauses.stream().map(c -> {
+        if (c.isFact()) {
+          if (c.head().predicate().isPrimitive()) {
+            return "[prim] depth=" + depth + ", " + c;
+          }
+          return "[fact] depth=" + depth + ", " + c;
+        }
+        return "[rule] depth=" + depth + ", " + c;
+      });
+    }).sorted().collect(Collectors.toList());
+  }
+
   public Set<Clause> proofs(Literal curLiteral) {
     return proofs(curLiteral, 0, new HashSet<>());
   }
@@ -54,10 +74,11 @@ final public class ProofAssistant {
 
     Preconditions.checkNotNull(curLiteral, "curLiteral should not be null");
     Preconditions.checkArgument(depth >= 0, "depth should be >= 0");
+    Preconditions.checkNotNull(visited, "visited should not be null");
 
     if (facts_.stream().anyMatch(fact -> fact.isRelevant(curLiteral))) {
       return facts_.stream().filter(literal -> literal.isRelevant(curLiteral)).map(Clause::new)
-          .collect(Collectors.toSet());
+          .peek(clause -> addFactAtDepth(clause, depth)).collect(Collectors.toSet());
     }
 
     Set<Clause> rulesWithSubRules =
@@ -92,6 +113,7 @@ final public class ProofAssistant {
               newNewBodies.add(nb);
             }
           }
+          addFactAtDepth(new Clause(literal), depth);
         } else if (!facts.isEmpty() /* fact */) {
           for (Literal fact : facts) {
             if (newBodies.isEmpty()) {
@@ -103,6 +125,7 @@ final public class ProofAssistant {
                 newNewBodies.add(nb);
               }
             }
+            addFactAtDepth(new Clause(literal), depth);
           }
         } else { /* rule */
 
@@ -172,7 +195,36 @@ final public class ProofAssistant {
         proofs.add(new Clause(rule.head(), body));
         proofs_.get(rule).insert(body);
       }
+      addRuleAtDepth(rule, depth);
     }
     return proofs;
+  }
+
+  private void addFactAtDepth(Clause clause, int depth) {
+
+    Optional<Map.Entry<Integer, Set<Clause>>> opt =
+        factsInProofs_.stream().filter(r -> r.getKey().equals(depth)).findFirst();
+
+    if (opt.isPresent()) {
+      opt.get().getValue().add(clause);
+    } else {
+      Set<Clause> set = new HashSet<>();
+      set.add(clause);
+      factsInProofs_.add(new AbstractMap.SimpleImmutableEntry<>(depth, set));
+    }
+  }
+
+  private void addRuleAtDepth(Clause clause, int depth) {
+
+    Optional<Map.Entry<Integer, Set<Clause>>> opt =
+        rulesInProofs_.stream().filter(r -> r.getKey().equals(depth)).findFirst();
+
+    if (opt.isPresent()) {
+      opt.get().getValue().add(clause);
+    } else {
+      Set<Clause> set = new HashSet<>();
+      set.add(clause);
+      rulesInProofs_.add(new AbstractMap.SimpleImmutableEntry<>(depth, set));
+    }
   }
 }

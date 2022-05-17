@@ -5,6 +5,7 @@ import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import com.computablefacts.asterix.trie.Trie;
 import com.computablefacts.decima.problog.*;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -74,5 +76,45 @@ public class GraphWithoutCycle1Test {
     BigDecimal probability = estimator.probability(query, 3);
 
     Assert.assertTrue(BigDecimal.valueOf(0.316).compareTo(probability) == 0);
+  }
+
+  @Test
+  public void testExtractClausesInProofs() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.4::edge(a, b)."));
+    kb.azzert(parseClause("0.55::edge(a, c)."));
+    kb.azzert(parseClause("0.8::edge(b, e)."));
+    kb.azzert(parseClause("0.2::edge(b, d)."));
+    kb.azzert(parseClause("0.4::edge(c, d)."));
+    kb.azzert(parseClause("0.3::edge(e, f)."));
+    kb.azzert(parseClause("0.5::edge(d, f)."));
+    kb.azzert(parseClause("0.6::edge(d, g)."));
+    kb.azzert(parseClause("0.7::edge(f, h)."));
+    kb.azzert(parseClause("0.7::edge(g, h)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("path(X, Y) :- edge(X, Y)."));
+    kb.azzert(parseClause("path(X, Y) :- path(X, Z), edge(Z, Y)."));
+
+    // Query kb
+    // path(b, f)?
+    Solver solver = new Solver(kb, true);
+    Literal query = new Literal("path", newConst("b"), newConst("f"));
+    List<String> table = solver.tableOfProofs(query);
+
+    Assert.assertEquals(8, table.size());
+    Assert.assertEquals(
+        "[fact] depth=0, 0.3::edge(\"e\", \"f\")\n" + "[fact] depth=0, 0.5::edge(\"d\", \"f\")\n"
+            + "[fact] depth=1, 0.2::edge(\"b\", \"d\")\n"
+            + "[fact] depth=1, 0.8::edge(\"b\", \"e\")\n"
+            + "[rule] depth=0, path(\"b\", \"f\") :- path(\"b\", \"d\"), 0.5::edge(\"d\", \"f\")\n"
+            + "[rule] depth=0, path(\"b\", \"f\") :- path(\"b\", \"e\"), 0.3::edge(\"e\", \"f\")\n"
+            + "[rule] depth=1, path(\"b\", \"d\") :- 0.2::edge(\"b\", \"d\")\n"
+            + "[rule] depth=1, path(\"b\", \"e\") :- 0.8::edge(\"b\", \"e\")",
+        Joiner.on("\n").join(table));
   }
 }

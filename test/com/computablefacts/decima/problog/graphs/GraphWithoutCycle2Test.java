@@ -5,6 +5,7 @@ import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import com.computablefacts.asterix.trie.Trie;
 import com.computablefacts.decima.problog.*;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -100,5 +102,57 @@ public class GraphWithoutCycle2Test {
     BigDecimal probability2 = estimator2.probability(query2, 2);
 
     Assert.assertTrue(BigDecimal.valueOf(0.94).compareTo(probability2) == 0);
+  }
+
+  @Test
+  public void testExtractClausesInProofs() {
+
+    // Create kb
+    InMemoryKnowledgeBase kb = new InMemoryKnowledgeBase();
+
+    // Init kb with facts
+    kb.azzert(parseClause("0.8::edge(a, c)."));
+    kb.azzert(parseClause("0.6::edge(b, c)."));
+    kb.azzert(parseClause("0.7::edge(a, b)."));
+    kb.azzert(parseClause("0.9::edge(c, d)."));
+    kb.azzert(parseClause("0.8::edge(c, e)."));
+    kb.azzert(parseClause("0.5::edge(e, d)."));
+
+    // Init kb with rules
+    kb.azzert(parseClause("path(X, Y) :- edge(X, Y)."));
+    kb.azzert(parseClause("path(X, Y) :- path(X, Z), edge(Z, Y)."));
+
+    // Query kb
+    // path(a, d)?
+    Solver solver = new Solver(kb, true);
+    Literal query1 = new Literal("path", newConst("a"), newConst("d"));
+    List<String> table1 = solver.tableOfProofs(query1);
+
+    Assert.assertEquals(12, table1.size());
+    Assert.assertEquals("[fact] depth=0, 0.5::edge(\"e\", \"d\")\n"
+        + "[fact] depth=0, 0.9::edge(\"c\", \"d\")\n" + "[fact] depth=1, 0.6::edge(\"b\", \"c\")\n"
+        + "[fact] depth=1, 0.8::edge(\"a\", \"c\")\n" + "[fact] depth=1, 0.8::edge(\"c\", \"e\")\n"
+        + "[fact] depth=2, 0.7::edge(\"a\", \"b\")\n"
+        + "[rule] depth=0, path(\"a\", \"d\") :- path(\"a\", \"c\"), 0.9::edge(\"c\", \"d\")\n"
+        + "[rule] depth=0, path(\"a\", \"d\") :- path(\"a\", \"e\"), 0.5::edge(\"e\", \"d\")\n"
+        + "[rule] depth=1, path(\"a\", \"c\") :- 0.8::edge(\"a\", \"c\")\n"
+        + "[rule] depth=1, path(\"a\", \"c\") :- path(\"a\", \"b\"), 0.6::edge(\"b\", \"c\")\n"
+        + "[rule] depth=1, path(\"a\", \"e\") :- path(\"a\", \"c\"), 0.8::edge(\"c\", \"e\")\n"
+        + "[rule] depth=2, path(\"a\", \"b\") :- 0.7::edge(\"a\", \"b\")",
+        Joiner.on("\n").join(table1));
+
+    // Query kb
+    // path(c, d)?
+    Literal query2 = new Literal("path", newConst("c"), newConst("d"));
+    List<String> table2 = solver.tableOfProofs(query2);
+
+    Assert.assertEquals(6, table2.size());
+    Assert.assertEquals(
+        "[fact] depth=0, 0.5::edge(\"e\", \"d\")\n" + "[fact] depth=0, 0.9::edge(\"c\", \"d\")\n"
+            + "[fact] depth=1, 0.8::edge(\"c\", \"e\")\n"
+            + "[rule] depth=0, path(\"c\", \"d\") :- 0.9::edge(\"c\", \"d\")\n"
+            + "[rule] depth=0, path(\"c\", \"d\") :- path(\"c\", \"e\"), 0.5::edge(\"e\", \"d\")\n"
+            + "[rule] depth=1, path(\"c\", \"e\") :- 0.8::edge(\"c\", \"e\")",
+        Joiner.on("\n").join(table2));
   }
 }
