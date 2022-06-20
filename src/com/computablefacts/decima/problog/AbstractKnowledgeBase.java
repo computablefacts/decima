@@ -3,22 +3,6 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.asterix.View;
 import com.computablefacts.asterix.codecs.Base64Codec;
@@ -38,13 +22,34 @@ import com.computablefacts.nona.types.Csv;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This class allows us to be agnostic from the storage layer. It is used to assert facts and rules.
+ * This class allows us to be agnostic from the storage layer. It is used to assert facts and
+ * rules.
  */
 @CheckReturnValue
 public abstract class AbstractKnowledgeBase {
@@ -180,17 +185,16 @@ public abstract class AbstractKnowledgeBase {
   public List<Clause> compact() {
 
     // Find all rules that do not reference another rule (if any)
-    Map.Entry<List<Clause>, List<Clause>> rules =
-        View.of(rules()).divide(rule -> rule.body().stream().noneMatch(literal -> View.of(rules())
-            .map(Clause::head).anyMatch(head -> head.isRelevant(literal))));
+    Map.Entry<List<Clause>, List<Clause>> rules = View.of(rules()).divide(
+        rule -> rule.body().stream().noneMatch(literal -> View.of(rules()).map(Clause::head)
+            .anyMatch(head -> head.isRelevant(literal))));
     List<Clause> dontReferenceOtherRules = rules.getKey();
     List<Clause> referenceOtherRules = rules.getValue();
 
     // Inline all rules that are not referenced by another rule
     List<Clause> newRules = referenceOtherRules.stream().flatMap(rule -> {
 
-      @Var
-      List<Clause> list = Lists.newArrayList(rule);
+      @Var List<Clause> list = Lists.newArrayList(rule);
 
       while (true) {
 
@@ -205,15 +209,16 @@ public abstract class AbstractKnowledgeBase {
             int pos = j;
             Literal literal = clause.body().get(pos);
 
-            newList.addAll(dontReferenceOtherRules.stream()
-                .filter(r -> r.head().isRelevant(literal)).map(or -> {
+            newList.addAll(
+                dontReferenceOtherRules.stream().filter(r -> r.head().isRelevant(literal))
+                    .map(or -> {
 
-                  Clause referencingRule = clause.rename();
-                  Clause referencedRule = or.rename();
-                  Clause newClause = mergeRules(referencingRule, referencedRule, pos);
+                      Clause referencingRule = clause.rename();
+                      Clause referencedRule = or.rename();
+                      Clause newClause = mergeRules(referencingRule, referencedRule, pos);
 
-                  return reorderBodyLiterals(newClause);
-                }).collect(Collectors.toList()));
+                      return reorderBodyLiterals(newClause);
+                    }).collect(Collectors.toList()));
           }
         }
         if (newList.isEmpty()) {
@@ -456,11 +461,10 @@ public abstract class AbstractKnowledgeBase {
           int status = con.getResponseCode();
 
           if (status > 299) {
-            try (BufferedReader in =
-                new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
+            try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getErrorStream()))) {
 
-              @Var
-              String inputLine;
+              @Var String inputLine;
 
               while ((inputLine = in.readLine()) != null) {
                 result.append(inputLine);
@@ -471,11 +475,10 @@ public abstract class AbstractKnowledgeBase {
             return BoxedType.empty();
           }
 
-          try (
-              BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+          try (BufferedReader in = new BufferedReader(
+              new InputStreamReader(con.getInputStream()))) {
 
-            @Var
-            String inputLine;
+            @Var String inputLine;
 
             while ((inputLine = in.readLine()) != null) {
               result.append(inputLine);
@@ -546,7 +549,8 @@ public abstract class AbstractKnowledgeBase {
 
         String predicate = "fn_" + name().toLowerCase();
         Collection<Literal> newCollection = new ArrayList<>();
-        Object[] oldCollection = JsonCodec.asArrayOfUnknownType(parameters.get(0).asString());
+        Object[] oldCollection = Strings.isNullOrEmpty(parameters.get(0).asString()) ? new Map[0]
+            : JsonCodec.asArrayOfUnknownType(parameters.get(0).asString());
         String filter = parameters.get(1).asString();
 
         for (Object obj : oldCollection) {
@@ -577,7 +581,7 @@ public abstract class AbstractKnowledgeBase {
    *
    * @param clause clause.
    * @return a {@link Pair} with {@link Pair#t} containing the rewritten clause and {@link Pair#u}
-   *         the newly created fact.
+   * the newly created fact.
    */
   protected Pair<Clause, Clause> rewriteRuleHead(Clause clause) {
 
@@ -618,8 +622,8 @@ public abstract class AbstractKnowledgeBase {
     Preconditions.checkArgument(pos >= 0 && pos < referencingRule.body().size(),
         "pos must be such as 0 <= pos < %d", referencingRule.body().size());
 
-    Map<com.computablefacts.decima.problog.Var, AbstractTerm> env =
-        referencedRule.head().unify(referencingRule.body().get(pos));
+    Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = referencedRule.head()
+        .unify(referencingRule.body().get(pos));
 
     Preconditions.checkState(env != null, "env should not be null");
 
