@@ -2,7 +2,6 @@ package com.computablefacts.decima.robdd;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -102,8 +101,7 @@ public class TestSifting extends TestBdd {
 
     BddNode res = manager.sifting(a0);
 
-    System.out
-        .println(manager.toDot(res, (x) -> "x" + x.index() + " (" + x.refCount() + ")", true));
+    System.out.println(manager.toDot(res, (x) -> "x" + x.index() + " (" + x.refCount() + ")", true));
 
     checkThruthTable(truth, res);
 

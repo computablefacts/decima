@@ -3,18 +3,16 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.parseClause;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.computablefacts.asterix.RandomString;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class BPlusTreeSubgoalFactsTest {
 
@@ -46,8 +44,8 @@ public class BPlusTreeSubgoalFactsTest {
     // s1(1)?
     AtomicInteger id = new AtomicInteger(0);
     String tblName = "solver_subgoals_" + new RandomString().nextString();
-    Solver solver = new Solver(kb, literal -> new Subgoal(literal, new BPlusTreeSubgoalFacts(
-        System.getProperty("java.io.tmpdir"), tblName, id.getAndIncrement()), true));
+    Solver solver = new Solver(kb, literal -> new Subgoal(literal,
+        new BPlusTreeSubgoalFacts(System.getProperty("java.io.tmpdir"), tblName, id.getAndIncrement()), true));
     Literal query = new Literal("s1", newConst(1));
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
 
@@ -88,11 +86,9 @@ public class BPlusTreeSubgoalFactsTest {
     Multiset<Literal> facts = HashMultiset.create();
     AtomicInteger id = new AtomicInteger(0);
     String tblName = "solver_subgoals_" + new RandomString().nextString();
-    Solver solver = new Solver(kb,
-        literal -> new Subgoal(literal,
-            new BPlusTreeSubgoalFacts(System.getProperty("java.io.tmpdir"), tblName,
-                id.getAndIncrement(), facts::add),
-            true));
+    Solver solver = new Solver(kb, literal -> new Subgoal(literal,
+        new BPlusTreeSubgoalFacts(System.getProperty("java.io.tmpdir"), tblName, id.getAndIncrement(), facts::add),
+        true));
     Literal query = new Literal("s2", newConst(1));
     List<Clause> proofs = Lists.newArrayList(solver.proofs(query));
 
@@ -102,14 +98,10 @@ public class BPlusTreeSubgoalFactsTest {
     Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "b", newConst(1))));
     Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "b", newConst(2))));
     Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "b", newConst(3))));
-    Assert.assertTrue(
-        facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(1), newConst(3))));
-    Assert.assertTrue(
-        facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(1), newConst(2))));
-    Assert.assertTrue(
-        facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(2), newConst(3))));
-    Assert.assertTrue(
-        facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(2), newConst(1))));
+    Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(1), newConst(3))));
+    Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(1), newConst(2))));
+    Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(2), newConst(3))));
+    Assert.assertTrue(facts.contains(new Literal(BigDecimal.valueOf(0.5), "f", newConst(2), newConst(1))));
     Assert.assertTrue(facts.contains(new Literal("s2", newConst(3))));
     Assert.assertTrue(facts.contains(new Literal("s2", newConst(2))));
     Assert.assertTrue(facts.contains(new Literal("s2", newConst(1))));

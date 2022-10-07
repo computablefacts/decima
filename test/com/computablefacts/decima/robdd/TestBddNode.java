@@ -1,12 +1,10 @@
 package com.computablefacts.decima.robdd;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.google.errorprone.annotations.Var;
-
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TestBddNode {
 
@@ -14,8 +12,8 @@ public class TestBddNode {
   public void testHashcodeAndEquals() {
     BddManager manager = new BddManager(1);
     EqualsVerifier.forClass(BddNode.class).suppress(Warning.NONFINAL_FIELDS)
-        .withPrefabValues(BddNode.class, manager.Zero, manager.One)
-        .withIgnoredFields("value_", "index_", "refCount_").verify();
+        .withPrefabValues(BddNode.class, manager.Zero, manager.One).withIgnoredFields("value_", "index_", "refCount_")
+        .verify();
   }
 
   @Test
@@ -38,8 +36,7 @@ public class TestBddNode {
     BddManager manager = new BddManager(1);
     BddNode c = manager.create(0, manager.Zero, manager.One);
 
-    @Var
-    String str = manager.One.toString();
+    @Var String str = manager.One.toString();
 
     Assert.assertTrue(str.contains("Identifier=1"));
     Assert.assertTrue(str.contains("Value=true"));

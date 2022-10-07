@@ -1,10 +1,8 @@
 package com.computablefacts.decima.robdd;
 
-import java.util.Random;
-
-import org.junit.Test;
-
 import com.google.errorprone.annotations.Var;
+import java.util.Random;
+import org.junit.Test;
 
 public class TestLargeModel {
 
@@ -20,8 +18,7 @@ public class TestLargeModel {
     manager = new BddManager(0);
     r = new Random();
 
-    @Var
-    BddNode bdd = generate(0, m1, m2);
+    @Var BddNode bdd = generate(0, m1, m2);
 
     System.out.println("Number of nodes in BDD: " + manager.size(bdd) + "/" + manager.N());
 
@@ -37,8 +34,7 @@ public class TestLargeModel {
       return manager.create(id, manager.Zero, manager.One);
     }
 
-    @Var
-    BddNode acc = getAndOr(height, max, m2);
+    @Var BddNode acc = getAndOr(height, max, m2);
 
     for (int i = 0; i < m2; i++) {
       acc = manager.and(acc, generate(height + 1, max, m2));

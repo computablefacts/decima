@@ -2,17 +2,15 @@ package com.computablefacts.decima.problog;
 
 import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Assert;
 import org.junit.Test;
-
-import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class VarTest {
 
   @Test
   public void testHashcodeAndEquals() {
-    EqualsVerifier.forClass(Var.class).withNonnullFields("id_").withIgnoredFields("isWildcard_")
-        .verify();
+    EqualsVerifier.forClass(Var.class).withNonnullFields("id_").withIgnoredFields("isWildcard_").verify();
   }
 
   @Test

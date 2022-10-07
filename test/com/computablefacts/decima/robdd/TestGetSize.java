@@ -2,7 +2,6 @@ package com.computablefacts.decima.robdd;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
 

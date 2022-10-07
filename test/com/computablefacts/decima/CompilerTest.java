@@ -1,18 +1,16 @@
 package com.computablefacts.decima;
 
+import com.computablefacts.decima.yaml.TestUtils;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.computablefacts.decima.yaml.TestUtils;
-import com.google.common.collect.Lists;
 
 @net.jcip.annotations.NotThreadSafe
 public class CompilerTest {
@@ -40,12 +38,11 @@ public class CompilerTest {
     String yaml = TestUtils.load("/data/tests/valid-yaml.yml");
     Path file = Files.createTempFile("rules-", ".yml");
     Files.write(file, Lists.newArrayList(yaml));
-    Compiler.main(new String[] {"-input", file.toString()});
+    Compiler.main(new String[]{"-input", file.toString()});
 
-    Assert.assertTrue(outContent_.toString().replace("\r", "")
-        .startsWith("0.3::stress(X) :- person(X).\n"
-            + "0.2::influences(X, Y) :- person(X), person(Y).\n" + "1.0::smokes(X) :- stress(X).\n"
-            + "1.0::smokes(X) :- friend(X, Y), influences(Y, X), smokes(Y).\n"
+    Assert.assertTrue(outContent_.toString().replace("\r", "").startsWith(
+        "0.3::stress(X) :- person(X).\n" + "0.2::influences(X, Y) :- person(X), person(Y).\n"
+            + "1.0::smokes(X) :- stress(X).\n" + "1.0::smokes(X) :- friend(X, Y), influences(Y, X), smokes(Y).\n"
             + "0.4::asthma(X) :- smokes(X).\n"));
   }
 }

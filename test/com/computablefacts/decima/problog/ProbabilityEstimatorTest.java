@@ -3,20 +3,20 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 import static com.computablefacts.decima.problog.Parser.parseClause;
-import static com.computablefacts.decima.problog.TestUtils.*;
+import static com.computablefacts.decima.problog.TestUtils.buildClause;
+import static com.computablefacts.decima.problog.TestUtils.checkAnswers;
+import static com.computablefacts.decima.problog.TestUtils.checkProofs;
 
+import com.computablefacts.asterix.trie.Trie;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.computablefacts.asterix.trie.Trie;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class ProbabilityEstimatorTest {
 
@@ -104,7 +104,7 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Non-ground query
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/non_ground_query.pl
    */
   @Test
@@ -151,7 +151,7 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Ground, non-ground query
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/ground_nonground_bug_v4.pl
    */
   @Test
@@ -187,7 +187,7 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Negative query
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/negative_query.pl
    */
   @Test
@@ -226,11 +226,11 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Tossing coins
-   *
+   * <p>
    * Description: two coins - one biased and one not.
-   *
+   * <p>
    * Query: what is the probability of throwing some heads.
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_or.pl
    */
   @Test
@@ -276,11 +276,11 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Tossing coins
-   *
+   * <p>
    * Description: two coins - one biased and one not.
-   *
+   * <p>
    * Query: what is the probability of throwing two heads.
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_and.pl
    */
   @Test
@@ -309,8 +309,7 @@ public class ProbabilityEstimatorTest {
     Assert.assertEquals(1, answers.size());
     Assert.assertEquals(1, tries.size());
 
-    Clause answer =
-        buildClause("twoHeads(a)", Lists.newArrayList("0.5::heads1(a)", "0.6::heads2(a)"));
+    Clause answer = buildClause("twoHeads(a)", Lists.newArrayList("0.5::heads1(a)", "0.6::heads2(a)"));
 
     Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer)));
     Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer)));
@@ -325,9 +324,9 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Duplicate fact
-   *
+   * <p>
    * Description: Interpret as two separate facts.
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_duplicate.pl
    */
   @Test
@@ -390,9 +389,9 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Probabilistic negation
-   *
+   * <p>
    * Description: Compute probability of a negated fact.
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_not.pl
    */
   @Test
@@ -432,9 +431,9 @@ public class ProbabilityEstimatorTest {
 
   /**
    * Probabilistic negation of a rule
-   *
+   * <p>
    * Description: Compute probability of a negated rule.
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/00_trivial_not_and.pl
    */
   @Test

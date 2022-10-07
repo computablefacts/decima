@@ -6,14 +6,16 @@ import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
 import static com.computablefacts.decima.problog.TestUtils.permute;
 
-import java.math.BigDecimal;
-import java.util.*;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.computablefacts.asterix.codecs.JsonCodec;
 import com.google.common.collect.Lists;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ParserTest {
 
@@ -193,8 +195,7 @@ public class ParserTest {
   @Test
   public void testParseFunction() {
 
-    Clause rule =
-        parseClause("under_and_above(X, Y) :- fn_if(O, fn_and(fn_lt(X, 0), fn_gt(Y, 0)), 1, 0).");
+    Clause rule = parseClause("under_and_above(X, Y) :- fn_if(O, fn_and(fn_lt(X, 0), fn_gt(Y, 0)), 1, 0).");
 
     Assert.assertTrue(rule.isRule());
     Assert.assertFalse(rule.isFact());
@@ -256,8 +257,7 @@ public class ParserTest {
 
     Var tmp = newVar();
     List<Literal> body = Lists.newArrayList(
-        new Literal("fn_match_regex", tmp, input,
-            newConst("(?m:^OPEN\\\\s+[a-zA-Z0-9]+\\\\s+BUCKET:\\\\s+.*$)")),
+        new Literal("fn_match_regex", tmp, input, newConst("(?m:^OPEN\\\\s+[a-zA-Z0-9]+\\\\s+BUCKET:\\\\s+.*$)")),
         new Literal("fn_to_text", output, tmp));
 
     Clause clause1 = new Clause(head, body);
@@ -281,7 +281,7 @@ public class ParserTest {
     Literal edgeXY = new Literal("edge", x, y);
 
     List<List<Literal>> permutations = new ArrayList<>();
-    permute(new Literal[] {fnIsTrue, fnLt, nodeX, nodeY}, permutations);
+    permute(new Literal[]{fnIsTrue, fnLt, nodeX, nodeY}, permutations);
 
     Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), fn_is_true(U).");
 
@@ -310,7 +310,7 @@ public class ParserTest {
     Literal edgeXY = new Literal("edge", x, y);
 
     List<List<Literal>> permutations = new ArrayList<>();
-    permute(new Literal[] {isFalse, fnLt, nodeX, nodeY}, permutations);
+    permute(new Literal[]{isFalse, fnLt, nodeX, nodeY}, permutations);
 
     Clause expected = parseClause("edge(X, Y) :- node(X), node(Y), fn_lt(U, X, Y), ~is_false(U).");
 
@@ -328,17 +328,16 @@ public class ParserTest {
   @Test
   public void testComparatorTransitivity() {
 
-    List<String> literals = Lists.newArrayList("fn_is(V6031, V6032)",
-        "fn_concat(V6032,  \"random\", V6019)", "fn_shadow_rwufvo2(V6019, V6021)");
+    List<String> literals = Lists.newArrayList("fn_is(V6031, V6032)", "fn_concat(V6032,  \"random\", V6019)",
+        "fn_shadow_rwufvo2(V6019, V6021)");
 
     List<List<String>> permutations = new ArrayList<>();
     permute(literals, permutations);
 
     for (List<String> body : permutations) {
 
-      String rule =
-          String.format("convertir_identifiant_adresse_en_uex(V6021, V6031) :- %s, %s, %s.",
-              body.get(0), body.get(1), body.get(2));
+      String rule = String.format("convertir_identifiant_adresse_en_uex(V6021, V6031) :- %s, %s, %s.", body.get(0),
+          body.get(1), body.get(2));
 
       Clause actual = parseClause(rule);
 
@@ -350,8 +349,7 @@ public class ParserTest {
 
   @Test
   public void testWrapUnwrap() {
-    Assert.assertEquals("\n\r\t)(:=",
-        Parser.unwrap(Parser.wrap(Parser.wrap(Parser.wrap("\n\r\t)(:=")))));
+    Assert.assertEquals("\n\r\t)(:=", Parser.unwrap(Parser.wrap(Parser.wrap(Parser.wrap("\n\r\t)(:=")))));
   }
 
   @Test(expected = IllegalStateException.class)
@@ -366,12 +364,10 @@ public class ParserTest {
         "infos_geometry(PARCELLE_ID, COORDINATE_UNWRAPPED) :- load_parcelle(JSON), fn_get(PARCELLE_ID, JSON, parcelleId), fn_get(COORDINATES, fn_get(JSON, geometry), coordinates), fn_materialize_facts(COORDINATES, COORDINATE), fn_materialize_facts(COORDINATE, COORDINATE_UNWRAPPED).");
 
     Assert.assertTrue(clause.body().get(0).isRelevant(new Literal("load_parcelle", newVar())));
-    Assert.assertTrue(clause.body().get(1)
-        .isRelevant(new Literal("fn_get", newVar(), newVar(), newConst("parcelleId"))));
+    Assert.assertTrue(
+        clause.body().get(1).isRelevant(new Literal("fn_get", newVar(), newVar(), newConst("parcelleId"))));
     Assert.assertTrue(clause.body().get(2).predicate().baseName().startsWith("fn_shadow_"));
-    Assert.assertTrue(
-        clause.body().get(3).isRelevant(new Literal("fn_materialize_facts", newVar(), newVar())));
-    Assert.assertTrue(
-        clause.body().get(4).isRelevant(new Literal("fn_materialize_facts", newVar(), newVar())));
+    Assert.assertTrue(clause.body().get(3).isRelevant(new Literal("fn_materialize_facts", newVar(), newVar())));
+    Assert.assertTrue(clause.body().get(4).isRelevant(new Literal("fn_materialize_facts", newVar(), newVar())));
   }
 }

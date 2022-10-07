@@ -1,11 +1,9 @@
 package com.computablefacts.decima.robdd;
 
+import com.google.errorprone.annotations.Var;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Test;
-
-import com.google.errorprone.annotations.Var;
 
 public class TestSwap extends TestBdd {
 
@@ -89,8 +87,7 @@ public class TestSwap extends TestBdd {
 
     System.out.println(manager.toDot(root, (x) -> Integer.toString(x.refCount(), 10), true));
 
-    @Var
-    BddNode res = manager.Swap(root, rdict.get("b"), rdict.get("c"));
+    @Var BddNode res = manager.Swap(root, rdict.get("b"), rdict.get("c"));
     checkThruthTable(truth, res);
 
     System.out.println(manager.toDot(root, (x) -> Integer.toString(x.refCount(), 10), true));
@@ -122,8 +119,7 @@ public class TestSwap extends TestBdd {
 
     Map<String, Boolean> truth = buildThruthTable(manager, root);
 
-    @Var
-    BddNode res = manager.Swap(root, rdict.get("b"), rdict.get("c"));
+    @Var BddNode res = manager.Swap(root, rdict.get("b"), rdict.get("c"));
     checkThruthTable(truth, res);
 
     res = manager.Swap(root, rdict.get("a"), rdict.get("c"));

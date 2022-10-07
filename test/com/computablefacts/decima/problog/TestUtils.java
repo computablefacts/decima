@@ -2,6 +2,9 @@ package com.computablefacts.decima.problog;
 
 import static com.computablefacts.decima.problog.Parser.parseClause;
 
+import com.computablefacts.asterix.trie.Trie;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,19 +13,15 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.computablefacts.asterix.trie.Trie;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
-
 final public class TestUtils {
 
-  private TestUtils() {}
+  private TestUtils() {
+  }
 
   public static Clause buildClause(String head, List<String> body) {
 
     Literal newHead = parseClause(head + ".").head();
-    List<Literal> newBody =
-        body.stream().map(s -> parseClause(s + ".").head()).collect(Collectors.toList());
+    List<Literal> newBody = body.stream().map(s -> parseClause(s + ".").head()).collect(Collectors.toList());
 
     Clause clause = new Clause(newHead, newBody);
     Preconditions.checkState(clause.isGrounded(), "invalid clause : %s", clause);
@@ -39,8 +38,7 @@ final public class TestUtils {
         return false;
       }
       stopwatch.stop();
-      System.out.println(
-          "Answer checked in " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms : " + answer);
+      System.out.println("Answer checked in " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms : " + answer);
     }
     return true;
   }
@@ -49,8 +47,7 @@ final public class TestUtils {
     return checkProofs(actual, expected, false);
   }
 
-  public static boolean checkProofs(Map<Literal, Trie<Literal>> actual, Set<Clause> expected,
-      boolean ignoreFunctions) {
+  public static boolean checkProofs(Map<Literal, Trie<Literal>> actual, Set<Clause> expected, boolean ignoreFunctions) {
     for (Clause proof : expected) {
 
       System.out.println("Checking proof : " + proof);
@@ -69,12 +66,9 @@ final public class TestUtils {
         if (bodies.stream().noneMatch(body -> {
           if (actual.containsKey(proof.head())) {
 
-            List<List<Literal>> proofs = actual.get(proof.head()).paths().stream()
-                .map(path -> path.stream()
-                    .filter(p -> !p.predicate().baseName()
-                        .startsWith("proba_") /* ignore synthetic facts */)
-                    .filter(p -> !ignoreFunctions || !p.predicate().isPrimitive())
-                    .collect(Collectors.toList()))
+            List<List<Literal>> proofs = actual.get(proof.head()).paths().stream().map(path -> path.stream()
+                    .filter(p -> !p.predicate().baseName().startsWith("proba_") /* ignore synthetic facts */)
+                    .filter(p -> !ignoreFunctions || !p.predicate().isPrimitive()).collect(Collectors.toList()))
                 .collect(Collectors.toList());
 
             return proofs.contains(body);
@@ -85,8 +79,7 @@ final public class TestUtils {
         }
       }
       stopwatch.stop();
-      System.out.println(
-          "Proof checked in " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms : " + proof);
+      System.out.println("Proof checked in " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms : " + proof);
     }
     return true;
   }

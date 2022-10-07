@@ -10,12 +10,11 @@ final public class TestUtils {
 
   public static String load(String path) throws IOException {
     try (InputStream stream = TestUtils.class.getResourceAsStream(path)) {
-      try (BufferedReader buffer =
-          new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+      try (BufferedReader buffer = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
         StringBuilder builder = new StringBuilder();
 
-        for (String line; (line = buffer.readLine()) != null;) {
+        for (String line; (line = buffer.readLine()) != null; ) {
           builder.append(line).append('\n');
         }
         return builder.toString();

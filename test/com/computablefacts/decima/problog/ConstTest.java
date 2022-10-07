@@ -2,17 +2,15 @@ package com.computablefacts.decima.problog;
 
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Assert;
 import org.junit.Test;
-
-import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class ConstTest {
 
   @Test
   public void testHashcodeAndEquals() {
-    EqualsVerifier.forClass(Const.class).withIgnoredFields("value_").withNonnullFields("id_")
-        .verify();
+    EqualsVerifier.forClass(Const.class).withIgnoredFields("value_").withNonnullFields("id_").verify();
   }
 
   @Test

@@ -1,18 +1,15 @@
 package com.computablefacts.decima.robdd;
 
+import com.google.errorprone.annotations.Var;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Assert;
-
-import com.google.errorprone.annotations.Var;
 
 public class TestBdd {
 
   private static Map<Integer, Boolean> buildInterpretation(String key) {
 
-    @Var
-    int index = 0;
+    @Var int index = 0;
     Map<Integer, Boolean> interpretation = new HashMap<>();
 
     for (int i = 0; i < key.length(); i++) {

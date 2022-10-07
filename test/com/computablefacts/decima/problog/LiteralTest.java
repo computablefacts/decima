@@ -6,7 +6,6 @@ import static com.computablefacts.decima.problog.Parser.parseClause;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
 

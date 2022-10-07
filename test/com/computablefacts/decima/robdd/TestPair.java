@@ -1,8 +1,7 @@
 package com.computablefacts.decima.robdd;
 
-import org.junit.Test;
-
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
 
 public class TestPair {
 

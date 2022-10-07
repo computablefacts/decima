@@ -2,22 +2,26 @@ package com.computablefacts.decima.problog.graphs;
 
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.parseClause;
-import static com.computablefacts.decima.problog.TestUtils.*;
+import static com.computablefacts.decima.problog.TestUtils.buildClause;
+import static com.computablefacts.decima.problog.TestUtils.checkAnswers;
+import static com.computablefacts.decima.problog.TestUtils.checkProofs;
 
+import com.computablefacts.asterix.WildcardMatcher;
+import com.computablefacts.asterix.trie.Trie;
+import com.computablefacts.decima.problog.Clause;
+import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
+import com.computablefacts.decima.problog.Literal;
+import com.computablefacts.decima.problog.ProbabilityEstimator;
+import com.computablefacts.decima.problog.Solver;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.computablefacts.asterix.WildcardMatcher;
-import com.computablefacts.asterix.trie.Trie;
-import com.computablefacts.decima.problog.*;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class ToothacheTest {
 
@@ -53,14 +57,10 @@ public class ToothacheTest {
     Assert.assertEquals(1, answers.size());
     Assert.assertEquals(1, tries.size());
 
-    Clause answer1 =
-        buildClause("toothache(a)", Lists.newArrayList("0.9::~cavity(a)", "0.95::~gum_disease(a)"));
-    Clause answer2 =
-        buildClause("toothache(a)", Lists.newArrayList("0.1::cavity(a)", "0.05::gum_disease(a)"));
-    Clause answer3 =
-        buildClause("toothache(a)", Lists.newArrayList("0.9::~cavity(a)", "0.05::gum_disease(a)"));
-    Clause answer4 =
-        buildClause("toothache(a)", Lists.newArrayList("0.1::cavity(a)", "0.95::~gum_disease(a)"));
+    Clause answer1 = buildClause("toothache(a)", Lists.newArrayList("0.9::~cavity(a)", "0.95::~gum_disease(a)"));
+    Clause answer2 = buildClause("toothache(a)", Lists.newArrayList("0.1::cavity(a)", "0.05::gum_disease(a)"));
+    Clause answer3 = buildClause("toothache(a)", Lists.newArrayList("0.9::~cavity(a)", "0.05::gum_disease(a)"));
+    Clause answer4 = buildClause("toothache(a)", Lists.newArrayList("0.1::cavity(a)", "0.95::~gum_disease(a)"));
 
     Assert.assertTrue(checkAnswers(answers, Sets.newHashSet(answer1, answer2, answer3, answer4)));
     Assert.assertTrue(checkProofs(tries, Sets.newHashSet(answer1, answer2, answer3, answer4)));
@@ -97,12 +97,9 @@ public class ToothacheTest {
 
     Assert.assertEquals(11, table.size());
     Assert.assertTrue(WildcardMatcher.match(Joiner.on("\n").join(table),
-        "[fact] depth=0, 0.05::gum_disease(\"a\")\n"
-            + "[fact] depth=0, 0.05::proba_???????(\"true\")\n"
-            + "[fact] depth=0, 0.1::cavity(\"a\")\n"
-            + "[fact] depth=0, 0.3::proba_???????(\"true\")\n"
-            + "[fact] depth=0, 0.6::proba_???????(\"true\")\n"
-            + "[fact] depth=0, 0.95::~gum_disease(\"a\")\n"
+        "[fact] depth=0, 0.05::gum_disease(\"a\")\n" + "[fact] depth=0, 0.05::proba_???????(\"true\")\n"
+            + "[fact] depth=0, 0.1::cavity(\"a\")\n" + "[fact] depth=0, 0.3::proba_???????(\"true\")\n"
+            + "[fact] depth=0, 0.6::proba_???????(\"true\")\n" + "[fact] depth=0, 0.95::~gum_disease(\"a\")\n"
             + "[fact] depth=0, 0.9::~cavity(\"a\")\n"
             + "[rule] depth=0, toothache(\"a\") :- 0.05::gum_disease(\"a\"), 0.9::~cavity(\"a\"), 0.3::proba_???????(\"true\")\n"
             + "[rule] depth=0, toothache(\"a\") :- 0.1::cavity(\"a\"), 0.05::gum_disease(\"a\")\n"

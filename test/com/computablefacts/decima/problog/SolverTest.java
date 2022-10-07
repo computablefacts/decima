@@ -6,14 +6,12 @@ import static com.computablefacts.decima.problog.Parser.parseClause;
 import static com.computablefacts.decima.problog.TestUtils.checkAnswers;
 import static com.computablefacts.decima.problog.TestUtils.checkProofs;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.computablefacts.asterix.trie.Trie;
 import com.google.common.collect.Sets;
+import java.util.Map;
+import java.util.Set;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class SolverTest {
 
@@ -220,8 +218,7 @@ public class SolverTest {
     kb.azzert(parseClause("bagItems(\"blue_bag\", 3)."));
 
     // Init kb with rules
-    kb.azzert(parseClause(
-        "hasMoreItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_gt(U, A, B), fn_is_true(U)."));
+    kb.azzert(parseClause("hasMoreItems(X, Y) :- bagItems(X, A), bagItems(Y, B), fn_gt(U, A, B), fn_is_true(U)."));
 
     // Query kb
     // hasMoreItems(X, Y)?
@@ -366,8 +363,7 @@ public class SolverTest {
     Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    @com.google.errorprone.annotations.Var
-    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    @com.google.errorprone.annotations.Var int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
@@ -412,8 +408,7 @@ public class SolverTest {
     Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    @com.google.errorprone.annotations.Var
-    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    @com.google.errorprone.annotations.Var int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
@@ -458,8 +453,7 @@ public class SolverTest {
     Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    @com.google.errorprone.annotations.Var
-    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    @com.google.errorprone.annotations.Var int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
@@ -504,8 +498,7 @@ public class SolverTest {
     Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    @com.google.errorprone.annotations.Var
-    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    @com.google.errorprone.annotations.Var int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
@@ -551,8 +544,7 @@ public class SolverTest {
     Clause answer4 = parseClause(
         "hasDifferentNumberOfItems(\"blue_bag\", \"red_bag\") :- bagItems(\"blue_bag\", \"2\"), bagItems(\"red_bag\", \"1\"), fn_eq(\"false\", \"2\", \"1\"), fn_is_false(\"false\").");
 
-    @com.google.errorprone.annotations.Var
-    int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
+    @com.google.errorprone.annotations.Var int count = checkAnswers(proofs, Sets.newHashSet(answer1)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer2)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer3)) ? 1 : 0;
     count += checkAnswers(proofs, Sets.newHashSet(answer4)) ? 1 : 0;
@@ -578,8 +570,7 @@ public class SolverTest {
     kb.azzert(parseClause("isGirl(X) :- girl(X), ~boy(X)."));
     kb.azzert(parseClause("isBoyNotGirl(X) :- isBoy(X), ~isGirl(X)."));
     kb.azzert(parseClause("isGirlNotBoy(X) :- isGirl(X), ~isBoy(X)."));
-    kb.azzert(parseClause(
-        "match(X, Y) :- isBoyNotGirl(X), ~isGirlNotBoy(X), isGirlNotBoy(Y), ~isBoyNotGirl(Y)."));
+    kb.azzert(parseClause("match(X, Y) :- isBoyNotGirl(X), ~isGirlNotBoy(X), isGirlNotBoy(Y), ~isBoyNotGirl(Y)."));
 
     // Query kb
     // match(X, Y)?
@@ -603,9 +594,9 @@ public class SolverTest {
 
   /**
    * Non-ground
-   *
+   * <p>
    * Description: negation on non-ground probabilistic facts are forbidden.
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/nonground.pl
    */
   @Test(expected = IllegalStateException.class)
@@ -632,7 +623,7 @@ public class SolverTest {
 
   /**
    * Variable unification in query
-   *
+   * <p>
    * See https://github.com/ML-KULeuven/problog/blob/master/test/query_same.pl
    */
   @Test
