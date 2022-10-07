@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.computablefacts.nona.Function;
-import com.computablefacts.nona.types.BoxedType;
+import com.computablefacts.asterix.BoxedType;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -205,7 +205,7 @@ final public class Literal {
 
   /**
    * Check if the current literal is grounded i.e. all terms are constants.
-   * 
+   *
    * @return true iif the current literal is grounded.
    */
   public boolean isGrounded() {

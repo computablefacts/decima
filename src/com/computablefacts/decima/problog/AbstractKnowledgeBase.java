@@ -17,7 +17,7 @@ import com.computablefacts.nona.functions.stringoperators.StrLength;
 import com.computablefacts.nona.functions.stringoperators.ToInteger;
 import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
-import com.computablefacts.nona.types.BoxedType;
+import com.computablefacts.asterix.BoxedType;
 import com.computablefacts.nona.types.Csv;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
