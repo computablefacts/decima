@@ -1,18 +1,16 @@
 package com.computablefacts.decima.problog;
 
-import java.io.File;
-import java.util.Iterator;
-import java.util.function.Consumer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.computablefacts.asterix.View;
 import com.computablefacts.logfmt.LogFormatter;
 import com.github.davidmoten.bplustree.BPlusTree;
 import com.github.davidmoten.bplustree.Serializer;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.io.File;
+import java.util.Iterator;
+import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @CheckReturnValue
 final public class BPlusTreeSubgoalFacts extends AbstractSubgoalFacts {
@@ -31,20 +29,18 @@ final public class BPlusTreeSubgoalFacts extends AbstractSubgoalFacts {
     this(directory, tableName, subgoalId, null);
   }
 
-  public BPlusTreeSubgoalFacts(String directory, String tableName, int subgoalId,
-      Consumer<Literal> peek) {
+  public BPlusTreeSubgoalFacts(String directory, String tableName, int subgoalId, Consumer<Literal> peek) {
 
-    File dir =
-        new File(String.format("%s%s%s_%d", directory, File.separator, tableName, subgoalId));
+    File dir = new File(String.format("%s%s%s_%d", directory, File.separator, tableName, subgoalId));
 
     if (!dir.exists()) {
       dir.mkdirs();
     }
 
     peek_ = peek;
-    tree_ = BPlusTree.file().directory(dir.getAbsolutePath()).deleteOnClose().maxLeafKeys(32)
-        .maxNonLeafKeys(8).segmentSizeMB(1).uniqueKeys(false).keySerializer(Serializer.INTEGER)
-        .valueSerializer(Serializer.utf8()).naturalOrder();
+    tree_ = BPlusTree.file().directory(dir.getAbsolutePath()).deleteOnClose().maxLeafKeys(32).maxNonLeafKeys(8)
+        .segmentSizeMB(1).uniqueKeys(false).keySerializer(Serializer.INTEGER).valueSerializer(Serializer.utf8())
+        .naturalOrder();
   }
 
   @Override
@@ -61,14 +57,12 @@ final public class BPlusTreeSubgoalFacts extends AbstractSubgoalFacts {
   @Override
   public boolean contains(Clause clause) {
     String cacheKey = cacheKey(clause);
-    return View.of(tree_.find(cacheKey.hashCode()))
-        .contains(value -> value.startsWith(cacheKey + SEPARATOR));
+    return View.of(tree_.find(cacheKey.hashCode())).contains(value -> value.startsWith(cacheKey + SEPARATOR));
   }
 
   @Override
   public Iterator<Clause> facts() {
-    return View.of(tree_.findAll())
-        .map(value -> Parser.parseClause(value.substring(value.indexOf(SEPARATOR) + 1)));
+    return View.of(tree_.findAll()).map(value -> Parser.parseClause(value.substring(value.indexOf(SEPARATOR) + 1)));
   }
 
   @Override

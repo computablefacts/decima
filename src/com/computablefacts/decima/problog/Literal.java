@@ -3,21 +3,26 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import com.computablefacts.nona.Function;
 import com.computablefacts.asterix.BoxedType;
+import com.computablefacts.nona.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
- * A literal is a predicate and a sequence of terms, the number of which must match the predicate's
- * arity.
- *
+ * A literal is a predicate and a sequence of terms, the number of which must match the predicate's arity.
+ * <p>
  * Literals can also be primitives of the Nona's programming language.
  */
 @CheckReturnValue
@@ -51,11 +56,9 @@ final public class Literal {
     this(probability, predicate, terms, new ArrayList<>());
   }
 
-  public Literal(BigDecimal probability, String predicate, List<AbstractTerm> terms,
-      List<Literal> functions) {
+  public Literal(BigDecimal probability, String predicate, List<AbstractTerm> terms, List<Literal> functions) {
 
-    Preconditions.checkArgument(
-        probability.doubleValue() >= 0.0 && probability.doubleValue() <= 1.0,
+    Preconditions.checkArgument(probability.doubleValue() >= 0.0 && probability.doubleValue() <= 1.0,
         "probability should be in [0.0, 1.0] : %s", probability);
     Preconditions.checkNotNull(predicate, "predicate should not be null");
     Preconditions.checkNotNull(terms, "terms should not be null");
@@ -124,17 +127,13 @@ final public class Literal {
    */
   public Literal negate() {
     if (predicate_.isNegated()) {
-      return BigDecimal.ZERO.compareTo(probability_) == 0
-          || BigDecimal.ONE.compareTo(probability_) == 0
-              ? new Literal(BigDecimal.ONE, predicate_.baseName(), terms_, functions_)
-              : new Literal(BigDecimal.ONE.subtract(probability_), predicate_.baseName(), terms_,
-                  functions_);
+      return BigDecimal.ZERO.compareTo(probability_) == 0 || BigDecimal.ONE.compareTo(probability_) == 0 ? new Literal(
+          BigDecimal.ONE, predicate_.baseName(), terms_, functions_)
+          : new Literal(BigDecimal.ONE.subtract(probability_), predicate_.baseName(), terms_, functions_);
     }
-    return BigDecimal.ZERO.compareTo(probability_) == 0
-        || BigDecimal.ONE.compareTo(probability_) == 0
-            ? new Literal(BigDecimal.ONE, "~" + predicate_.baseName(), terms_, functions_)
-            : new Literal(BigDecimal.ONE.subtract(probability_), "~" + predicate_.baseName(),
-                terms_, functions_);
+    return BigDecimal.ZERO.compareTo(probability_) == 0 || BigDecimal.ONE.compareTo(probability_) == 0 ? new Literal(
+        BigDecimal.ONE, "~" + predicate_.baseName(), terms_, functions_)
+        : new Literal(BigDecimal.ONE.subtract(probability_), "~" + predicate_.baseName(), terms_, functions_);
   }
 
   /**
@@ -147,8 +146,8 @@ final public class Literal {
   }
 
   /**
-   * A literal's id is used by a clause when creating its id. The id's encoding ensures that two
-   * literals are structurally the same if they have the same id.
+   * A literal's id is used by a clause when creating its id. The id's encoding ensures that two literals are
+   * structurally the same if they have the same id.
    *
    * @return an identifier.
    */
@@ -166,10 +165,9 @@ final public class Literal {
   }
 
   /**
-   * Literal tag. Two literal's tags are the same if there is a one-to-one mapping of variables to
-   * variables, such that when the mapping is applied to one literal, the result is a literal that
-   * is the same as the other one, when compared using structural equality. The tag is used as a key
-   * by the subgoal table.
+   * Literal tag. Two literal's tags are the same if there is a one-to-one mapping of variables to variables, such that
+   * when the mapping is applied to one literal, the result is a literal that is the same as the other one, when
+   * compared using structural equality. The tag is used as a key by the subgoal table.
    *
    * @return a tag.
    */
@@ -287,8 +285,7 @@ final public class Literal {
   }
 
   /**
-   * Shuffle creates an environment in which all variables are mapped to freshly generated
-   * variables.
+   * Shuffle creates an environment in which all variables are mapped to freshly generated variables.
    *
    * @param env environment.
    * @return an environment.
@@ -340,9 +337,9 @@ final public class Literal {
    * Unify two literals.
    *
    * @param literal literal.
-   * @return the result is either an environment or null. Null is returned when the two literals
-   *         cannot be unified. When they can, applying the substitutions defined by the environment
-   *         on both literals will create two literals that are structurally equal.
+   * @return the result is either an environment or null. Null is returned when the two literals cannot be unified. When
+   * they can, applying the substitutions defined by the environment on both literals will create two literals that are
+   * structurally equal.
    */
   public Map<Var, AbstractTerm> unify(Literal literal) {
 
@@ -355,8 +352,7 @@ final public class Literal {
     Preconditions.checkState(terms_.size() == literal.terms_.size(),
         "terms_.size() should be equal to literal.terms_.size()");
 
-    @com.google.errorprone.annotations.Var
-    Map<Var, AbstractTerm> env = new HashMap<>();
+    @com.google.errorprone.annotations.Var Map<Var, AbstractTerm> env = new HashMap<>();
 
     for (int i = 0; i < terms_.size(); i++) {
 
@@ -396,10 +392,8 @@ final public class Literal {
 
         String bool = ((Const) terms_.get(0)).value().toString();
 
-        return Boolean.parseBoolean(bool)
-            ? Lists.newArrayList(new Literal(probability_, predicate_.name(), newConst(true)))
-                .iterator()
-            : null;
+        return Boolean.parseBoolean(bool) ? Lists.newArrayList(
+            new Literal(probability_, predicate_.name(), newConst(true))).iterator() : null;
       }
 
       if (predicate.equals("FN_IS_FALSE")) {
@@ -408,9 +402,8 @@ final public class Literal {
 
         String bool = ((Const) terms_.get(0)).value().toString();
 
-        return !Boolean.parseBoolean(bool) ? Lists
-            .newArrayList(new Literal(probability_, predicate_.name(), newConst(false))).iterator()
-            : null;
+        return !Boolean.parseBoolean(bool) ? Lists.newArrayList(
+            new Literal(probability_, predicate_.name(), newConst(false))).iterator() : null;
       }
 
       if (predicate.endsWith("_MATERIALIZE_FACTS")) {
@@ -418,9 +411,8 @@ final public class Literal {
         Function function = compile2();
         BoxedType<?> result = function.evaluate(definitions);
 
-        return result == null ? null
-            : result.isCollection() ? ((Collection<Literal>) result.asCollection()).iterator()
-                : result.value() instanceof Iterator ? (Iterator<Literal>) result.value() : null;
+        return result == null ? null : result.isCollection() ? ((Collection<Literal>) result.asCollection()).iterator()
+            : result.value() instanceof Iterator ? (Iterator<Literal>) result.value() : null;
       }
     }
 
@@ -428,14 +420,13 @@ final public class Literal {
 
     Function function = compile();
     BoxedType<?> result = function.evaluate(definitions);
-    boolean isValid = result != null && (result.isString() || result.isNumber()
-        || result.isBoolean() || result.isDate() || result.isCollection() || result.isMap());
+    boolean isValid = result != null && (result.isString() || result.isNumber() || result.isBoolean() || result.isDate()
+        || result.isCollection() || result.isMap());
 
     if (!isValid) {
       Preconditions.checkState(isValid,
           "The only return types allowed are String, Number, Boolean, Date, Collection and Map : %s(\n  %s\n)",
-          function.name(),
-          function.parameters().stream().map(Function::name).collect(Collectors.joining("\n  , ")));
+          function.name(), function.parameters().stream().map(Function::name).collect(Collectors.joining("\n  , ")));
     }
     if (!isFirstTermVariable) { // => FN_IS()
 
@@ -451,10 +442,8 @@ final public class Literal {
     List<Object> parameters = terms_.stream().skip(1).collect(Collectors.toList());
     parameters.add(0, result.value());
 
-    return Lists
-        .newArrayList(new Literal(probability_, predicate_.name(),
-            parameters.stream().map(AbstractTerm::newConst).collect(Collectors.toList())))
-        .iterator();
+    return Lists.newArrayList(new Literal(probability_, predicate_.name(),
+        parameters.stream().map(AbstractTerm::newConst).collect(Collectors.toList()))).iterator();
   }
 
   private boolean isValidPrimitive() {
@@ -473,10 +462,10 @@ final public class Literal {
 
       Object value = ((Const) term).value();
 
-      if (!(value instanceof String || value instanceof Number || value instanceof Boolean
-          || value instanceof Date || value instanceof Collection || value instanceof Map)) {
+      if (!(value instanceof String || value instanceof Number || value instanceof Boolean || value instanceof Date
+          || value instanceof Collection || value instanceof Map)) {
         return false; // The only types allowed are String, Number, Boolean, Date, Collection And
-                      // Map
+        // Map
       }
     }
     return true;
@@ -582,10 +571,8 @@ final public class Literal {
 
   private Function compile() {
     if (functions_.size() <= 0) {
-      String function = predicate_.name().toUpperCase() + "("
-          + terms_.stream().skip(1).map(term -> Function.wrap(((Const) term).value().toString()))
-              .collect(Collectors.joining(", "))
-          + ")";
+      String function = predicate_.name().toUpperCase() + "(" + terms_.stream().skip(1)
+          .map(term -> Function.wrap(((Const) term).value().toString())).collect(Collectors.joining(", ")) + ")";
       return new Function(function);
     }
     return new Function(mergeFunctions());

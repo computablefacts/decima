@@ -1,22 +1,27 @@
 package com.computablefacts.decima.problog;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.computablefacts.asterix.Generated;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A subgoal is the item that is tabled by this algorithm.
- *
- * A subgoal has a literal, a set of facts, and an array of waiters. A waiter is a pair containing a
- * subgoal and a clause.
- *
- * All maps and lists should support concurrency because they will be updated and enumerated at the
- * same time by the tabling algorithm
+ * <p>
+ * A subgoal has a literal, a set of facts, and an array of waiters. A waiter is a pair containing a subgoal and a
+ * clause.
+ * <p>
+ * All maps and lists should support concurrency because they will be updated and enumerated at the same time by the
+ * tabling algorithm
  */
 @CheckReturnValue
 final public class Subgoal {
@@ -141,13 +146,11 @@ final public class Subgoal {
       return;
     }
 
-    @com.google.errorprone.annotations.Var
-    Clause prev = null;
+    @com.google.errorprone.annotations.Var Clause prev = null;
 
     if (!proofs_.isEmpty()) {
       for (int i = proofs_.size() - 1; i >= 0; i--) {
-        if (proofs_.get(i).head().isRelevant(clause.head())
-            && proofs_.get(i).hasSuffix(clause.body())) {
+        if (proofs_.get(i).head().isRelevant(clause.head()) && proofs_.get(i).hasSuffix(clause.body())) {
           prev = proofs_.remove(i);
           break;
         }
@@ -156,8 +159,7 @@ final public class Subgoal {
 
     if (prev == null) {
       for (int i = rules_.size() - 1; i >= 0; i--) {
-        if (rules_.get(i).head().isRelevant(clause.head())
-            && rules_.get(i).hasSuffix(clause.body())) {
+        if (rules_.get(i).head().isRelevant(clause.head()) && rules_.get(i).hasSuffix(clause.body())) {
           prev = rules_.get(i);
           break;
         }
@@ -166,8 +168,7 @@ final public class Subgoal {
 
     Preconditions.checkState(prev != null, "prev should not be null");
 
-    @com.google.errorprone.annotations.Var
-    Clause proof = merge(clause, prev);
+    @com.google.errorprone.annotations.Var Clause proof = merge(clause, prev);
 
     if (!proof.isGrounded() && clause.isGrounded()) {
 
@@ -207,8 +208,7 @@ final public class Subgoal {
       List<Clause> removed = new ArrayList<>();
 
       for (int i = proofs_.size() - 1; i >= 0; i--) {
-        if (proofs_.get(i).head().isRelevant(clause.head())
-            && proofs_.get(i).hasSuffix(clause.body())) {
+        if (proofs_.get(i).head().isRelevant(clause.head()) && proofs_.get(i).hasSuffix(clause.body())) {
           removed.add(proofs_.get(i));
         }
       }
@@ -238,8 +238,8 @@ final public class Subgoal {
     Preconditions.checkArgument(cur.isRule(), "cur should be a rule : %s", cur);
     Preconditions.checkNotNull(prev, "prev should not be null");
     Preconditions.checkArgument(prev.isRule(), "prev should be a rule : %s", cur);
-    Preconditions.checkArgument(cur.body().size() <= prev.body().size(),
-        "mismatch in body length : %s vs %s", prev.body(), cur.body());
+    Preconditions.checkArgument(cur.body().size() <= prev.body().size(), "mismatch in body length : %s vs %s",
+        prev.body(), cur.body());
 
     // 1 - Build env
     Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = prev.head().unify(cur.head());
@@ -257,13 +257,11 @@ final public class Subgoal {
 
     // 3 - Transfer probabilities to the right literals
     Literal head = merged.head();
-    List<Literal> body =
-        new ArrayList<>(merged.body().subList(0, merged.body().size() - cur.body().size()));
+    List<Literal> body = new ArrayList<>(merged.body().subList(0, merged.body().size() - cur.body().size()));
 
     if (!cur.body().isEmpty()) {
       body.add(cur.body().get(0));
-      body.addAll(merged.body().subList(merged.body().size() - cur.body().size() + 1,
-          merged.body().size()));
+      body.addAll(merged.body().subList(merged.body().size() - cur.body().size() + 1, merged.body().size()));
     }
 
     // 4 - Create a new cur

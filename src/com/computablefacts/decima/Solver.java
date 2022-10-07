@@ -1,17 +1,16 @@
 package com.computablefacts.decima;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.computablefacts.asterix.IO;
 import com.computablefacts.asterix.View;
 import com.computablefacts.asterix.codecs.JsonCodec;
 import com.computablefacts.asterix.console.ConsoleApp;
-import com.computablefacts.decima.problog.*;
+import com.computablefacts.decima.problog.AbstractKnowledgeBase;
+import com.computablefacts.decima.problog.AbstractTerm;
+import com.computablefacts.decima.problog.Clause;
+import com.computablefacts.decima.problog.InMemoryKnowledgeBase;
+import com.computablefacts.decima.problog.Literal;
+import com.computablefacts.decima.problog.Parser;
+import com.computablefacts.decima.problog.ProbabilityEstimator;
 import com.computablefacts.junon.Fact;
 import com.computablefacts.junon.Metadata;
 import com.computablefacts.junon.Provenance;
@@ -19,6 +18,17 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @CheckReturnValue
 final public class Solver extends ConsoleApp {
@@ -97,8 +107,7 @@ final public class Solver extends ConsoleApp {
     }
   }
 
-  private static Map<Literal, BigDecimal> apply(File rules, File facts, File queries,
-      boolean computeProbabilities) {
+  private static Map<Literal, BigDecimal> apply(File rules, File facts, File queries, boolean computeProbabilities) {
 
     Preconditions.checkNotNull(rules, "rules should not be null");
     Preconditions.checkNotNull(facts, "facts should not be null");
@@ -108,8 +117,8 @@ final public class Solver extends ConsoleApp {
     Preconditions.checkArgument(facts.exists(), "Missing facts : %s", facts);
     Preconditions.checkArgument(queries.exists(), "Missing queries : %s", queries);
 
-    Set<Clause> clauses = View.of(rules).map(Parser::parseClause)
-        .concat(View.of(facts).map(Parser::parseClause)).toSet();
+    Set<Clause> clauses = View.of(rules).map(Parser::parseClause).concat(View.of(facts).map(Parser::parseClause))
+        .toSet();
 
     Set<Literal> questions = View.of(queries).map(Parser::parseQuery).toSet();
 
@@ -117,8 +126,7 @@ final public class Solver extends ConsoleApp {
         : applyWithoutProbabilities(questions, clauses);
   }
 
-  private static Map<Literal, BigDecimal> applyWithProbabilities(Set<Literal> questions,
-      Set<Clause> clauses) {
+  private static Map<Literal, BigDecimal> applyWithProbabilities(Set<Literal> questions, Set<Clause> clauses) {
 
     Preconditions.checkNotNull(questions, "questions should not be null");
     Preconditions.checkNotNull(clauses, "clauses should not be null");
@@ -127,8 +135,7 @@ final public class Solver extends ConsoleApp {
     AbstractKnowledgeBase kb = new InMemoryKnowledgeBase();
     clauses.forEach(kb::azzert);
 
-    com.computablefacts.decima.problog.Solver solver =
-        new com.computablefacts.decima.problog.Solver(kb, true);
+    com.computablefacts.decima.problog.Solver solver = new com.computablefacts.decima.problog.Solver(kb, true);
 
     for (Literal question : questions) {
 
@@ -140,8 +147,7 @@ final public class Solver extends ConsoleApp {
     return answers;
   }
 
-  private static Map<Literal, BigDecimal> applyWithoutProbabilities(Set<Literal> questions,
-      Set<Clause> clauses) {
+  private static Map<Literal, BigDecimal> applyWithoutProbabilities(Set<Literal> questions, Set<Clause> clauses) {
 
     Preconditions.checkNotNull(questions, "questions should not be null");
     Preconditions.checkNotNull(clauses, "clauses should not be null");
@@ -150,8 +156,7 @@ final public class Solver extends ConsoleApp {
     AbstractKnowledgeBase kb = new InMemoryKnowledgeBase();
     clauses.forEach(kb::azzert);
 
-    com.computablefacts.decima.problog.Solver solver =
-        new com.computablefacts.decima.problog.Solver(kb, false);
+    com.computablefacts.decima.problog.Solver solver = new com.computablefacts.decima.problog.Solver(kb, false);
 
     for (Literal question : questions) {
 

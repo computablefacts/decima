@@ -1,15 +1,14 @@
 package com.computablefacts.decima.yaml;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.computablefacts.asterix.Generated;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A single ProbLog rule.
@@ -31,7 +30,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
  *       query: "query2(...)?"
  *       output: "0.xxx::query2(...)."
  * </pre>
- *
+ * <p>
  * Once compiled, the YAML above will create the following rules :
  *
  * <pre>
@@ -60,15 +59,13 @@ final public class Rule {
   @JsonProperty("tests")
   Test[] tests_;
 
-  public Rule() {}
+  public Rule() {
+  }
 
-  public Rule(String name, String description, double confidence, String parameters,
-      String[] body) {
+  public Rule(String name, String description, double confidence, String parameters, String[] body) {
 
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(name),
-        "name should neither be null nor empty");
-    Preconditions.checkArgument(body != null && body.length > 0,
-        "body should neither be null nor empty");
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "name should neither be null nor empty");
+    Preconditions.checkArgument(body != null && body.length > 0, "body should neither be null nor empty");
     Preconditions.checkNotNull(parameters, "parameters should not be null");
     Preconditions.checkState(confidence >= 0.0 && confidence <= 1.0,
         "confidence must be such as 0.0 <= confidence <= 1.0");
@@ -89,9 +86,9 @@ final public class Rule {
       return false;
     }
     Rule rule = (Rule) obj;
-    return Objects.equals(name_, rule.name_) && Objects.equals(description_, rule.description_)
-        && Objects.equals(parameters_, rule.parameters_)
-        && Objects.equals(confidence_, rule.confidence_) && Arrays.equals(body_, rule.body_);
+    return Objects.equals(name_, rule.name_) && Objects.equals(description_, rule.description_) && Objects.equals(
+        parameters_, rule.parameters_) && Objects.equals(confidence_, rule.confidence_) && Arrays.equals(body_,
+        rule.body_);
   }
 
   @Override

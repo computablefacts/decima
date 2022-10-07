@@ -1,5 +1,9 @@
 package com.computablefacts.decima.robdd;
 
+import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.CheckReturnValue;
+import com.google.errorprone.annotations.Var;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,11 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-
-import com.google.common.base.Preconditions;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.errorprone.annotations.CheckReturnValue;
-import com.google.errorprone.annotations.Var;
 
 /**
  * Represents a BDD.
@@ -35,7 +34,7 @@ final public class BddManager {
 
   /**
    * Initializes a new instance of the {@link BddManager} class.
-   * 
+   *
    * @param n The number of variables.
    */
   public BddManager(int n) {
@@ -79,8 +78,8 @@ final public class BddManager {
    * Get the BDD node corresponding to the specified index variable, low and high identifier.
    *
    * @param index Index.
-   * @param low The low node.
-   * @param high The high node.
+   * @param low   The low node.
+   * @param high  The high node.
    * @return The unique BDD node.
    */
   public BddNode get(int index, int low, int high) {
@@ -88,8 +87,7 @@ final public class BddManager {
   }
 
   /**
-   * Get the function returning the string corresponding the variable at index. This is used for
-   * debugging purpose.
+   * Get the function returning the string corresponding the variable at index. This is used for debugging purpose.
    *
    * @return {@link java.util.function.Function}.
    */
@@ -98,22 +96,20 @@ final public class BddManager {
   }
 
   /**
-   * Set the function returning the string corresponding the variable at index. This is used for
-   * debugging purpose.
-   * 
+   * Set the function returning the string corresponding the variable at index. This is used for debugging purpose.
+   *
    * @param variableString {@link java.util.function.Function}.
    */
   public void variableString(Function<Integer, String> variableString) {
-    variableString_ =
-        Preconditions.checkNotNull(variableString, "variableString should not be null");
+    variableString_ = Preconditions.checkNotNull(variableString, "variableString should not be null");
   }
 
   /**
    * Create the BDD Node corresponding to the variable index, with high and low children.
    *
    * @param index The index of the variable.
-   * @param high The high node, or 1-node.
-   * @param low The low node, or 0-node.
+   * @param high  The high node, or 1-node.
+   * @param low   The low node, or 0-node.
    * @return The created node.
    */
   public BddNode create(int index, int high, BddNode low) {
@@ -124,8 +120,8 @@ final public class BddManager {
    * Create the BDD Node corresponding to the variable index, with high and low children.
    *
    * @param index The index of the variable.
-   * @param high The high node, or 1-node.
-   * @param low The low node, or 0-node.
+   * @param high  The high node, or 1-node.
+   * @param low   The low node, or 0-node.
    * @return The created node.
    */
   public BddNode create(int index, BddNode high, int low) {
@@ -136,8 +132,8 @@ final public class BddManager {
    * Create the BDD Node corresponding to the variable index, with high and low children.
    *
    * @param index The index of the variable.
-   * @param high The high node, or 1-node.
-   * @param low The low node, or 0-node.
+   * @param high  The high node, or 1-node.
+   * @param low   The low node, or 0-node.
    * @return The created node.
    */
   public BddNode create(int index, int high, int low) {
@@ -146,10 +142,10 @@ final public class BddManager {
 
   /**
    * Create the BDD Node corresponding to the variable index, with high and low children.
-   * 
+   *
    * @param index The index of the variable.
-   * @param high The high node, or 1-node.
-   * @param low The low node, or 0-node.
+   * @param high  The high node, or 1-node.
+   * @param low   The low node, or 0-node.
    * @return The created node.
    */
   public BddNode create(int index, BddNode high, BddNode low) {
@@ -157,8 +153,7 @@ final public class BddManager {
     Preconditions.checkArgument((high == null && low == null) || (high != null && low != null),
         "node should not be null");
 
-    @Var
-    BddNode unique = uniqueTable_.get(index, low.id(), high.id());
+    @Var BddNode unique = uniqueTable_.get(index, low.id(), high.id());
 
     if (unique != null) {
       return unique;
@@ -204,11 +199,11 @@ final public class BddManager {
   }
 
   /**
-   * Swap the specified variables. The two variables shall be adjacent. index shall be followed by
-   * index2 in the variable order.
-   * 
-   * @param root The root node of the BDD.
-   * @param index Variable index.
+   * Swap the specified variables. The two variables shall be adjacent. index shall be followed by index2 in the
+   * variable order.
+   *
+   * @param root   The root node of the BDD.
+   * @param index  Variable index.
    * @param index2 Variable index.
    * @return
    */
@@ -219,8 +214,7 @@ final public class BddManager {
 
     int i = variableOrder_.indexOf(index) + 1;
 
-    Preconditions.checkState(i < variableOrder_.size(),
-        "'" + index + "' is the last variable in the variable order.");
+    Preconditions.checkState(i < variableOrder_.size(), "'" + index + "' is the last variable in the variable order.");
 
     int nextIndex = variableOrder_.get(i);
 
@@ -238,7 +232,6 @@ final public class BddManager {
   }
 
   /**
-   *
    * @param node
    * @param currentIndex
    * @param nextIndex
@@ -251,15 +244,14 @@ final public class BddManager {
       return;
     }
 
-    Preconditions.checkState(node.index() == currentIndex,
-        "Got %s and should be %s in the unique table.", node.index(), currentIndex);
+    Preconditions.checkState(node.index() == currentIndex, "Got %s and should be %s in the unique table.", node.index(),
+        currentIndex);
 
     if (node.high().index() != nextIndex && node.low().index() != nextIndex) {
       return;
     }
 
-    @Var
-    BddNode f11, f10, f01, f00;
+    @Var BddNode f11, f10, f01, f00;
 
     if (node.high().index() == nextIndex) {
       f11 = node.high().high();
@@ -277,8 +269,7 @@ final public class BddManager {
       f00 = node.low();
     }
 
-    @Var
-    BddNode a, b;
+    @Var BddNode a, b;
 
     if (f11.equals(f01)) {
       a = f11;
@@ -292,8 +283,7 @@ final public class BddManager {
       b = create(node.index(), f10, f00);
     }
 
-    @Var
-    BddNode oldLow, oldHigh;
+    @Var BddNode oldLow, oldHigh;
 
     uniqueTable_.delete(node);
     node.index(nextIndex);
@@ -362,7 +352,7 @@ final public class BddManager {
   /**
    * Returns the size of a given BDD.
    *
-   * @param root The root node of the BDD.
+   * @param root    The root node of the BDD.
    * @param visited The list of visited nodes.
    * @return The BDD size.
    */
@@ -382,7 +372,7 @@ final public class BddManager {
 
   /**
    * Applies the sifting algorithm to reduce the size of the BDD by changing the variable order.
-   * 
+   *
    * @param root The root node of the BDD.
    * @return The BDD with the new variable order.
    */
@@ -400,10 +390,8 @@ final public class BddManager {
     for (int i = 0; i < N(); i++) {
 
       // Move variable xi through the order
-      @Var
-      int optSize = size(root);
-      @Var
-      int optPos, curPos, startPos = reverseOrder[i];
+      @Var int optSize = size(root);
+      @Var int optPos, curPos, startPos = reverseOrder[i];
       optPos = startPos;
       curPos = startPos;
 
@@ -474,8 +462,7 @@ final public class BddManager {
       vlist[nodes.get(i).index()].add(nodes.get(i));
     }
 
-    @Var
-    int nextId = -1;
+    @Var int nextId = -1;
 
     for (int k = N(); k >= 0; k--) {
 
@@ -509,8 +496,7 @@ final public class BddManager {
         return res == 0 ? xhk.compareTo(yhk) : res;
       });
 
-      @Var
-      Pair<Integer, Integer> oldKey = new Pair<>(-2, -2);
+      @Var Pair<Integer, Integer> oldKey = new Pair<>(-2, -2);
 
       for (BddNode u : Q) {
         if (u.key().equals(oldKey)) {
@@ -523,8 +509,7 @@ final public class BddManager {
           u.lowNoUpdate(u.low() == null ? null : subgraph[u.low().id()]);
           u.highNoUpdate(u.high() == null ? null : subgraph[u.high().id()]);
 
-          Preconditions.checkState(
-              (u.low() == null && u.high() == null) || (u.low() != null && u.high() != null));
+          Preconditions.checkState((u.low() == null && u.high() == null) || (u.low() != null && u.high() != null));
 
           oldKey = u.key();
         }
@@ -536,7 +521,7 @@ final public class BddManager {
   /**
    * Restrict the specified bdd using the positive and negative sets.
    *
-   * @param root The root node of the BDD.
+   * @param root     The root node of the BDD.
    * @param positive Index of the positive variable.
    * @param negative Index of the negative variable.
    * @return A node.
@@ -548,10 +533,10 @@ final public class BddManager {
   /**
    * Restrict the specified bdd using the positive and negative sets.
    *
-   * @param root The root node of the BDD.
+   * @param root     The root node of the BDD.
    * @param positive Index of the positive variable.
    * @param negative Index of the negative variable.
-   * @param cache Cache.
+   * @param cache    Cache.
    * @return A node.
    */
   public BddNode restrict(BddNode root, int positive, int negative, @Var BddNode[] cache) {
@@ -659,8 +644,7 @@ final public class BddManager {
       }
     }
 
-    @Var
-    int index = f.index();
+    @Var int index = f.index();
 
     if (g.index() < index) {
       index = g.index();
@@ -705,7 +689,7 @@ final public class BddManager {
   /**
    * Returns the dot representation of a given node.
    *
-   * @param root The root node of the BDD.
+   * @param root    The root node of the BDD.
    * @param fnLabel
    * @param showAll
    * @return The dot code.
@@ -728,16 +712,14 @@ final public class BddManager {
 
       for (BddNode n : uniqueTable_.nodes(i)) {
 
-        @Var
-        String color = "grey";
+        @Var String color = "grey";
 
         if (nodes.contains(n)) {
           color = "black";
         }
 
         if (showAll || nodes.contains(n)) {
-          t.append("\t\t" + n.id() + " [label=\"" + fnLabel.apply(n) + "\", " + "color=\"" + color
-              + "\"];\n");
+          t.append("\t\t" + n.id() + " [label=\"" + fnLabel.apply(n) + "\", " + "color=\"" + color + "\"];\n");
         }
       }
       t.append("\t}\n");
@@ -751,8 +733,7 @@ final public class BddManager {
     for (int i = 0; i < N(); i++) {
       for (BddNode n : uniqueTable_.nodes(i)) {
 
-        @Var
-        String color = "grey";
+        @Var String color = "grey";
 
         if (nodes.contains(n)) {
           color = "black";
@@ -760,8 +741,7 @@ final public class BddManager {
 
         if (n.index() < N() && (showAll || nodes.contains(n))) {
           t.append("\t" + n.id() + " -> " + n.high().id() + " [color=\"" + color + "}\"];\n");
-          t.append(
-              "\t" + n.id() + " -> " + n.low().id() + " [style=dotted,color=\"" + color + "\"];\n");
+          t.append("\t" + n.id() + " -> " + n.low().id() + " [style=dotted,color=\"" + color + "\"];\n");
         }
       }
     }

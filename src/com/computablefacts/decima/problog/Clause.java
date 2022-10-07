@@ -1,17 +1,19 @@
 package com.computablefacts.decima.problog;
 
-import java.util.*;
-
 import com.computablefacts.asterix.Generated;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
- * A clause has a head literal, and a sequence of literals that form its body. If there are no
- * literals in its body, the clause is called a fact. If there is at least one literal in its body,
- * it is called a rule.
- *
+ * A clause has a head literal, and a sequence of literals that form its body. If there are no literals in its body, the
+ * clause is called a fact. If there is at least one literal in its body, it is called a rule.
+ * <p>
  * A clause asserts that its head is true if every literal in its body is true.
  */
 @CheckReturnValue
@@ -53,8 +55,7 @@ final public class Clause {
 
     Preconditions.checkNotNull(head, "head should not be null");
     Preconditions.checkNotNull(body, "body should not be null");
-    Preconditions.checkState(body.stream().noneMatch(Objects::isNull),
-        "body literals should not be null");
+    Preconditions.checkState(body.stream().noneMatch(Objects::isNull), "body literals should not be null");
 
     head_ = head;
     body_ = new ArrayList<>(body);
@@ -212,8 +213,7 @@ final public class Clause {
    * Check if a list of literals is a prefix of the current rule body literals.
    *
    * @param literals a list of literals.
-   * @return true iif the list of literals is a prefix of the current rule body literals, false
-   *         otherwise.
+   * @return true iif the list of literals is a prefix of the current rule body literals, false otherwise.
    */
   public boolean hasPrefix(List<Literal> literals) {
 
@@ -236,8 +236,7 @@ final public class Clause {
    * Check if a list of literals is a suffix of the current rule body literals.
    *
    * @param literals a list of literals.
-   * @return true iif the list of literals is a suffix of the current rule body literals, false
-   *         otherwise.
+   * @return true iif the list of literals is a suffix of the current rule body literals, false otherwise.
    */
   public boolean hasSuffix(List<Literal> literals) {
 
@@ -259,15 +258,14 @@ final public class Clause {
   }
 
   /**
-   * Rename the variables in a clause. Every variable in the head is in the body, so the head can be
-   * ignored while generating an environment.
+   * Rename the variables in a clause. Every variable in the head is in the body, so the head can be ignored while
+   * generating an environment.
    *
    * @return a new clause.
    */
   public Clause rename() {
 
-    @com.google.errorprone.annotations.Var
-    Map<Var, AbstractTerm> env = new HashMap<>();
+    @com.google.errorprone.annotations.Var Map<Var, AbstractTerm> env = new HashMap<>();
 
     for (Literal literal : body_) {
       env = literal.shuffle(env);
@@ -276,8 +274,7 @@ final public class Clause {
   }
 
   /**
-   * Clause substitution in which the substitution is applied to each each literal that makes up the
-   * clause.
+   * Clause substitution in which the substitution is applied to each each literal that makes up the clause.
    *
    * @param env environment.
    * @return a new clause.
@@ -298,8 +295,8 @@ final public class Clause {
   }
 
   /**
-   * Resolve the first literal in a rule with a given literal. If the two literals unify, a new
-   * clause is generated that has the same number of literals in the body.
+   * Resolve the first literal in a rule with a given literal. If the two literals unify, a new clause is generated that
+   * has the same number of literals in the body.
    *
    * @param literal literal.
    * @return a new clause or null on error.

@@ -2,10 +2,6 @@ package com.computablefacts.decima;
 
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 import com.computablefacts.asterix.IO;
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.asterix.View;
@@ -21,6 +17,13 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.io.File;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @CheckReturnValue
 final public class Builder extends ConsoleApp {
@@ -33,8 +36,7 @@ final public class Builder extends ConsoleApp {
     Preconditions.checkNotNull(uuid, "uuid should not be null");
     Preconditions.checkNotNull(json, "json should not be null");
 
-    return new Clause(new Literal("json",
-        Lists.newArrayList(newConst(namespace), newConst(uuid), newConst(json))));
+    return new Clause(new Literal("json", Lists.newArrayList(newConst(namespace), newConst(uuid), newConst(json))));
   }
 
   public static Set<Clause> jsonPaths(String namespace, String uuid, String json) {
@@ -55,8 +57,7 @@ final public class Builder extends ConsoleApp {
         int indexBegin = term.lastIndexOf('[');
         int indexEnd = term.lastIndexOf(']');
 
-        if (indexBegin < 0 || indexEnd < 0 || indexBegin >= indexEnd
-            || indexEnd != term.length() - 1) {
+        if (indexBegin < 0 || indexEnd < 0 || indexBegin >= indexEnd || indexEnd != term.length() - 1) {
           terms.add(newConst(term));
         } else { // Here, we are dealing with an array
           terms.add(newConst(term.substring(0, indexBegin)));
@@ -86,8 +87,7 @@ final public class Builder extends ConsoleApp {
     long nbFacts = View.of(input).index().filter(pair -> !Strings.isNullOrEmpty(pair.getValue()))
         .map(pair -> new AbstractMap.SimpleEntry<>(rnd.nextString(), pair.getValue()))
         .peek(pair -> kb.azzert(json("", pair.getKey(), pair.getValue())))
-        .peek(pair -> kb.azzert(jsonPaths("", pair.getKey(), pair.getValue())))
-        .reduce(0, (carry, x) -> carry + 1);
+        .peek(pair -> kb.azzert(jsonPaths("", pair.getKey(), pair.getValue()))).reduce(0, (carry, x) -> carry + 1);
 
     if (output == null) {
       System.out.println(kb);

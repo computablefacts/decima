@@ -2,15 +2,6 @@ package com.computablefacts.decima.problog;
 
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.computablefacts.asterix.BloomFilter;
 import com.computablefacts.asterix.Generated;
 import com.computablefacts.asterix.trie.Trie;
@@ -19,6 +10,18 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tabling algorithm in a non probabilistic setting :
@@ -29,7 +32,7 @@ import com.google.errorprone.annotations.Var;
  * <li>Chen, Weidong &amp; Warren, David. (1996). Tabled evaluation with delaying for general logic
  * programs. J. ACM. 43. 20-74. 10.1145/227595.227597.</li>
  * </ul>
- *
+ * <p>
  * Tabling algorithm in a probabilistic setting :
  *
  * <ul>
@@ -61,8 +64,8 @@ final public class Solver {
     this(kb, newSubgoal, FALSE_POSITIVE_PROBABILITY, EXPECTED_NUMBER_OF_ELEMENTS); // BF : ~72MB
   }
 
-  public Solver(AbstractKnowledgeBase kb, Function<Literal, Subgoal> newSubgoal,
-      double falsePositiveProbability, int expectedNumberOfElements) {
+  public Solver(AbstractKnowledgeBase kb, Function<Literal, Subgoal> newSubgoal, double falsePositiveProbability,
+      int expectedNumberOfElements) {
 
     Preconditions.checkNotNull(kb, "kb should not be null");
     Preconditions.checkNotNull(newSubgoal, "newSubgoal should not be null");
@@ -84,8 +87,8 @@ final public class Solver {
   }
 
   /**
-   * First, sets up and calls the subgoal search procedure. Then, extracts the answers and unfold
-   * the proofs. In order to work, subgoals must track rules i.e. {@code computeProofs = true}.
+   * First, sets up and calls the subgoal search procedure. Then, extracts the answers and unfold the proofs. In order
+   * to work, subgoals must track rules i.e. {@code computeProofs = true}.
    *
    * @param query goal.
    * @return proofs.
@@ -141,8 +144,7 @@ final public class Solver {
   }
 
   /**
-   * First, sets up and calls the subgoal search procedure. Then, extracts the answers but do not
-   * unfold the proofs.
+   * First, sets up and calls the subgoal search procedure. Then, extracts the answers but do not unfold the proofs.
    *
    * @param query goal.
    * @return facts answering the query.
@@ -152,12 +154,11 @@ final public class Solver {
   }
 
   /**
-   * First, sets up and calls the subgoal search procedure. Then, extracts the answers but do not
-   * unfold the proofs.
+   * First, sets up and calls the subgoal search procedure. Then, extracts the answers but do not unfold the proofs.
    *
-   * @param query goal.
-   * @param maxSampleSize stops the solver after the goal reaches this number of solutions or more.
-   *        If this number is less than or equals to 0, returns all solutions.
+   * @param query         goal.
+   * @param maxSampleSize stops the solver after the goal reaches this number of solutions or more. If this number is
+   *                      less than or equals to 0, returns all solutions.
    * @return facts answering the query.
    */
   public Iterator<Clause> solve(Literal query, int maxSampleSize) {
@@ -173,18 +174,16 @@ final public class Solver {
   }
 
   /**
-   * Dump the subgoals rules. This method will yield no result if {@code computeProofs} is set to
-   * {@code false}.
+   * Dump the subgoals rules. This method will yield no result if {@code computeProofs} is set to {@code false}.
    *
    * @return the generated rules.
    */
   @Generated
   public String dumpSubgoals() {
-    return subgoals_.values().stream()
-        .map(subgoal -> subgoal.literal().toString() + " : " + subgoal.nbFacts() + "\n"
-            + (subgoal.rules().isEmpty() ? "  -> nil"
-                : subgoal.rules().stream().map(rule -> "  -> " + rule.toString())
-                    .collect(Collectors.joining("\n"))))
+    return subgoals_.values().stream().map(
+            subgoal -> subgoal.literal().toString() + " : " + subgoal.nbFacts() + "\n" + (subgoal.rules().isEmpty()
+                ? "  -> nil"
+                : subgoal.rules().stream().map(rule -> "  -> " + rule.toString()).collect(Collectors.joining("\n"))))
         .collect(Collectors.joining("\n"));
   }
 
@@ -209,13 +208,11 @@ final public class Solver {
     Literal literal = subgoal.literal();
     Predicate predicate = literal.predicate();
 
-    Preconditions.checkState(!predicate.isPrimitive(), "predicate should not be a primitive : %s",
-        literal);
+    Preconditions.checkState(!predicate.isPrimitive(), "predicate should not be a primitive : %s", literal);
 
     if (predicate.isNegated()) {
 
-      Preconditions.checkState(literal.isSemiGrounded(), "negated clauses should be grounded : %s",
-          literal);
+      Preconditions.checkState(literal.isSemiGrounded(), "negated clauses should be grounded : %s", literal);
 
       // Evaluate the positive version of the rule (i.e. negation as failure)
       Literal base = new Literal(predicate.baseName(), literal.terms());
@@ -226,8 +223,8 @@ final public class Solver {
       search(sub);
 
       String newPredicate = literal.predicate().name();
-      List<AbstractTerm> newTerms = literal.terms().stream()
-          .map(t -> t.isConst() ? t : newConst("_")).collect(Collectors.toList());
+      List<AbstractTerm> newTerms = literal.terms().stream().map(t -> t.isConst() ? t : newConst("_"))
+          .collect(Collectors.toList());
       Iterator<Clause> facts = sub.facts();
 
       if (!facts.hasNext()) {
@@ -247,9 +244,8 @@ final public class Solver {
             if (sub.rules().isEmpty()) {
 
               // Negate a probabilistic fact
-              Clause newFact =
-                  new Clause(new Literal(BigDecimal.ONE.subtract(fact.head().probability()),
-                      newPredicate, newTerms));
+              Clause newFact = new Clause(
+                  new Literal(BigDecimal.ONE.subtract(fact.head().probability()), newPredicate, newTerms));
 
               if (!BigDecimal.ZERO.equals(newFact.head().probability())) {
                 fact(subgoal, newFact);
@@ -264,16 +260,14 @@ final public class Solver {
                 for (Literal lit : rule.body()) {
                   if (!lit.predicate().isPrimitive()) {
 
-                    Clause newRule = new Clause(new Literal(newPredicate, newTerms),
-                        Lists.newArrayList(lit.negate()));
+                    Clause newRule = new Clause(new Literal(newPredicate, newTerms), Lists.newArrayList(lit.negate()));
 
                     subgoal.addRule(newRule);
                   }
                 }
               }
 
-              List<Clause> rules =
-                  sub.proofs().stream().filter(Clause::isGrounded).collect(Collectors.toList());
+              List<Clause> rules = sub.proofs().stream().filter(Clause::isGrounded).collect(Collectors.toList());
 
               for (Clause rule : rules) {
                 for (Literal lit : rule.body()) {
@@ -295,8 +289,7 @@ final public class Solver {
       }
     } else {
 
-      @Var
-      boolean match = false;
+      @Var boolean match = false;
       Iterator<Clause> facts = kb_.facts(literal);
 
       while (facts.hasNext()) {
@@ -304,8 +297,7 @@ final public class Solver {
         Clause fact = facts.next();
         Clause renamed = fact.rename();
 
-        Map<com.computablefacts.decima.problog.Var, AbstractTerm> env =
-            literal.unify(renamed.head());
+        Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = literal.unify(renamed.head());
 
         if (env != null) {
           fact(subgoal, renamed.subst(env));
@@ -323,8 +315,7 @@ final public class Solver {
         Clause rule = rules.next();
         Clause renamed = rule.rename();
 
-        Map<com.computablefacts.decima.problog.Var, AbstractTerm> env =
-            literal.unify(renamed.head());
+        Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = literal.unify(renamed.head());
 
         if (env != null) {
           rule(subgoal, renamed.subst(env), true);
@@ -345,7 +336,7 @@ final public class Solver {
    * Store a fact, and inform all waiters of the fact too.
    *
    * @param subgoal subgoal.
-   * @param clause fact.
+   * @param clause  fact.
    */
   private void fact(Subgoal subgoal, Clause clause) {
 
@@ -379,8 +370,8 @@ final public class Solver {
    * Evaluate a newly derived rule.
    *
    * @param subgoal subgoal.
-   * @param rule rule.
-   * @param isInKb true iif the rule has been loaded from the KB, false otherwise.
+   * @param rule    rule.
+   * @param isInKb  true iif the rule has been loaded from the KB, false otherwise.
    */
   private void rule(Subgoal subgoal, Clause rule, boolean isInKb) {
 
@@ -410,8 +401,7 @@ final public class Solver {
       return;
     }
 
-    @Var
-    Subgoal sub = subgoals_.get(first.tag());
+    @Var Subgoal sub = subgoals_.get(first.tag());
 
     if (sub != null) {
       sub.addWaiter(subgoal, rule);
@@ -445,8 +435,8 @@ final public class Solver {
    * Start grounding a rule.
    *
    * @param subgoal subgoal.
-   * @param rule rule.
-   * @param fact fact.
+   * @param rule    rule.
+   * @param fact    fact.
    */
   private void ground(Subgoal subgoal, Clause rule, Clause fact) {
 
@@ -459,8 +449,7 @@ final public class Solver {
     // Rule with first body literal
     Clause prevClause = rule.resolve(fact.head());
 
-    Preconditions.checkState(prevClause != null, "resolution failed : rule = %s / head = %s", rule,
-        fact);
+    Preconditions.checkState(prevClause != null, "resolution failed : rule = %s / head = %s", rule, fact);
 
     // Rule minus first body literal
     Clause newClause = new Clause(prevClause.head(),

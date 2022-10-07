@@ -3,6 +3,7 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.Parser.reorderBodyLiterals;
 
+import com.computablefacts.asterix.BoxedType;
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.asterix.View;
 import com.computablefacts.asterix.codecs.Base64Codec;
@@ -17,7 +18,6 @@ import com.computablefacts.nona.functions.stringoperators.StrLength;
 import com.computablefacts.nona.functions.stringoperators.ToInteger;
 import com.computablefacts.nona.functions.stringoperators.ToLowerCase;
 import com.computablefacts.nona.functions.stringoperators.ToUpperCase;
-import com.computablefacts.asterix.BoxedType;
 import com.computablefacts.nona.types.Csv;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
@@ -48,8 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class allows us to be agnostic from the storage layer. It is used to assert facts and
- * rules.
+ * This class allows us to be agnostic from the storage layer. It is used to assert facts and rules.
  */
 @CheckReturnValue
 public abstract class AbstractKnowledgeBase {
@@ -119,8 +118,7 @@ public abstract class AbstractKnowledgeBase {
     Literal head = newClause.head();
     BigDecimal probability = head.probability();
 
-    Preconditions.checkState(!BigDecimal.ZERO.equals(probability),
-        "head probability must be != 0.0 : %s", newClause);
+    Preconditions.checkState(!BigDecimal.ZERO.equals(probability), "head probability must be != 0.0 : %s", newClause);
 
     if (clause.isFact()) {
       azzertFact(newClause);
@@ -185,9 +183,8 @@ public abstract class AbstractKnowledgeBase {
   public List<Clause> compact() {
 
     // Find all rules that do not reference another rule (if any)
-    Map.Entry<List<Clause>, List<Clause>> rules = View.of(rules()).divide(
-        rule -> rule.body().stream().noneMatch(literal -> View.of(rules()).map(Clause::head)
-            .anyMatch(head -> head.isRelevant(literal))));
+    Map.Entry<List<Clause>, List<Clause>> rules = View.of(rules()).divide(rule -> rule.body().stream()
+        .noneMatch(literal -> View.of(rules()).map(Clause::head).anyMatch(head -> head.isRelevant(literal))));
     List<Clause> dontReferenceOtherRules = rules.getKey();
     List<Clause> referenceOtherRules = rules.getValue();
 
@@ -209,16 +206,14 @@ public abstract class AbstractKnowledgeBase {
             int pos = j;
             Literal literal = clause.body().get(pos);
 
-            newList.addAll(
-                dontReferenceOtherRules.stream().filter(r -> r.head().isRelevant(literal))
-                    .map(or -> {
+            newList.addAll(dontReferenceOtherRules.stream().filter(r -> r.head().isRelevant(literal)).map(or -> {
 
-                      Clause referencingRule = clause.rename();
-                      Clause referencedRule = or.rename();
-                      Clause newClause = mergeRules(referencingRule, referencedRule, pos);
+              Clause referencingRule = clause.rename();
+              Clause referencedRule = or.rename();
+              Clause newClause = mergeRules(referencingRule, referencedRule, pos);
 
-                      return reorderBodyLiterals(newClause);
-                    }).collect(Collectors.toList()));
+              return reorderBodyLiterals(newClause);
+            }).collect(Collectors.toList()));
           }
         }
         if (newList.isEmpty()) {
@@ -274,10 +269,8 @@ public abstract class AbstractKnowledgeBase {
       @Override
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-        Preconditions.checkArgument(parameters.size() == 2,
-            "ASSERT_JSON takes exactly two parameters.");
-        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
-            parameters.get(0));
+        Preconditions.checkArgument(parameters.size() == 2, "ASSERT_JSON takes exactly two parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string", parameters.get(0));
         Preconditions.checkArgument(parameters.get(1).isCollection() || parameters.get(1).isMap(),
             "%s should be a json array or object", parameters.get(1));
 
@@ -309,12 +302,10 @@ public abstract class AbstractKnowledgeBase {
       @Override
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-        Preconditions.checkArgument(parameters.size() == 2,
-            "ASSERT_CSV takes exactly two parameters.");
-        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
-            parameters.get(0));
-        Preconditions.checkArgument(parameters.get(1).value() instanceof Csv,
-            "%s should be a csv array", parameters.get(1));
+        Preconditions.checkArgument(parameters.size() == 2, "ASSERT_CSV takes exactly two parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string", parameters.get(0));
+        Preconditions.checkArgument(parameters.get(1).value() instanceof Csv, "%s should be a csv array",
+            parameters.get(1));
 
         String uuid = parameters.get(0).asString();
         Csv csvs = (Csv) parameters.get(1).value();
@@ -343,8 +334,7 @@ public abstract class AbstractKnowledgeBase {
       @Override
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-        Preconditions.checkArgument(parameters.size() > 1,
-            "EXIST_IN_KB takes at least two parameters.");
+        Preconditions.checkArgument(parameters.size() > 1, "EXIST_IN_KB takes at least two parameters.");
 
         String predicate = parameters.get(0).asString();
         List<String> terms = parameters.subList(1, parameters.size()).stream().map(bt -> {
@@ -419,8 +409,7 @@ public abstract class AbstractKnowledgeBase {
 
         Preconditions.checkArgument(parameters.size() >= 4,
             "HTTP_MATERIALIZE_FACTS_QUERY takes at least four parameters.");
-        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string",
-            parameters.get(0));
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s should be a string", parameters.get(0));
 
         Base64.Encoder b64Encoder = Base64.getEncoder();
         StringBuilder builder = new StringBuilder();
@@ -428,16 +417,13 @@ public abstract class AbstractKnowledgeBase {
         for (int i = 1; i < parameters.size(); i = i + 3) {
 
           String name = parameters.get(i).asString();
-          String filter =
-              "_".equals(parameters.get(i + 1).asString()) ? "" : parameters.get(i + 1).asString();
-          String value =
-              "_".equals(parameters.get(i + 2).asString()) ? "" : parameters.get(i + 2).asString();
+          String filter = "_".equals(parameters.get(i + 1).asString()) ? "" : parameters.get(i + 1).asString();
+          String value = "_".equals(parameters.get(i + 2).asString()) ? "" : parameters.get(i + 2).asString();
 
           if (builder.length() > 0) {
             builder.append('&');
           }
-          builder.append(name).append('=')
-              .append(Base64Codec.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
+          builder.append(name).append('=').append(Base64Codec.encodeB64(b64Encoder, value.isEmpty() ? filter : value));
         }
 
         String httpUrl = parameters.get(0).asString();
@@ -461,8 +447,7 @@ public abstract class AbstractKnowledgeBase {
           int status = con.getResponseCode();
 
           if (status > 299) {
-            try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getErrorStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
 
               @Var String inputLine;
 
@@ -475,8 +460,7 @@ public abstract class AbstractKnowledgeBase {
             return BoxedType.empty();
           }
 
-          try (BufferedReader in = new BufferedReader(
-              new InputStreamReader(con.getInputStream()))) {
+          try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
 
             @Var String inputLine;
 
@@ -540,12 +524,9 @@ public abstract class AbstractKnowledgeBase {
       @Override
       public BoxedType<?> evaluate(List<BoxedType<?>> parameters) {
 
-        Preconditions.checkArgument(parameters.size() == 2,
-            "MATERIALIZE_FACTS takes exactly two parameters.");
-        Preconditions.checkArgument(parameters.get(0).isString(), "%s must be a string",
-            parameters.get(0));
-        Preconditions.checkArgument(parameters.get(1).isString(), "%s must be a string",
-            parameters.get(1));
+        Preconditions.checkArgument(parameters.size() == 2, "MATERIALIZE_FACTS takes exactly two parameters.");
+        Preconditions.checkArgument(parameters.get(0).isString(), "%s must be a string", parameters.get(0));
+        Preconditions.checkArgument(parameters.get(1).isString(), "%s must be a string", parameters.get(1));
 
         String predicate = "fn_" + name().toLowerCase();
         Collection<Literal> newCollection = new ArrayList<>();
@@ -580,8 +561,8 @@ public abstract class AbstractKnowledgeBase {
    * </ul>
    *
    * @param clause clause.
-   * @return a {@link Pair} with {@link Pair#t} containing the rewritten clause and {@link Pair#u}
-   * the newly created fact.
+   * @return a {@link Pair} with {@link Pair#t} containing the rewritten clause and {@link Pair#u} the newly created
+   * fact.
    */
   protected Pair<Clause, Clause> rewriteRuleHead(Clause clause) {
 
@@ -594,8 +575,7 @@ public abstract class AbstractKnowledgeBase {
       return new Pair<>(clause, null);
     }
 
-    Preconditions.checkState(!head.predicate().isNegated(),
-        "the rule head should not be negated : %s", clause);
+    Preconditions.checkState(!head.predicate().isNegated(), "the rule head should not be negated : %s", clause);
 
     String predicate = head.predicate().name();
     BigDecimal probability = head.probability();
@@ -619,8 +599,8 @@ public abstract class AbstractKnowledgeBase {
 
     Preconditions.checkNotNull(referencingRule, "referencingRule should not be null");
     Preconditions.checkNotNull(referencedRule, "referencedRule should not be null");
-    Preconditions.checkArgument(pos >= 0 && pos < referencingRule.body().size(),
-        "pos must be such as 0 <= pos < %d", referencingRule.body().size());
+    Preconditions.checkArgument(pos >= 0 && pos < referencingRule.body().size(), "pos must be such as 0 <= pos < %d",
+        referencingRule.body().size());
 
     Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = referencedRule.head()
         .unify(referencingRule.body().get(pos));

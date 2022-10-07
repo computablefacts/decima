@@ -3,14 +3,6 @@ package com.computablefacts.decima.problog;
 import static com.computablefacts.decima.problog.AbstractTerm.newConst;
 import static com.computablefacts.decima.problog.AbstractTerm.newVar;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.computablefacts.asterix.RandomString;
 import com.computablefacts.nona.Function;
 import com.google.common.base.CharMatcher;
@@ -20,6 +12,20 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @CheckReturnValue
 public final class Parser {
@@ -134,8 +140,7 @@ public final class Parser {
 
     scan.nextToken();
 
-    Preconditions.checkState(scan.ttype == '?',
-        "[line " + scan.lineno() + "] Expected '?' after query");
+    Preconditions.checkState(scan.ttype == '?', "[line " + scan.lineno() + "] Expected '?' after query");
 
     return head;
   }
@@ -164,8 +169,7 @@ public final class Parser {
 
     if (scan.nextToken() == ':') { // Rule
 
-      Preconditions.checkState(scan.nextToken() == '-',
-          "[line " + scan.lineno() + "] Expected ':-'");
+      Preconditions.checkState(scan.nextToken() == '-', "[line " + scan.lineno() + "] Expected ':-'");
 
       List<Literal> body = new ArrayList<>();
 
@@ -287,28 +291,24 @@ public final class Parser {
       builtInExpected = false;
     }
 
-    Preconditions.checkState(lhs != null,
-        "[line " + scan.lineno() + "] Predicate or start of expression expected");
+    Preconditions.checkState(lhs != null, "[line " + scan.lineno() + "] Predicate or start of expression expected");
 
     scan.nextToken();
 
-    if (scan.ttype == StreamTokenizer.TT_WORD || scan.ttype == '=' || scan.ttype == '!'
-        || scan.ttype == '<' || scan.ttype == '>') {
+    if (scan.ttype == StreamTokenizer.TT_WORD || scan.ttype == '=' || scan.ttype == '!' || scan.ttype == '<'
+        || scan.ttype == '>') {
 
-      Preconditions.checkState(!negated,
-          "[line " + scan.lineno() + "] Built-in should not be negated");
+      Preconditions.checkState(!negated, "[line " + scan.lineno() + "] Built-in should not be negated");
 
       scan.pushBack();
       return parseBuiltInPredicate(scan, map, lhs);
     }
 
-    Preconditions.checkState(!builtInExpected,
-        "[line " + scan.lineno() + "] Unexpected built-in predicate");
+    Preconditions.checkState(!builtInExpected, "[line " + scan.lineno() + "] Unexpected built-in predicate");
     Preconditions.checkState(scan.ttype == '(',
         "[line " + scan.lineno() + "] Expected '(' after predicate or an operator");
 
-    @Var
-    List<AbstractTerm> terms = new ArrayList<>();
+    @Var List<AbstractTerm> terms = new ArrayList<>();
 
     if (scan.nextToken() != ')') {
 
@@ -316,8 +316,7 @@ public final class Parser {
 
       if (lhs.startsWith("fn_")) {
 
-        @Var
-        List<Literal> literals = new ArrayList<>();
+        @Var List<Literal> literals = new ArrayList<>();
         terms = parseFunction(lhs, scan, map, literals);
         Literal lit = new Literal(probability, negated ? "~" + lhs : lhs, terms);
         literals.add(lit);
@@ -374,25 +373,24 @@ public final class Parser {
         } else if (scan.ttype == '"' || scan.ttype == '\'') {
           terms.add(newConst(unwrap(scan.sval)));
         } else {
-          Preconditions.checkState(false,
-              "[line " + scan.lineno() + "] Expected term in expression");
+          Preconditions.checkState(false, "[line " + scan.lineno() + "] Expected term in expression");
         }
       } while (scan.nextToken() == ',');
 
-      Preconditions.checkState(scan.ttype == ')', "[line " + scan.lineno()
-          + "] Expected ')', terms = [" + Joiner.on(',').join(terms) + "]");
+      Preconditions.checkState(scan.ttype == ')',
+          "[line " + scan.lineno() + "] Expected ')', terms = [" + Joiner.on(',').join(terms) + "]");
     }
     return list(new Literal(probability, negated ? "~" + lhs : lhs, terms));
   }
 
   /**
-   * Parse functions. Internally, functions are expanded as a sequence of one ore more
-   * {@link Literal}. For example, the function :
+   * Parse functions. Internally, functions are expanded as a sequence of one ore more {@link Literal}. For example, the
+   * function :
    *
    * <pre>
    * fn_if(O, fn_and(fn_lt(X, 0), fn_gt(Y, 0)), 1, 0)
    * </pre>
-   *
+   * <p>
    * will be expanded as :
    *
    * <pre>
@@ -407,8 +405,7 @@ public final class Parser {
    * @throws IOException
    */
   private static List<AbstractTerm> parseFunction(String lhs, StreamTokenizer scan,
-      Map<String, com.computablefacts.decima.problog.Var> map, List<Literal> literals)
-      throws IOException {
+      Map<String, com.computablefacts.decima.problog.Var> map, List<Literal> literals) throws IOException {
 
     Preconditions.checkNotNull(lhs, "lhs should not be null");
     Preconditions.checkArgument(lhs.startsWith("fn_"), "lhs should be a function");
@@ -450,13 +447,13 @@ public final class Parser {
   }
 
   /**
-   * Parses one of the built-in predicates. Internally, built-in predicates are expanded as two
-   * {@link Literal}. For example, the built-in predicate :
+   * Parses one of the built-in predicates. Internally, built-in predicates are expanded as two {@link Literal}. For
+   * example, the built-in predicate :
    *
    * <pre>
    * X > Y
    * </pre>
-   *
+   * <p>
    * will be expanded as :
    *
    * <pre>
@@ -466,8 +463,8 @@ public final class Parser {
    * @param scan
    * @param map
    * @param lhs
-   * @throws IOException
    * @return
+   * @throws IOException
    */
   private static List<Literal> parseBuiltInPredicate(StreamTokenizer scan,
       Map<String, com.computablefacts.decima.problog.Var> map, String lhs) throws IOException {
@@ -477,8 +474,7 @@ public final class Parser {
     Preconditions.checkNotNull(lhs, "lhs should not be null");
 
     // Extract operator
-    @Var
-    String operator;
+    @Var String operator;
     scan.nextToken();
 
     if (scan.ttype == StreamTokenizer.TT_WORD) {
@@ -495,8 +491,7 @@ public final class Parser {
       }
     }
 
-    @Var
-    boolean isNegative = false;
+    @Var boolean isNegative = false;
     String op;
 
     if ("=".equals(operator)) {
@@ -518,8 +513,7 @@ public final class Parser {
       op = null;
     }
 
-    Preconditions.checkState(op != null,
-        "[line " + scan.lineno() + "] Invalid operator '" + operator + "'");
+    Preconditions.checkState(op != null, "[line " + scan.lineno() + "] Invalid operator '" + operator + "'");
 
     // Extract operator right hand side
     String rhs;
@@ -533,8 +527,7 @@ public final class Parser {
       rhs = null;
     }
 
-    Preconditions.checkState(rhs != null,
-        "[line " + scan.lineno() + "] Right hand side of expression expected");
+    Preconditions.checkState(rhs != null, "[line " + scan.lineno() + "] Right hand side of expression expected");
 
     // Materialize built-in
 
@@ -543,8 +536,7 @@ public final class Parser {
       AbstractTerm dest = stringToVarOrConst(map, lhs);
       AbstractTerm src = stringToVarOrConst(map, rhs);
 
-      Preconditions.checkState(!dest.isConst(),
-          "[line " + scan.lineno() + "] It is forbidden to assign to a constant");
+      Preconditions.checkState(!dest.isConst(), "[line " + scan.lineno() + "] It is forbidden to assign to a constant");
 
       Literal lit = new Literal(op, dest, src);
       return list(lit);
@@ -565,8 +557,7 @@ public final class Parser {
    * @param name
    * @return
    */
-  private static AbstractTerm stringToVarOrConst(
-      Map<String, com.computablefacts.decima.problog.Var> map, String name) {
+  private static AbstractTerm stringToVarOrConst(Map<String, com.computablefacts.decima.problog.Var> map, String name) {
     if (isWildcard(name)) {
       return newVar(true);
     }
@@ -674,8 +665,7 @@ public final class Parser {
         scan.pushBack(); // The stream ends with a number
       } else {
 
-        @Var
-        boolean hasDecimalPart = true;
+        @Var boolean hasDecimalPart = true;
 
         for (int i = 0; i < scan.sval.length(); i++) {
           if (!Character.isDigit((int) scan.sval.charAt(i))) {
@@ -790,19 +780,15 @@ public final class Parser {
       boolean p1IsMaterialization = p1.predicate().baseName().endsWith("_materialize_facts");
       boolean p2IsMaterialization = p2.predicate().baseName().endsWith("_materialize_facts");
 
-      boolean p1IsTrueOrIsFalse = p1.predicate().baseName().equals("fn_is_true")
-          || p1.predicate().baseName().equals("fn_is_false");
-      boolean p2IsTrueOrIsFalse = p2.predicate().baseName().equals("fn_is_true")
-          || p2.predicate().baseName().equals("fn_is_false");
+      boolean p1IsTrueOrIsFalse =
+          p1.predicate().baseName().equals("fn_is_true") || p1.predicate().baseName().equals("fn_is_false");
+      boolean p2IsTrueOrIsFalse =
+          p2.predicate().baseName().equals("fn_is_true") || p2.predicate().baseName().equals("fn_is_false");
 
-      Preconditions.checkState(!p1IsMaterialization || p1IsPrimitive,
-          "materializations must be primitives : %s", p1);
-      Preconditions.checkState(!p2IsMaterialization || p2IsPrimitive,
-          "materializations must be primitives : %s", p2);
-      Preconditions.checkState(!p1IsPrimitive || !p1IsNegated, "primitives cannot be negated : %s",
-          p1);
-      Preconditions.checkState(!p2IsPrimitive || !p2IsNegated, "primitives cannot be negated : %s",
-          p2);
+      Preconditions.checkState(!p1IsMaterialization || p1IsPrimitive, "materializations must be primitives : %s", p1);
+      Preconditions.checkState(!p2IsMaterialization || p2IsPrimitive, "materializations must be primitives : %s", p2);
+      Preconditions.checkState(!p1IsPrimitive || !p1IsNegated, "primitives cannot be negated : %s", p1);
+      Preconditions.checkState(!p2IsPrimitive || !p2IsNegated, "primitives cannot be negated : %s", p2);
 
       // For each literal, find variables that must be grounded before the resolution begins
       Set<AbstractTerm> p1Provides = new HashSet<>();
@@ -816,40 +802,34 @@ public final class Parser {
         if (!head.isConst()) {
           p1Needs.add(head);
         }
-        p1Provides.addAll(
-            p1.terms().stream().skip(1).filter(t -> !t.isConst()).collect(Collectors.toList()));
+        p1Provides.addAll(p1.terms().stream().skip(1).filter(t -> !t.isConst()).collect(Collectors.toList()));
       } else if (p1IsPrimitive) {
-        p1Needs.addAll(
-            p1.terms().stream().skip(p1IsTrueOrIsFalse ? 0 : 1 /* result stored in first term */)
-                .filter(t -> !t.isConst()).collect(Collectors.toList()));
+        p1Needs.addAll(p1.terms().stream().skip(p1IsTrueOrIsFalse ? 0 : 1 /* result stored in first term */)
+            .filter(t -> !t.isConst()).collect(Collectors.toList()));
         if (!p1IsTrueOrIsFalse) {
           p1Provides.add(p1.terms().get(0));
         }
       } else if (p1IsNegated) {
         p1Needs.addAll(p1.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
       } else {
-        p1Provides
-            .addAll(p1.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
+        p1Provides.addAll(p1.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
       }
       if (p2IsMaterialization) {
         AbstractTerm head = p2.terms().get(0);
         if (!head.isConst()) {
           p2Needs.add(head);
         }
-        p2Provides.addAll(
-            p2.terms().stream().skip(1).filter(t -> !t.isConst()).collect(Collectors.toList()));
+        p2Provides.addAll(p2.terms().stream().skip(1).filter(t -> !t.isConst()).collect(Collectors.toList()));
       } else if (p2IsPrimitive) {
-        p2Needs.addAll(
-            p2.terms().stream().skip(p2IsTrueOrIsFalse ? 0 : 1 /* result stored in first term */)
-                .filter(t -> !t.isConst()).collect(Collectors.toList()));
+        p2Needs.addAll(p2.terms().stream().skip(p2IsTrueOrIsFalse ? 0 : 1 /* result stored in first term */)
+            .filter(t -> !t.isConst()).collect(Collectors.toList()));
         if (!p2IsTrueOrIsFalse) {
           p2Provides.add(p2.terms().get(0));
         }
       } else if (p2IsNegated) {
         p2Needs.addAll(p2.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
       } else {
-        p2Provides
-            .addAll(p2.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
+        p2Provides.addAll(p2.terms().stream().filter(t -> !t.isConst()).collect(Collectors.toList()));
       }
 
       // If both literals do not share variables, the order of theses two body literals does not
@@ -892,7 +872,8 @@ public final class Parser {
         todo.add(i);
       }
       try {
-        outer: while (!todo.isEmpty()) {
+        outer:
+        while (!todo.isEmpty()) {
           for (Integer r : todo) {
             if (!hasDependency(r, todo)) {
               todo.remove(r);

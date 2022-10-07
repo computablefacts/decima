@@ -1,8 +1,7 @@
 package com.computablefacts.decima.problog;
 
-import java.util.Iterator;
-
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.util.Iterator;
 
 @CheckReturnValue
 public abstract class AbstractSubgoalFacts {

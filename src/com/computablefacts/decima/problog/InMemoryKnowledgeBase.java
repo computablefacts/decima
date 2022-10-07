@@ -1,14 +1,12 @@
 package com.computablefacts.decima.problog;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import javax.validation.constraints.NotNull;
-
-import com.google.errorprone.annotations.CheckReturnValue;
 
 @CheckReturnValue
 final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
@@ -16,7 +14,8 @@ final public class InMemoryKnowledgeBase extends AbstractKnowledgeBase {
   private Map<Predicate, Set<Clause>> facts_ = new ConcurrentHashMap<>();
   private Map<Predicate, Set<Clause>> rules_ = new ConcurrentHashMap<>();
 
-  public InMemoryKnowledgeBase() {}
+  public InMemoryKnowledgeBase() {
+  }
 
   @Override
   protected void azzertFact(@NotNull Clause fact) {

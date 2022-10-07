@@ -1,9 +1,8 @@
 package com.computablefacts.decima.robdd;
 
-import java.util.Objects;
-
 import com.computablefacts.asterix.Generated;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.util.Objects;
 
 /**
  * A pair consisting of two elements.
@@ -25,8 +24,7 @@ public final class Pair<T, U> {
   @Generated
   @Override
   public String toString() {
-    return String.format("[Pair: t=%s, u=%s]", t == null ? "null" : t.toString(),
-        u == null ? "null" : u.toString());
+    return String.format("[Pair: t=%s, u=%s]", t == null ? "null" : t.toString(), u == null ? "null" : u.toString());
   }
 
   @Override

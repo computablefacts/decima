@@ -1,12 +1,5 @@
 package com.computablefacts.decima.yaml;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.computablefacts.asterix.Generated;
 import com.computablefacts.decima.problog.Clause;
 import com.computablefacts.decima.problog.Parser;
@@ -17,6 +10,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Preconditions;
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Group ProbLog rules in a YAML file.
@@ -46,7 +44,7 @@ import com.google.common.base.Preconditions;
  *
  *  - ...
  * </pre>
- *
+ * <p>
  * Once compiled, the YAML above will create the following rules :
  *
  * <pre>
@@ -69,7 +67,8 @@ final public class Rules {
   @JsonProperty("rules")
   Rule[] rules_;
 
-  public Rules() {}
+  public Rules() {
+  }
 
   public static Rules load(File file) {
     return load(file, false);
@@ -124,8 +123,8 @@ final public class Rules {
           if (!test.matchOutput(clauses)) {
 
             StringBuilder builder = new StringBuilder();
-            builder.append("\nTest failed for :").append(
-                "\n===[ RULE ]=============================================================================\n")
+            builder.append("\nTest failed for :")
+                .append("\n===[ RULE ]=============================================================================\n")
                 .append(rule).append(test);
 
             logger_.error(LogFormatter.create(true).message(builder.toString()).formatError());

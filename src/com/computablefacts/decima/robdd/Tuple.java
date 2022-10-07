@@ -1,9 +1,8 @@
 package com.computablefacts.decima.robdd;
 
-import java.util.Objects;
-
 import com.computablefacts.asterix.Generated;
 import com.google.errorprone.annotations.CheckReturnValue;
+import java.util.Objects;
 
 /**
  * A triple consisting of three elements.
@@ -41,8 +40,7 @@ public final class Tuple<T, U, V> {
       return false;
     }
     Tuple tuple = (Tuple) o;
-    return Objects.equals(this.t, tuple.t) && Objects.equals(this.u, tuple.u)
-        && Objects.equals(this.v, tuple.v);
+    return Objects.equals(this.t, tuple.t) && Objects.equals(this.u, tuple.u) && Objects.equals(this.v, tuple.v);
   }
 
   @Override

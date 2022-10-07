@@ -1,13 +1,12 @@
 package com.computablefacts.decima.robdd;
 
+import com.computablefacts.asterix.Generated;
+import com.google.common.collect.Lists;
+import com.google.errorprone.annotations.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import com.computablefacts.asterix.Generated;
-import com.google.common.collect.Lists;
-import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
  * Represents a BDD node.
@@ -33,7 +32,8 @@ final public class BddNode {
   // Reference count i.e. the number of time this node is referenced.
   private int refCount_;
 
-  public BddNode() {}
+  public BddNode() {
+  }
 
   public BddNode(int index, BddNode high, BddNode low) {
     index_ = index;
@@ -49,8 +49,7 @@ final public class BddNode {
   @Generated
   @Override
   public String toString() {
-    return String.format(
-        "[BddNode: Identifier=%s, Value=%s, Index=%s, Low=%s, High=%s, RefCount=%s]", id_, value_,
+    return String.format("[BddNode: Identifier=%s, Value=%s, Index=%s, Low=%s, High=%s, RefCount=%s]", id_, value_,
         index_, low_ != null ? low_.id_ : "null", high_ != null ? high_.id_ : "null", refCount_);
   }
 
@@ -63,11 +62,9 @@ final public class BddNode {
       return false;
     }
     BddNode other = (BddNode) obj;
-    return Objects.equals(id_, other.id_)
-        && Objects.equals(low_ == null ? null : low_.id_,
-            other.low_ == null ? null : other.low_.id_)
-        && Objects.equals(high_ == null ? null : high_.id_,
-            other.high_ == null ? null : other.high_.id_);
+    return Objects.equals(id_, other.id_) && Objects.equals(low_ == null ? null : low_.id_,
+        other.low_ == null ? null : other.low_.id_) && Objects.equals(high_ == null ? null : high_.id_,
+        other.high_ == null ? null : other.high_.id_);
   }
 
   @Override

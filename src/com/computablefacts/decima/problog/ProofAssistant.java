@@ -1,20 +1,27 @@
 package com.computablefacts.decima.problog;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.computablefacts.asterix.trie.Trie;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.Var;
+import java.math.BigDecimal;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * See Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic
- * Setting". Technical Communications of ICLP. 7. 124-133. 10.4230/LIPIcs.ICLP.2010.124. for
- * details.
+ * See Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic Setting". Technical
+ * Communications of ICLP. 7. 124-133. 10.4230/LIPIcs.ICLP.2010.124. for details.
  */
 @CheckReturnValue
 final public class ProofAssistant {
@@ -32,20 +39,17 @@ final public class ProofAssistant {
     Preconditions.checkNotNull(subgoals, "subgoals should not be null");
 
     facts_ = subgoals.stream().filter(subgoal -> subgoal.proofs().isEmpty())
-        .flatMap(subgoal -> Sets.newHashSet(subgoal.facts()).stream()).map(Clause::head)
+        .flatMap(subgoal -> Sets.newHashSet(subgoal.facts()).stream()).map(Clause::head).collect(Collectors.toSet());
+
+    rulesWithoutSubRules_ = subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream()).filter(Clause::isGrounded)
+        .filter(rule -> rule.body().stream()
+            .allMatch(literal -> literal.predicate().isPrimitive() || facts_.contains(literal)))
         .collect(Collectors.toSet());
 
-    rulesWithoutSubRules_ =
-        subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream()).filter(Clause::isGrounded)
-            .filter(rule -> rule.body().stream()
-                .allMatch(literal -> literal.predicate().isPrimitive() || facts_.contains(literal)))
-            .collect(Collectors.toSet());
-
-    rulesWithSubRules_ =
-        subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream()).filter(Clause::isGrounded)
-            .filter(rule -> rule.body().stream().anyMatch(
-                literal -> !literal.predicate().isPrimitive() && !facts_.contains(literal)))
-            .collect(Collectors.toSet());
+    rulesWithSubRules_ = subgoals.stream().flatMap(subgoal -> subgoal.proofs().stream()).filter(Clause::isGrounded)
+        .filter(rule -> rule.body().stream()
+            .anyMatch(literal -> !literal.predicate().isPrimitive() && !facts_.contains(literal)))
+        .collect(Collectors.toSet());
   }
 
   public List<String> tableOfProofs() {
@@ -81,9 +85,8 @@ final public class ProofAssistant {
           .peek(clause -> addFactAtDepth(clause, depth)).collect(Collectors.toSet());
     }
 
-    Set<Clause> rulesWithSubRules =
-        rulesWithSubRules_.stream().filter(clause -> !visited.contains(clause))
-            .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
+    Set<Clause> rulesWithSubRules = rulesWithSubRules_.stream().filter(clause -> !visited.contains(clause))
+        .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
 
     Set<Clause> rulesWithoutSubRules = rulesWithoutSubRules_.stream()
         .filter(clause -> clause.head().isRelevant(curLiteral)).collect(Collectors.toSet());
@@ -99,8 +102,7 @@ final public class ProofAssistant {
 
       for (Literal literal : rule.body()) {
 
-        Set<Literal> facts =
-            facts_.stream().filter(fact -> fact.isRelevant(literal)).collect(Collectors.toSet());
+        Set<Literal> facts = facts_.stream().filter(fact -> fact.isRelevant(literal)).collect(Collectors.toSet());
         Set<List<Literal>> newNewBodies = new HashSet<>();
 
         if (literal.predicate().isPrimitive() /* function */) {
@@ -129,12 +131,9 @@ final public class ProofAssistant {
           }
         } else { /* rule */
 
-          @Var
-          Set<Clause> proofz =
-              proofs_.entrySet().stream().filter(e -> e.getKey().head().isRelevant(literal))
-                  .flatMap(
-                      e -> e.getValue().paths().stream().map(path -> new Clause(literal, path)))
-                  .collect(Collectors.toSet());
+          @Var Set<Clause> proofz = proofs_.entrySet().stream().filter(e -> e.getKey().head().isRelevant(literal))
+              .flatMap(e -> e.getValue().paths().stream().map(path -> new Clause(literal, path)))
+              .collect(Collectors.toSet());
 
           if (proofz.isEmpty()) {
             Set<Clause> newVisited = new HashSet<>(visited);
@@ -158,8 +157,7 @@ final public class ProofAssistant {
 
             Preconditions.checkState(proof.isRule(), "proof should be a rule : %s", proof);
 
-            if (proof.body().stream().map(Literal::probability)
-                .allMatch(prob -> BigDecimal.ONE.compareTo(prob) == 0)) {
+            if (proof.body().stream().map(Literal::probability).allMatch(prob -> BigDecimal.ONE.compareTo(prob) == 0)) {
               ones.add(proof);
             } else {
               others.add(proof);
@@ -167,8 +165,8 @@ final public class ProofAssistant {
           }
 
           OptionalInt minSize = ones.stream().mapToInt(proof -> proof.body().size()).min();
-          proofz = Sets.union(ones.stream().filter(p -> p.body().size() == minSize.getAsInt())
-              .collect(Collectors.toSet()), others);
+          proofz = Sets.union(
+              ones.stream().filter(p -> p.body().size() == minSize.getAsInt()).collect(Collectors.toSet()), others);
 
           // --[ END SHENANIGANS ]--
 
@@ -202,8 +200,8 @@ final public class ProofAssistant {
 
   private void addFactAtDepth(Clause clause, int depth) {
 
-    Optional<Map.Entry<Integer, Set<Clause>>> opt =
-        factsInProofs_.stream().filter(r -> r.getKey().equals(depth)).findFirst();
+    Optional<Map.Entry<Integer, Set<Clause>>> opt = factsInProofs_.stream().filter(r -> r.getKey().equals(depth))
+        .findFirst();
 
     if (opt.isPresent()) {
       opt.get().getValue().add(clause);
@@ -216,8 +214,8 @@ final public class ProofAssistant {
 
   private void addRuleAtDepth(Clause clause, int depth) {
 
-    Optional<Map.Entry<Integer, Set<Clause>>> opt =
-        rulesInProofs_.stream().filter(r -> r.getKey().equals(depth)).findFirst();
+    Optional<Map.Entry<Integer, Set<Clause>>> opt = rulesInProofs_.stream().filter(r -> r.getKey().equals(depth))
+        .findFirst();
 
     if (opt.isPresent()) {
       opt.get().getValue().add(clause);

@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CheckReturnValue;
 
 /**
- * A predicate symbol has a name and an arity. Negated predicates are prefixed with "~". Primitives
- * are prefixed with "fn_".
+ * A predicate symbol has a name and an arity. Negated predicates are prefixed with "~". Primitives are prefixed with
+ * "fn_".
  */
 @CheckReturnValue
 final public class Predicate {
@@ -18,7 +18,7 @@ final public class Predicate {
   /**
    * Constructor.
    *
-   * @param name predicate name.
+   * @param name  predicate name.
    * @param arity predicate arity.
    */
   public Predicate(String name, int arity) {
