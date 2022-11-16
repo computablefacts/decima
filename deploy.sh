@@ -39,7 +39,7 @@ fi
 echo "All environment variables are set."
 echo "Preparing the local keyring... (requires travis to have decrypted the file beforehand)"
 
-gpg --fast-import .travis/gpg.asc
+gpg --batch --import .travis/gpg.asc
 
 echo "The import of GPG keys succeeded."
 
