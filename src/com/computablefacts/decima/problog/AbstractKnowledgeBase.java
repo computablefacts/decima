@@ -599,7 +599,7 @@ public abstract class AbstractKnowledgeBase {
 
     Preconditions.checkNotNull(referencingRule, "referencingRule should not be null");
     Preconditions.checkNotNull(referencedRule, "referencedRule should not be null");
-    Preconditions.checkArgument(pos >= 0 && pos < referencingRule.body().size(), "pos must be such as 0 <= pos < %d",
+    Preconditions.checkArgument(pos >= 0 && pos < referencingRule.body().size(), "pos must be such as 0 <= pos < %s",
         referencingRule.body().size());
 
     Map<com.computablefacts.decima.problog.Var, AbstractTerm> env = referencedRule.head()
