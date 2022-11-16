@@ -41,7 +41,7 @@
   </developers>
 
   <properties>
-    <junon.version>0.10</junon.version>
+    <junon.version>0.11</junon.version>
     <nona.version>4.2</nona.version>
     <bplustree.version>0.1.3</bplustree.version>
     <jcip.version>1.0-1</jcip.version>
