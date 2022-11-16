@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * See Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic Setting". Technical
+ * See Mantadelis, Theofrastos &amp; Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic Setting". Technical
  * Communications of ICLP. 7. 124-133. 10.4230/LIPIcs.ICLP.2010.124. for details.
  */
 @CheckReturnValue

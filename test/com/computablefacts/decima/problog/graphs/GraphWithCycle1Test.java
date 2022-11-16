@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Extracted from Mantadelis, Theofrastos & Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic Setting".
+ * Extracted from Mantadelis, Theofrastos &amp; Janssens, Gerda. (2010). "Dedicated Tabling for a Probabilistic Setting".
  * Technical Communications of ICLP. 7. 124-133. 10.4230/LIPIcs.ICLP.2010.124.
  */
 public class GraphWithCycle1Test {
